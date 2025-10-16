@@ -249,31 +249,39 @@ def cargar_datos_historicos():
 def calcular_estadisticas_descriptivas(df, columna, grupo_por=None):
     """
     Calcula estadísticas descriptivas para una columna.
-    
+
     Args:
         df: DataFrame
         columna: Nombre de la columna a analizar
         grupo_por: Columna por la cual agrupar (opcional)
-    
+
     Returns:
         dict o DataFrame: Estadísticas descriptivas
     """
     if grupo_por:
-        return df.groupby(grupo_por)[columna].agg([
+        stats = df.groupby(grupo_por)[columna].agg([
             ('Promedio', 'mean'),
             ('Mediana', 'median'),
             ('Desv. Estándar', 'std'),
             ('Mínimo', 'min'),
             ('Máximo', 'max'),
             ('Cuenta', 'count')
-        ]).round(2)
+        ])
+        # Redondear promedios, medianas, mínimos y máximos a enteros
+        # Mantener decimales para desviación estándar
+        stats['Promedio'] = stats['Promedio'].round(0)
+        stats['Mediana'] = stats['Mediana'].round(0)
+        stats['Mínimo'] = stats['Mínimo'].round(0)
+        stats['Máximo'] = stats['Máximo'].round(0)
+        stats['Desv. Estándar'] = stats['Desv. Estándar'].round(2)
+        return stats
     else:
         return {
-            'Promedio': df[columna].mean(),
-            'Mediana': df[columna].median(),
-            'Desv. Estándar': df[columna].std(),
-            'Mínimo': df[columna].min(),
-            'Máximo': df[columna].max(),
+            'Promedio': round(df[columna].mean(), 0),
+            'Mediana': round(df[columna].median(), 0),
+            'Desv. Estándar': round(df[columna].std(), 2),
+            'Mínimo': round(df[columna].min(), 0),
+            'Máximo': round(df[columna].max(), 0),
             'Cuenta': df[columna].count()
         }
 
@@ -317,9 +325,9 @@ def realizar_test_comparacion(df, area, grupo1_filtro, grupo2_filtro, nombre_gru
         'valido': True,
         'n_grupo1': len(datos_grupo1),
         'n_grupo2': len(datos_grupo2),
-        'media_grupo1': datos_grupo1.mean(),
-        'media_grupo2': datos_grupo2.mean(),
-        'diferencia_medias': datos_grupo1.mean() - datos_grupo2.mean(),
+        'media_grupo1': round(datos_grupo1.mean(), 0),
+        'media_grupo2': round(datos_grupo2.mean(), 0),
+        'diferencia_medias': round(datos_grupo1.mean() - datos_grupo2.mean(), 0),
         't_statistic': t_stat,
         'p_value': p_value,
         'significativo': significativo,
@@ -453,13 +461,13 @@ def crear_grafico_barras_promedios(df, areas, grupo_por, titulo):
     grupos = sorted(df[grupo_por].unique())
 
     for area in areas:
-        promedios = [df[df[grupo_por] == grupo][area].mean() for grupo in grupos]
+        promedios = [round(df[df[grupo_por] == grupo][area].mean(), 0) for grupo in grupos]
         fig.add_trace(go.Bar(
             name=area,
             x=grupos,
             y=promedios,
             marker_color=COLORES_AREAS.get(area, '#999999'),
-            text=[f'{p:.1f}' for p in promedios],
+            text=[f'{int(p)}' for p in promedios],
             textposition='outside'
         ))
 
@@ -700,7 +708,7 @@ def mostrar_vista_general(df, info):
         if info['aula_regular_cargado']:
             df_regular = df[df['Modelo'] == 'Aula Regular']
             st.metric("Estudiantes", len(df_regular))
-            st.metric("Promedio Global", f"{df_regular['Puntaje Global'].mean():.1f}")
+            st.metric("Promedio Global", f"{round(df_regular['Puntaje Global'].mean(), 0):.0f}")
             st.metric("Grupos", ", ".join(sorted(df_regular['Grupo'].unique())))
         else:
             st.warning("No se cargaron datos de Aula Regular")
@@ -710,7 +718,7 @@ def mostrar_vista_general(df, info):
         if info['modelo_flexible_cargado']:
             df_flexible = df[df['Modelo'] == 'Modelo Flexible']
             st.metric("Estudiantes", len(df_flexible))
-            st.metric("Promedio Global", f"{df_flexible['Puntaje Global'].mean():.1f}")
+            st.metric("Promedio Global", f"{round(df_flexible['Puntaje Global'].mean(), 0):.0f}")
             st.metric("Grupos", ", ".join(sorted(df_flexible['Grupo'].unique())))
         else:
             st.warning("No se cargaron datos de Modelo Flexible")
@@ -746,7 +754,7 @@ def mostrar_vista_general(df, info):
     # Promedios por área y modelo
     st.subheader("📚 Promedios por Área y Modelo")
 
-    promedios_modelo = df.groupby('Modelo')[AREAS + ['Puntaje Global']].mean().round(1)
+    promedios_modelo = df.groupby('Modelo')[AREAS + ['Puntaje Global']].mean().round(0)
 
     # Gráfico de barras agrupadas
     fig = crear_grafico_barras_promedios(
@@ -809,14 +817,20 @@ def mostrar_comparacion_modelos(df):
         df_regular = df[df['Modelo'] == 'Aula Regular']
         stats_regular = calcular_estadisticas_descriptivas(df_regular, area_seleccionada)
         for key, value in stats_regular.items():
-            st.metric(key, f"{value:.2f}")
+            if key == 'Desv. Estándar':
+                st.metric(key, f"{value:.2f}")
+            else:
+                st.metric(key, f"{value:.0f}")
 
     with col2:
         st.markdown("### Modelo Flexible")
         df_flexible = df[df['Modelo'] == 'Modelo Flexible']
         stats_flexible = calcular_estadisticas_descriptivas(df_flexible, area_seleccionada)
         for key, value in stats_flexible.items():
-            st.metric(key, f"{value:.2f}")
+            if key == 'Desv. Estándar':
+                st.metric(key, f"{value:.2f}")
+            else:
+                st.metric(key, f"{value:.0f}")
 
     st.markdown("---")
 
@@ -835,7 +849,7 @@ def mostrar_comparacion_modelos(df):
     if resultado_test['valido']:
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.metric("Diferencia de Medias", f"{resultado_test['diferencia_medias']:.2f}")
+            st.metric("Diferencia de Medias", f"{resultado_test['diferencia_medias']:.0f}")
         with col2:
             st.metric("Valor p", f"{resultado_test['p_value']:.4f}")
         with col3:
@@ -905,13 +919,13 @@ def mostrar_comparacion_grupos(df):
 
     with col2:
         st.subheader("📊 Promedios por Grupo")
-        promedios = df_modelo.groupby('Grupo')[area_seleccionada].mean().sort_values(ascending=False)
+        promedios = df_modelo.groupby('Grupo')[area_seleccionada].mean().round(0).sort_values(ascending=False)
         fig = go.Figure(data=[
             go.Bar(
                 x=promedios.index,
                 y=promedios.values,
                 marker_color=[COLORES_GRUPOS.get(g, '#999999') for g in promedios.index],
-                text=[f'{v:.1f}' for v in promedios.values],
+                text=[f'{int(v)}' for v in promedios.values],
                 textposition='outside'
             )
         ])
@@ -962,7 +976,7 @@ def mostrar_comparacion_grupos(df):
                 if resultado_test['valido']:
                     col1, col2, col3 = st.columns(3)
                     with col1:
-                        st.metric("Diferencia de Medias", f"{resultado_test['diferencia_medias']:.2f}")
+                        st.metric("Diferencia de Medias", f"{resultado_test['diferencia_medias']:.0f}")
                     with col2:
                         st.metric("Valor p", f"{resultado_test['p_value']:.4f}")
                     with col3:
@@ -1019,8 +1033,8 @@ def mostrar_analisis_estudiante(df):
         st.markdown("### Puntajes por Área")
 
         # Calcular promedios
-        promedio_modelo = df_modelo[AREAS].mean()
-        promedio_grupo = df_modelo[df_modelo['Grupo'] == estudiante['Grupo']][AREAS].mean()
+        promedio_modelo = df_modelo[AREAS].mean().round(0)
+        promedio_grupo = df_modelo[df_modelo['Grupo'] == estudiante['Grupo']][AREAS].mean().round(0)
 
         # Tabla comparativa
         datos_comparacion = []
@@ -1031,11 +1045,11 @@ def mostrar_analisis_estudiante(df):
 
             datos_comparacion.append({
                 'Área': area,
-                'Estudiante': f"{puntaje_est:.1f}",
-                'Prom. Modelo': f"{prom_mod:.1f}",
-                'Dif. Modelo': f"{puntaje_est - prom_mod:+.1f}",
-                'Prom. Grupo': f"{prom_grp:.1f}",
-                'Dif. Grupo': f"{puntaje_est - prom_grp:+.1f}"
+                'Estudiante': f"{puntaje_est:.0f}",
+                'Prom. Modelo': f"{prom_mod:.0f}",
+                'Dif. Modelo': f"{puntaje_est - prom_mod:+.0f}",
+                'Prom. Grupo': f"{prom_grp:.0f}",
+                'Dif. Grupo': f"{puntaje_est - prom_grp:+.0f}"
             })
 
         df_comparacion = pd.DataFrame(datos_comparacion)
@@ -1129,7 +1143,10 @@ def mostrar_analisis_area(df):
         st.markdown("### Todos los Estudiantes")
         stats_general = calcular_estadisticas_descriptivas(df, area_seleccionada)
         for key, value in stats_general.items():
-            st.metric(key, f"{value:.2f}")
+            if key == 'Desv. Estándar':
+                st.metric(key, f"{value:.2f}")
+            else:
+                st.metric(key, f"{value:.0f}")
 
     with col2:
         st.markdown("### Por Modelo")
@@ -1165,7 +1182,7 @@ def mostrar_analisis_area(df):
 
         if resultado_test['valido']:
             st.markdown("### Test Estadístico")
-            st.metric("Diferencia de Medias", f"{resultado_test['diferencia_medias']:.2f}")
+            st.metric("Diferencia de Medias", f"{resultado_test['diferencia_medias']:.0f}")
             st.metric("Valor p", f"{resultado_test['p_value']:.4f}")
             st.metric("¿Significativo?", resultado_test['significativo'])
             st.info(resultado_test['interpretacion'])
@@ -1251,7 +1268,7 @@ def mostrar_rankings(df):
                 y=top_20['Nombre Completo'],
                 orientation='h',
                 marker_color=[COLORES_MODELOS.get(m, '#999999') for m in top_20['Modelo']],
-                text=top_20['Puntaje Global'].round(1),
+                text=top_20['Puntaje Global'].round(0).astype(int),
                 textposition='outside'
             )
         ])
@@ -1412,7 +1429,7 @@ def mostrar_analisis_avanzado(df):
     segmentacion = df_analisis.groupby('Clasificación').agg({
         'Nombre Completo': 'count',
         'Puntaje Global': ['mean', 'min', 'max']
-    }).round(2)
+    }).round(0)
 
     segmentacion.columns = ['Cantidad', 'Promedio', 'Mínimo', 'Máximo']
     segmentacion = segmentacion.reset_index()
@@ -1465,9 +1482,9 @@ def mostrar_comparacion_temporal(df):
     for area in areas_comparacion:
         datos_comparacion.append({
             'Área': area,
-            '2024': f"{datos_hist['2024'][area]:.2f}",
-            '2025': f"{datos_hist['2025'][area]:.2f}",
-            'Avance': f"{datos_hist['Avance'][area]:+.2f}",
+            '2024': f"{datos_hist['2024'][area]:.0f}",
+            '2025': f"{datos_hist['2025'][area]:.0f}",
+            'Avance': f"{datos_hist['Avance'][area]:+.0f}",
             'Cambio %': f"{(datos_hist['Avance'][area] / datos_hist['2024'][area] * 100):+.2f}%"
         })
 
@@ -1482,24 +1499,24 @@ def mostrar_comparacion_temporal(df):
     fig = go.Figure()
 
     # Datos 2024
-    valores_2024 = [datos_hist['2024'][area] for area in AREAS]
+    valores_2024 = [round(datos_hist['2024'][area], 0) for area in AREAS]
     fig.add_trace(go.Bar(
         name='2024',
         x=AREAS,
         y=valores_2024,
         marker_color='#95a5a6',
-        text=[f'{v:.1f}' for v in valores_2024],
+        text=[f'{int(v)}' for v in valores_2024],
         textposition='outside'
     ))
 
     # Datos 2025
-    valores_2025 = [datos_hist['2025'][area] for area in AREAS]
+    valores_2025 = [round(datos_hist['2025'][area], 0) for area in AREAS]
     fig.add_trace(go.Bar(
         name='2025',
         x=AREAS,
         y=valores_2025,
         marker_color='#3498db',
-        text=[f'{v:.1f}' for v in valores_2025],
+        text=[f'{int(v)}' for v in valores_2025],
         textposition='outside'
     ))
 
@@ -1518,7 +1535,7 @@ def mostrar_comparacion_temporal(df):
     # Gráfico de avances
     st.subheader("📊 Avances y Retrocesos por Área")
 
-    avances = [datos_hist['Avance'][area] for area in AREAS]
+    avances = [round(datos_hist['Avance'][area], 0) for area in AREAS]
     colores_avance = ['#2ecc71' if a > 0 else '#e74c3c' for a in avances]
 
     fig = go.Figure(data=[
@@ -1526,7 +1543,7 @@ def mostrar_comparacion_temporal(df):
             x=AREAS,
             y=avances,
             marker_color=colores_avance,
-            text=[f'{a:+.1f}' for a in avances],
+            text=[f'{int(a):+d}' for a in avances],
             textposition='outside'
         )
     ])
@@ -1571,17 +1588,17 @@ def mostrar_comparacion_temporal(df):
     st.markdown("---")
     st.subheader("📌 Resumen General")
 
-    avance_global = datos_hist['Avance']['Puntaje Global']
+    avance_global = round(datos_hist['Avance']['Puntaje Global'], 0)
 
     if avance_global > 0:
         st.success(f"""
         **Resultado General:** El Modelo Aula Regular muestra una **mejora** en el puntaje global
-        de **+{avance_global:.2f} puntos** respecto al año 2024.
+        de **+{int(avance_global)} puntos** respecto al año 2024.
         """)
     elif avance_global < 0:
         st.error(f"""
         **Resultado General:** El Modelo Aula Regular muestra un **retroceso** en el puntaje global
-        de **{avance_global:.2f} puntos** respecto al año 2024.
+        de **{int(avance_global)} puntos** respecto al año 2024.
         """)
     else:
         st.info("""
