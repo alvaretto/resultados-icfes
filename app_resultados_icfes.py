@@ -28,7 +28,7 @@ st.set_page_config(
     page_title="Análisis Resultados ICFES - Pedacito de Cielo 2025",
     page_icon="📊",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="expanded"  # Sidebar expandido por defecto para mejor acceso al menú de navegación
 )
 
 # ============================================================================
