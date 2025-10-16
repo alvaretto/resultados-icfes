@@ -269,19 +269,27 @@ def calcular_estadisticas_descriptivas(df, columna, grupo_por=None):
         ])
         # Redondear promedios, medianas, mínimos y máximos a enteros
         # Mantener decimales para desviación estándar
-        stats['Promedio'] = stats['Promedio'].round(0)
-        stats['Mediana'] = stats['Mediana'].round(0)
-        stats['Mínimo'] = stats['Mínimo'].round(0)
-        stats['Máximo'] = stats['Máximo'].round(0)
-        stats['Desv. Estándar'] = stats['Desv. Estándar'].round(2)
+        # Usar fillna para manejar valores NaN antes de redondear
+        stats['Promedio'] = stats['Promedio'].fillna(0).round(0)
+        stats['Mediana'] = stats['Mediana'].fillna(0).round(0)
+        stats['Mínimo'] = stats['Mínimo'].fillna(0).round(0)
+        stats['Máximo'] = stats['Máximo'].fillna(0).round(0)
+        stats['Desv. Estándar'] = stats['Desv. Estándar'].fillna(0).round(2)
         return stats
     else:
+        # Manejar valores NaN con pd.isna()
+        promedio = df[columna].mean()
+        mediana = df[columna].median()
+        desv_std = df[columna].std()
+        minimo = df[columna].min()
+        maximo = df[columna].max()
+
         return {
-            'Promedio': round(df[columna].mean(), 0),
-            'Mediana': round(df[columna].median(), 0),
-            'Desv. Estándar': round(df[columna].std(), 2),
-            'Mínimo': round(df[columna].min(), 0),
-            'Máximo': round(df[columna].max(), 0),
+            'Promedio': round(promedio, 0) if pd.notna(promedio) else 0,
+            'Mediana': round(mediana, 0) if pd.notna(mediana) else 0,
+            'Desv. Estándar': round(desv_std, 2) if pd.notna(desv_std) else 0,
+            'Mínimo': round(minimo, 0) if pd.notna(minimo) else 0,
+            'Máximo': round(maximo, 0) if pd.notna(maximo) else 0,
             'Cuenta': df[columna].count()
         }
 
@@ -321,13 +329,17 @@ def realizar_test_comparacion(df, area, grupo1_filtro, grupo2_filtro, nombre_gru
         significativo = "No (p ≥ 0.05)"
         interpretacion = f"No existe una diferencia estadísticamente significativa entre {nombre_grupo1} y {nombre_grupo2}"
 
+    # Calcular medias con manejo de NaN
+    media1 = datos_grupo1.mean()
+    media2 = datos_grupo2.mean()
+
     return {
         'valido': True,
         'n_grupo1': len(datos_grupo1),
         'n_grupo2': len(datos_grupo2),
-        'media_grupo1': round(datos_grupo1.mean(), 0),
-        'media_grupo2': round(datos_grupo2.mean(), 0),
-        'diferencia_medias': round(datos_grupo1.mean() - datos_grupo2.mean(), 0),
+        'media_grupo1': round(media1, 0) if pd.notna(media1) else 0,
+        'media_grupo2': round(media2, 0) if pd.notna(media2) else 0,
+        'diferencia_medias': round(media1 - media2, 0) if pd.notna(media1) and pd.notna(media2) else 0,
         't_statistic': t_stat,
         'p_value': p_value,
         'significativo': significativo,
@@ -461,7 +473,11 @@ def crear_grafico_barras_promedios(df, areas, grupo_por, titulo):
     grupos = sorted(df[grupo_por].unique())
 
     for area in areas:
-        promedios = [round(df[df[grupo_por] == grupo][area].mean(), 0) for grupo in grupos]
+        promedios = []
+        for grupo in grupos:
+            prom = df[df[grupo_por] == grupo][area].mean()
+            promedios.append(round(prom, 0) if pd.notna(prom) else 0)
+
         fig.add_trace(go.Bar(
             name=area,
             x=grupos,
@@ -707,8 +723,9 @@ def mostrar_vista_general(df, info):
         st.markdown("### Modelo Aula Regular")
         if info['aula_regular_cargado']:
             df_regular = df[df['Modelo'] == 'Aula Regular']
+            promedio_regular = df_regular['Puntaje Global'].mean()
             st.metric("Estudiantes", len(df_regular))
-            st.metric("Promedio Global", f"{round(df_regular['Puntaje Global'].mean(), 0):.0f}")
+            st.metric("Promedio Global", f"{round(promedio_regular, 0) if pd.notna(promedio_regular) else 0:.0f}")
             st.metric("Grupos", ", ".join(sorted(df_regular['Grupo'].unique())))
         else:
             st.warning("No se cargaron datos de Aula Regular")
@@ -717,8 +734,9 @@ def mostrar_vista_general(df, info):
         st.markdown("### Modelo Flexible")
         if info['modelo_flexible_cargado']:
             df_flexible = df[df['Modelo'] == 'Modelo Flexible']
+            promedio_flexible = df_flexible['Puntaje Global'].mean()
             st.metric("Estudiantes", len(df_flexible))
-            st.metric("Promedio Global", f"{round(df_flexible['Puntaje Global'].mean(), 0):.0f}")
+            st.metric("Promedio Global", f"{round(promedio_flexible, 0) if pd.notna(promedio_flexible) else 0:.0f}")
             st.metric("Grupos", ", ".join(sorted(df_flexible['Grupo'].unique())))
         else:
             st.warning("No se cargaron datos de Modelo Flexible")
@@ -754,7 +772,7 @@ def mostrar_vista_general(df, info):
     # Promedios por área y modelo
     st.subheader("📚 Promedios por Área y Modelo")
 
-    promedios_modelo = df.groupby('Modelo')[AREAS + ['Puntaje Global']].mean().round(0)
+    promedios_modelo = df.groupby('Modelo')[AREAS + ['Puntaje Global']].mean().fillna(0).round(0)
 
     # Gráfico de barras agrupadas
     fig = crear_grafico_barras_promedios(
@@ -919,7 +937,7 @@ def mostrar_comparacion_grupos(df):
 
     with col2:
         st.subheader("📊 Promedios por Grupo")
-        promedios = df_modelo.groupby('Grupo')[area_seleccionada].mean().round(0).sort_values(ascending=False)
+        promedios = df_modelo.groupby('Grupo')[area_seleccionada].mean().fillna(0).round(0).sort_values(ascending=False)
         fig = go.Figure(data=[
             go.Bar(
                 x=promedios.index,
@@ -1032,14 +1050,14 @@ def mostrar_analisis_estudiante(df):
     with col1:
         st.markdown("### Puntajes por Área")
 
-        # Calcular promedios
-        promedio_modelo = df_modelo[AREAS].mean().round(0)
-        promedio_grupo = df_modelo[df_modelo['Grupo'] == estudiante['Grupo']][AREAS].mean().round(0)
+        # Calcular promedios con manejo de NaN
+        promedio_modelo = df_modelo[AREAS].mean().fillna(0).round(0)
+        promedio_grupo = df_modelo[df_modelo['Grupo'] == estudiante['Grupo']][AREAS].mean().fillna(0).round(0)
 
         # Tabla comparativa
         datos_comparacion = []
         for area in AREAS:
-            puntaje_est = estudiante[area]
+            puntaje_est = estudiante[area] if pd.notna(estudiante[area]) else 0
             prom_mod = promedio_modelo[area]
             prom_grp = promedio_grupo[area]
 
@@ -1429,7 +1447,10 @@ def mostrar_analisis_avanzado(df):
     segmentacion = df_analisis.groupby('Clasificación').agg({
         'Nombre Completo': 'count',
         'Puntaje Global': ['mean', 'min', 'max']
-    }).round(0)
+    })
+
+    # Redondear con manejo de NaN
+    segmentacion = segmentacion.fillna(0).round(0)
 
     segmentacion.columns = ['Cantidad', 'Promedio', 'Mínimo', 'Máximo']
     segmentacion = segmentacion.reset_index()
@@ -1480,12 +1501,19 @@ def mostrar_comparacion_temporal(df):
     datos_comparacion = []
 
     for area in areas_comparacion:
+        val_2024 = datos_hist['2024'][area]
+        val_2025 = datos_hist['2025'][area]
+        avance = datos_hist['Avance'][area]
+
+        # Calcular cambio porcentual con manejo de división por cero
+        cambio_pct = (avance / val_2024 * 100) if val_2024 != 0 else 0
+
         datos_comparacion.append({
             'Área': area,
-            '2024': f"{datos_hist['2024'][area]:.0f}",
-            '2025': f"{datos_hist['2025'][area]:.0f}",
-            'Avance': f"{datos_hist['Avance'][area]:+.0f}",
-            'Cambio %': f"{(datos_hist['Avance'][area] / datos_hist['2024'][area] * 100):+.2f}%"
+            '2024': f"{val_2024:.0f}",
+            '2025': f"{val_2025:.0f}",
+            'Avance': f"{avance:+.0f}",
+            'Cambio %': f"{cambio_pct:+.2f}%"
         })
 
     df_comparacion = pd.DataFrame(datos_comparacion)
@@ -1499,7 +1527,11 @@ def mostrar_comparacion_temporal(df):
     fig = go.Figure()
 
     # Datos 2024
-    valores_2024 = [round(datos_hist['2024'][area], 0) for area in AREAS]
+    valores_2024 = []
+    for area in AREAS:
+        val = datos_hist['2024'][area]
+        valores_2024.append(round(val, 0) if pd.notna(val) else 0)
+
     fig.add_trace(go.Bar(
         name='2024',
         x=AREAS,
@@ -1510,7 +1542,11 @@ def mostrar_comparacion_temporal(df):
     ))
 
     # Datos 2025
-    valores_2025 = [round(datos_hist['2025'][area], 0) for area in AREAS]
+    valores_2025 = []
+    for area in AREAS:
+        val = datos_hist['2025'][area]
+        valores_2025.append(round(val, 0) if pd.notna(val) else 0)
+
     fig.add_trace(go.Bar(
         name='2025',
         x=AREAS,
@@ -1535,7 +1571,11 @@ def mostrar_comparacion_temporal(df):
     # Gráfico de avances
     st.subheader("📊 Avances y Retrocesos por Área")
 
-    avances = [round(datos_hist['Avance'][area], 0) for area in AREAS]
+    avances = []
+    for area in AREAS:
+        val = datos_hist['Avance'][area]
+        avances.append(round(val, 0) if pd.notna(val) else 0)
+
     colores_avance = ['#2ecc71' if a > 0 else '#e74c3c' for a in avances]
 
     fig = go.Figure(data=[
@@ -1571,7 +1611,8 @@ def mostrar_comparacion_temporal(df):
         mejoras = [(area, datos_hist['Avance'][area]) for area in AREAS if datos_hist['Avance'][area] > 0]
         if mejoras:
             for area, avance in sorted(mejoras, key=lambda x: x[1], reverse=True):
-                st.success(f"**{area}:** +{avance:.2f} puntos")
+                avance_val = round(avance, 0) if pd.notna(avance) else 0
+                st.success(f"**{area}:** +{int(avance_val)} puntos")
         else:
             st.info("No hay áreas con mejora")
 
@@ -1580,7 +1621,8 @@ def mostrar_comparacion_temporal(df):
         retrocesos = [(area, datos_hist['Avance'][area]) for area in AREAS if datos_hist['Avance'][area] < 0]
         if retrocesos:
             for area, avance in sorted(retrocesos, key=lambda x: x[1]):
-                st.error(f"**{area}:** {avance:.2f} puntos")
+                avance_val = round(avance, 0) if pd.notna(avance) else 0
+                st.error(f"**{area}:** {int(avance_val)} puntos")
         else:
             st.info("No hay áreas con retroceso")
 
@@ -1588,7 +1630,8 @@ def mostrar_comparacion_temporal(df):
     st.markdown("---")
     st.subheader("📌 Resumen General")
 
-    avance_global = round(datos_hist['Avance']['Puntaje Global'], 0)
+    avance_global_val = datos_hist['Avance']['Puntaje Global']
+    avance_global = round(avance_global_val, 0) if pd.notna(avance_global_val) else 0
 
     if avance_global > 0:
         st.success(f"""
