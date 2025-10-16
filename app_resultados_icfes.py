@@ -664,6 +664,7 @@ def main():
 
     # Tabs principales
     tabs = st.tabs([
+        "🏫 Resultados Institucionales",
         "📊 Vista General",
         "🔄 Comparación entre Modelos",
         "👥 Comparación entre Grupos",
@@ -674,41 +675,450 @@ def main():
         "📅 Comparación Temporal"
     ])
 
-    # TAB 1: Vista General
+    # TAB 0: Resultados Institucionales
     with tabs[0]:
+        mostrar_resultados_institucionales(df)
+
+    # TAB 1: Vista General
+    with tabs[1]:
         mostrar_vista_general(df, info)
 
     # TAB 2: Comparación entre Modelos
-    with tabs[1]:
+    with tabs[2]:
         mostrar_comparacion_modelos(df)
 
     # TAB 3: Comparación entre Grupos
-    with tabs[2]:
+    with tabs[3]:
         mostrar_comparacion_grupos(df)
 
     # TAB 4: Análisis por Estudiante
-    with tabs[3]:
+    with tabs[4]:
         mostrar_analisis_estudiante(df)
 
     # TAB 5: Análisis por Área
-    with tabs[4]:
+    with tabs[5]:
         mostrar_analisis_area(df)
 
     # TAB 6: Rankings Generales
-    with tabs[5]:
+    with tabs[6]:
         mostrar_rankings(df)
 
     # TAB 7: Análisis Estadístico Avanzado
-    with tabs[6]:
+    with tabs[7]:
         mostrar_analisis_avanzado(df)
 
     # TAB 8: Comparación Temporal
-    with tabs[7]:
+    with tabs[8]:
         mostrar_comparacion_temporal(df)
 
 # ============================================================================
 # PESTAÑAS DE LA APLICACIÓN
 # ============================================================================
+
+def mostrar_resultados_institucionales(df):
+    """Pestaña 0: Resultados y Comparativas Institucionales Generales"""
+    st.header("🏫 Resultados Institucionales Generales")
+
+    st.markdown("""
+    <div style='background-color: #e8f4f8; padding: 15px; border-radius: 10px; border-left: 5px solid #3498db;'>
+    <strong>📊 Resultados Consolidados de la Institución Educativa Pedacito de Cielo</strong><br>
+    Esta sección presenta los resultados globales de <strong>TODA la institución</strong>,
+    combinando los 98 estudiantes de ambos modelos educativos (Aula Regular y Modelo Flexible).
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    # ========================================================================
+    # 1. PROMEDIOS INSTITUCIONALES GLOBALES
+    # ========================================================================
+
+    st.subheader("📈 Promedios Institucionales por Área")
+
+    # Calcular promedios institucionales
+    promedios_institucionales = {}
+    for area in AREAS:
+        prom = df[area].mean()
+        promedios_institucionales[area] = round(prom, 0) if pd.notna(prom) else 0
+
+    prom_global = df['Puntaje Global'].mean()
+    promedios_institucionales['Puntaje Global'] = round(prom_global, 0) if pd.notna(prom_global) else 0
+
+    # Mostrar métricas principales
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        st.metric(
+            "🎓 Total Estudiantes",
+            f"{len(df)}",
+            help="Total de estudiantes evaluados en la institución"
+        )
+
+    with col2:
+        st.metric(
+            "📊 Puntaje Global Institucional",
+            f"{promedios_institucionales['Puntaje Global']:.0f}",
+            help="Promedio del puntaje global de todos los estudiantes"
+        )
+
+    with col3:
+        clasificacion_modal = df['Clasificación'].mode()[0] if len(df['Clasificación'].mode()) > 0 else 'N/A'
+        st.metric(
+            "🏆 Clasificación Predominante",
+            clasificacion_modal,
+            help="Clasificación más frecuente en la institución"
+        )
+
+    with col4:
+        total_superior_alto = len(df[df['Clasificación'].isin(['Superior', 'Alto'])])
+        porcentaje = (total_superior_alto / len(df) * 100) if len(df) > 0 else 0
+        st.metric(
+            "⭐ Superior + Alto",
+            f"{total_superior_alto} ({porcentaje:.1f}%)",
+            help="Estudiantes en clasificación Superior o Alto"
+        )
+
+    st.markdown("---")
+
+    # Tabla de promedios por área
+    st.markdown("### 📚 Promedios por Área Académica")
+
+    df_promedios = pd.DataFrame({
+        'Área': AREAS,
+        'Promedio Institucional': [promedios_institucionales[area] for area in AREAS]
+    })
+
+    # Agregar columna de clasificación por área
+    def clasificar_puntaje(puntaje):
+        if puntaje >= 70:
+            return "🟢 Superior"
+        elif puntaje >= 60:
+            return "🔵 Alto"
+        elif puntaje >= 50:
+            return "🟡 Medio"
+        else:
+            return "🔴 Bajo"
+
+    df_promedios['Nivel'] = df_promedios['Promedio Institucional'].apply(clasificar_puntaje)
+
+    col1, col2 = st.columns([2, 1])
+
+    with col1:
+        # Gráfico de barras con promedios institucionales
+        fig = go.Figure(data=[
+            go.Bar(
+                x=AREAS,
+                y=[promedios_institucionales[area] for area in AREAS],
+                marker_color=[COLORES_AREAS.get(area, '#999999') for area in AREAS],
+                text=[f'{promedios_institucionales[area]:.0f}' for area in AREAS],
+                textposition='outside'
+            )
+        ])
+
+        fig.update_layout(
+            title='Promedios Institucionales por Área',
+            xaxis_title='Área',
+            yaxis_title='Promedio',
+            height=400,
+            yaxis_range=[0, max([promedios_institucionales[area] for area in AREAS]) * 1.15]
+        )
+
+        st.plotly_chart(fig, use_container_width=True, key='institucional_barras_areas')
+
+    with col2:
+        st.dataframe(
+            df_promedios,
+            use_container_width=True,
+            hide_index=True,
+            height=400
+        )
+
+    st.markdown("---")
+
+    # ========================================================================
+    # 2. ESTADÍSTICAS DESCRIPTIVAS INSTITUCIONALES
+    # ========================================================================
+
+    st.subheader("📊 Estadísticas Descriptivas Institucionales")
+
+    st.markdown(f"""
+    <div style='background-color: #f0f0f0; padding: 10px; border-radius: 5px;'>
+    Análisis estadístico del <strong>Puntaje Global</strong> de los <strong>{len(df)} estudiantes</strong> de la institución.
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("")
+
+    # Calcular estadísticas
+    stats_institucionales = {
+        'Promedio': round(df['Puntaje Global'].mean(), 0) if pd.notna(df['Puntaje Global'].mean()) else 0,
+        'Mediana': round(df['Puntaje Global'].median(), 0) if pd.notna(df['Puntaje Global'].median()) else 0,
+        'Desviación Estándar': round(df['Puntaje Global'].std(), 2) if pd.notna(df['Puntaje Global'].std()) else 0,
+        'Mínimo': round(df['Puntaje Global'].min(), 0) if pd.notna(df['Puntaje Global'].min()) else 0,
+        'Máximo': round(df['Puntaje Global'].max(), 0) if pd.notna(df['Puntaje Global'].max()) else 0,
+        'Rango': round(df['Puntaje Global'].max() - df['Puntaje Global'].min(), 0) if pd.notna(df['Puntaje Global'].max()) and pd.notna(df['Puntaje Global'].min()) else 0
+    }
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.metric("📊 Promedio", f"{stats_institucionales['Promedio']:.0f}")
+        st.metric("📍 Mediana", f"{stats_institucionales['Mediana']:.0f}")
+
+    with col2:
+        st.metric("📉 Mínimo", f"{stats_institucionales['Mínimo']:.0f}")
+        st.metric("📈 Máximo", f"{stats_institucionales['Máximo']:.0f}")
+
+    with col3:
+        st.metric("📏 Rango", f"{stats_institucionales['Rango']:.0f}")
+        st.metric("📐 Desv. Estándar", f"{stats_institucionales['Desviación Estándar']:.2f}")
+
+    st.markdown("---")
+
+    # Distribución por clasificación
+    st.markdown("### 🎯 Distribución por Clasificación")
+
+    clasificacion_counts = df['Clasificación'].value_counts().reset_index()
+    clasificacion_counts.columns = ['Clasificación', 'Cantidad']
+    clasificacion_counts['Porcentaje'] = (clasificacion_counts['Cantidad'] / len(df) * 100).round(1)
+
+    # Ordenar por nivel de clasificación
+    orden_clasificacion = ['Superior', 'Alto', 'Medio', 'Bajo']
+    clasificacion_counts['Clasificación'] = pd.Categorical(
+        clasificacion_counts['Clasificación'],
+        categories=orden_clasificacion,
+        ordered=True
+    )
+    clasificacion_counts = clasificacion_counts.sort_values('Clasificación')
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.dataframe(
+            clasificacion_counts,
+            use_container_width=True,
+            hide_index=True,
+            height=200
+        )
+
+    with col2:
+        # Gráfico de pastel
+        fig = px.pie(
+            clasificacion_counts,
+            values='Cantidad',
+            names='Clasificación',
+            title='Distribución de Clasificaciones',
+            color='Clasificación',
+            color_discrete_map={
+                'Superior': '#2ecc71',
+                'Alto': '#3498db',
+                'Medio': '#f39c12',
+                'Bajo': '#e74c3c'
+            }
+        )
+        fig.update_traces(textposition='inside', textinfo='percent+label')
+        st.plotly_chart(fig, use_container_width=True, key='institucional_pie_clasificacion')
+
+    st.markdown("---")
+
+    # ========================================================================
+    # 3. HISTOGRAMA DE DISTRIBUCIÓN DEL PUNTAJE GLOBAL
+    # ========================================================================
+
+    st.subheader("📊 Distribución del Puntaje Global Institucional")
+
+    fig = px.histogram(
+        df,
+        x='Puntaje Global',
+        nbins=20,
+        marginal='box',
+        labels={'Puntaje Global': 'Puntaje', 'count': 'Frecuencia'},
+        title='Distribución de Puntajes Globales - Toda la Institución',
+        color_discrete_sequence=['#3498db']
+    )
+
+    # Agregar línea vertical en el promedio
+    fig.add_vline(
+        x=stats_institucionales['Promedio'],
+        line_dash="dash",
+        line_color="red",
+        annotation_text=f"Promedio: {stats_institucionales['Promedio']:.0f}",
+        annotation_position="top"
+    )
+
+    fig.update_layout(
+        height=500,
+        showlegend=False
+    )
+
+    st.plotly_chart(fig, use_container_width=True, key='institucional_hist_puntaje_global')
+
+    st.markdown("---")
+
+    # ========================================================================
+    # 4. COMPARATIVA INSTITUCIONAL VS MODELOS
+    # ========================================================================
+
+    st.subheader("🔄 Comparativa: Institución vs Modelos Educativos")
+
+    st.markdown("""
+    <div style='background-color: #fff3cd; padding: 10px; border-radius: 5px; border-left: 5px solid #ffc107;'>
+    <strong>💡 Análisis Comparativo:</strong> Visualiza cómo cada modelo educativo contribuye al resultado institucional general.
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("")
+
+    # Calcular promedios por modelo
+    df_aula_regular = df[df['Modelo'] == 'Aula Regular']
+    df_modelo_flexible = df[df['Modelo'] == 'Modelo Flexible']
+
+    promedios_comparativa = {
+        'Institución (Total)': {},
+        'Aula Regular': {},
+        'Modelo Flexible': {}
+    }
+
+    # Promedios institucionales
+    for area in AREAS + ['Puntaje Global']:
+        prom_inst = df[area].mean()
+        promedios_comparativa['Institución (Total)'][area] = round(prom_inst, 0) if pd.notna(prom_inst) else 0
+
+        prom_regular = df_aula_regular[area].mean()
+        promedios_comparativa['Aula Regular'][area] = round(prom_regular, 0) if pd.notna(prom_regular) else 0
+
+        prom_flexible = df_modelo_flexible[area].mean()
+        promedios_comparativa['Modelo Flexible'][area] = round(prom_flexible, 0) if pd.notna(prom_flexible) else 0
+
+    # Métricas comparativas
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.markdown("### 🏫 Institución")
+        st.metric("Estudiantes", len(df))
+        st.metric("Puntaje Global", f"{promedios_comparativa['Institución (Total)']['Puntaje Global']:.0f}")
+
+    with col2:
+        st.markdown("### 📘 Aula Regular")
+        st.metric("Estudiantes", len(df_aula_regular))
+        st.metric("Puntaje Global", f"{promedios_comparativa['Aula Regular']['Puntaje Global']:.0f}")
+        diferencia_regular = promedios_comparativa['Aula Regular']['Puntaje Global'] - promedios_comparativa['Institución (Total)']['Puntaje Global']
+        st.metric("vs Institución", f"{diferencia_regular:+.0f}", delta=f"{diferencia_regular:+.0f}")
+
+    with col3:
+        st.markdown("### 📗 Modelo Flexible")
+        st.metric("Estudiantes", len(df_modelo_flexible))
+        st.metric("Puntaje Global", f"{promedios_comparativa['Modelo Flexible']['Puntaje Global']:.0f}")
+        diferencia_flexible = promedios_comparativa['Modelo Flexible']['Puntaje Global'] - promedios_comparativa['Institución (Total)']['Puntaje Global']
+        st.metric("vs Institución", f"{diferencia_flexible:+.0f}", delta=f"{diferencia_flexible:+.0f}")
+
+    st.markdown("---")
+
+    # Gráfico comparativo por áreas
+    st.markdown("### 📚 Comparativa por Área Académica")
+
+    fig = go.Figure()
+
+    # Barra para Institución
+    fig.add_trace(go.Bar(
+        name='Institución (Total)',
+        x=AREAS,
+        y=[promedios_comparativa['Institución (Total)'][area] for area in AREAS],
+        marker_color='#95a5a6',
+        text=[f"{promedios_comparativa['Institución (Total)'][area]:.0f}" for area in AREAS],
+        textposition='outside'
+    ))
+
+    # Barra para Aula Regular
+    fig.add_trace(go.Bar(
+        name='Aula Regular',
+        x=AREAS,
+        y=[promedios_comparativa['Aula Regular'][area] for area in AREAS],
+        marker_color='#3498db',
+        text=[f"{promedios_comparativa['Aula Regular'][area]:.0f}" for area in AREAS],
+        textposition='outside'
+    ))
+
+    # Barra para Modelo Flexible
+    fig.add_trace(go.Bar(
+        name='Modelo Flexible',
+        x=AREAS,
+        y=[promedios_comparativa['Modelo Flexible'][area] for area in AREAS],
+        marker_color='#2ecc71',
+        text=[f"{promedios_comparativa['Modelo Flexible'][area]:.0f}" for area in AREAS],
+        textposition='outside'
+    ))
+
+    fig.update_layout(
+        title='Comparativa de Promedios: Institución vs Modelos Educativos',
+        xaxis_title='Área',
+        yaxis_title='Promedio',
+        barmode='group',
+        height=500,
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        )
+    )
+
+    st.plotly_chart(fig, use_container_width=True, key='institucional_comparativa_modelos')
+
+    st.markdown("---")
+
+    # Tabla comparativa detallada
+    st.markdown("### 📋 Tabla Comparativa Detallada")
+
+    df_comparativa = pd.DataFrame({
+        'Área': AREAS + ['Puntaje Global'],
+        'Institución': [promedios_comparativa['Institución (Total)'][area] for area in AREAS + ['Puntaje Global']],
+        'Aula Regular': [promedios_comparativa['Aula Regular'][area] for area in AREAS + ['Puntaje Global']],
+        'Modelo Flexible': [promedios_comparativa['Modelo Flexible'][area] for area in AREAS + ['Puntaje Global']],
+    })
+
+    # Agregar columnas de diferencia
+    df_comparativa['Dif. Aula Regular'] = df_comparativa['Aula Regular'] - df_comparativa['Institución']
+    df_comparativa['Dif. Modelo Flexible'] = df_comparativa['Modelo Flexible'] - df_comparativa['Institución']
+
+    st.dataframe(
+        df_comparativa,
+        use_container_width=True,
+        hide_index=True
+    )
+
+    st.markdown("---")
+
+    # Resumen final
+    st.subheader("📌 Resumen Institucional")
+
+    mejor_area = max(promedios_institucionales.items(), key=lambda x: x[1] if x[0] != 'Puntaje Global' else 0)
+    peor_area = min(promedios_institucionales.items(), key=lambda x: x[1] if x[0] != 'Puntaje Global' else float('inf'))
+
+    st.success(f"""
+    **✅ Fortaleza Institucional:** El área con mejor desempeño es **{mejor_area[0]}**
+    con un promedio de **{mejor_area[1]:.0f} puntos**.
+    """)
+
+    st.warning(f"""
+    **⚠️ Oportunidad de Mejora:** El área con menor desempeño es **{peor_area[0]}**
+    con un promedio de **{peor_area[1]:.0f} puntos**.
+    """)
+
+    if promedios_comparativa['Aula Regular']['Puntaje Global'] > promedios_comparativa['Modelo Flexible']['Puntaje Global']:
+        st.info(f"""
+        **📊 Comparativa de Modelos:** El **Modelo Aula Regular** presenta un puntaje global
+        **{abs(diferencia_regular):.0f} puntos superior** al promedio institucional,
+        mientras que el **Modelo Flexible** está **{abs(diferencia_flexible):.0f} puntos por debajo**.
+        """)
+    else:
+        st.info(f"""
+        **📊 Comparativa de Modelos:** El **Modelo Flexible** presenta un puntaje global
+        **{abs(diferencia_flexible):.0f} puntos superior** al promedio institucional,
+        mientras que el **Aula Regular** está **{abs(diferencia_regular):.0f} puntos por debajo**.
+        """)
+
 
 def mostrar_vista_general(df, info):
     """Pestaña 1: Vista General"""
