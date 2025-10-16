@@ -1124,7 +1124,7 @@ def mostrar_analisis_estudiante(df):
         go.Bar(
             x=df_percentiles['Área'],
             y=[float(p.strip('%')) for p in df_percentiles['Percentil']],
-            marker_color=COLORES_AREAS.values(),
+            marker_color=[COLORES_AREAS.get(area, '#999999') for area in df_percentiles['Área']],
             text=df_percentiles['Percentil'],
             textposition='outside'
         )
