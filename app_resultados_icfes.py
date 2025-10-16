@@ -759,7 +759,7 @@ def mostrar_vista_general(df, info):
             color_discrete_map=COLORES_MODELOS,
             title='Distribución por Modelo y Clasificación'
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, key='sunburst_clasificacion')
 
     with col2:
         # Tabla de distribución
@@ -781,7 +781,7 @@ def mostrar_vista_general(df, info):
         'Modelo',
         'Comparación de Promedios por Área entre Modelos'
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, key='barras_promedios_general')
 
     # Tabla de promedios
     st.markdown("### Tabla de Promedios")
@@ -802,7 +802,7 @@ def mostrar_vista_general(df, info):
         labels={'Puntaje Global': 'Puntaje', 'count': 'Frecuencia'},
         title='Distribución de Puntaje Global por Modelo'
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, key='hist_puntaje_global')
 
 def mostrar_comparacion_modelos(df):
     """Pestaña 2: Comparación entre Modelos"""
@@ -885,12 +885,12 @@ def mostrar_comparacion_modelos(df):
     with col1:
         st.subheader("📦 Diagrama de Caja")
         fig = crear_grafico_comparacion_modelos(df, area_seleccionada)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, key=f'comp_modelos_tab2_{area_seleccionada}')
 
     with col2:
         st.subheader("📊 Distribución")
         fig = crear_grafico_distribucion(df, area_seleccionada)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, key=f'dist_tab2_{area_seleccionada}')
 
 
 def mostrar_comparacion_grupos(df):
@@ -933,7 +933,7 @@ def mostrar_comparacion_grupos(df):
     with col1:
         st.subheader("📦 Comparación entre Grupos")
         fig = crear_grafico_comparacion_grupos(df, modelo_seleccionado, area_seleccionada)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, key=f'comp_grupos_{modelo_seleccionado}_{area_seleccionada}')
 
     with col2:
         st.subheader("📊 Promedios por Grupo")
@@ -953,7 +953,7 @@ def mostrar_comparacion_grupos(df):
             yaxis_title='Promedio',
             height=400
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, key=f'prom_grupos_{modelo_seleccionado}_{area_seleccionada}')
 
     st.markdown("---")
 
@@ -966,7 +966,7 @@ def mostrar_comparacion_grupos(df):
         'Grupo',
         f'Promedios por Área y Grupo - {modelo_seleccionado}'
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, key=f'barras_areas_{modelo_seleccionado}')
 
     # Tests estadísticos entre grupos (si hay más de un grupo)
     if len(grupos) >= 2:
@@ -1076,7 +1076,7 @@ def mostrar_analisis_estudiante(df):
     with col2:
         st.markdown("### Perfil de Competencias")
         fig = crear_radar_chart(estudiante, AREAS)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, key=f'radar_{estudiante_seleccionado}')
 
     st.markdown("---")
 
@@ -1136,7 +1136,7 @@ def mostrar_analisis_estudiante(df):
         yaxis_range=[0, 105],
         height=400
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, key=f'percentiles_{estudiante_seleccionado}')
 
 
 def mostrar_analisis_area(df):
@@ -1185,7 +1185,7 @@ def mostrar_analisis_area(df):
 
     with col1:
         fig = crear_grafico_comparacion_modelos(df, area_seleccionada)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, key=f'comp_modelos_tab5_{area_seleccionada}')
 
     with col2:
         # Test estadístico
@@ -1216,7 +1216,7 @@ def mostrar_analisis_area(df):
         'Grupo',
         f'Promedio de {area_seleccionada} por Grupo'
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, key=f'barras_grupos_tab5_{area_seleccionada}')
 
     # Box plot de todos los grupos
     fig = go.Figure()
@@ -1235,7 +1235,7 @@ def mostrar_analisis_area(df):
         xaxis_title='Grupo',
         height=500
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, key=f'box_grupos_tab5_{area_seleccionada}')
 
     st.markdown("---")
 
@@ -1297,7 +1297,7 @@ def mostrar_rankings(df):
             height=600,
             yaxis={'categoryorder': 'total ascending'}
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, key='top20_general')
 
     elif tipo_ranking == "Por Modelo":
         modelo_seleccionado = st.selectbox(
@@ -1382,17 +1382,17 @@ def mostrar_analisis_avanzado(df):
 
     if modelo_seleccionado != 'Todos':
         fig = crear_heatmap_correlaciones(df, modelo_seleccionado)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, key=f'heatmap_{modelo_seleccionado}')
     else:
         col1, col2 = st.columns(2)
         with col1:
             if 'Aula Regular' in df['Modelo'].unique():
                 fig = crear_heatmap_correlaciones(df, 'Aula Regular')
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True, key='heatmap_aula_regular')
         with col2:
             if 'Modelo Flexible' in df['Modelo'].unique():
                 fig = crear_heatmap_correlaciones(df, 'Modelo Flexible')
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True, key='heatmap_modelo_flexible')
 
     st.markdown("---")
 
@@ -1437,7 +1437,7 @@ def mostrar_analisis_avanzado(df):
             yaxis_title='Puntaje',
             height=400
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, key=f'percentiles_area_{area_percentil}')
 
     st.markdown("---")
 
@@ -1467,7 +1467,7 @@ def mostrar_analisis_avanzado(df):
             names='Clasificación',
             title='Distribución por Clasificación'
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, key='pie_clasificacion')
 
 
 def mostrar_comparacion_temporal(df):
@@ -1564,7 +1564,7 @@ def mostrar_comparacion_temporal(df):
         height=500
     )
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, key='comp_temporal_2024_2025')
 
     st.markdown("---")
 
@@ -1597,7 +1597,7 @@ def mostrar_comparacion_temporal(df):
         height=500
     )
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, key='avances_retrocesos')
 
     st.markdown("---")
 
