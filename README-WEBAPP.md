@@ -1,6 +1,63 @@
 # 📊 Aplicación Web de Análisis de Resultados ICFES Saber 11 - 2025
+## Institución Educativa Pedacito de Cielo
 
-Aplicación web interactiva desarrollada con **Streamlit** para visualización y análisis estadístico de resultados del examen ICFES Saber 11.
+Aplicación web interactiva desarrollada con **Streamlit** para visualización y análisis estadístico comparativo de resultados del examen ICFES Saber 11.
+
+**Versión Completa:** Incluye análisis comparativo entre **Modelo Aula Regular** y **Modelo Flexible**.
+
+---
+
+## 🎯 Características Principales
+
+### Modelos Educativos Analizados
+
+1. **Modelo Aula Regular**
+   - Grupos: 11A y 11B
+   - Total: 36 estudiantes
+   - Datos históricos: 2024 y 2025
+
+2. **Modelo Flexible**
+   - Grupos: P3A, P3B y P3C
+   - Total: 62 estudiantes
+   - Datos: 2025 (datos 2024 pendientes)
+
+### Tipos de Análisis Disponibles
+
+✅ **Comparación entre Modelos Educativos**
+- Análisis estadístico comparativo Aula Regular vs Modelo Flexible
+- Tests de significancia estadística
+- Visualizaciones comparativas por área
+
+✅ **Comparación entre Grupos**
+- Dentro de Aula Regular: 11A vs 11B
+- Dentro de Modelo Flexible: P3A vs P3B vs P3C
+- Estadísticas descriptivas por grupo
+
+✅ **Análisis por Estudiante**
+- Perfil individual de competencias
+- Comparación con promedios de modelo y grupo
+- Rankings y percentiles
+
+✅ **Análisis por Área**
+- Comparación de cada área entre modelos
+- Comparación de cada área entre grupos
+- Rankings por área
+
+✅ **Rankings Generales**
+- Ranking global (todos los estudiantes)
+- Rankings por modelo
+- Rankings por grupo
+- Rankings por área
+
+✅ **Análisis Estadístico Avanzado**
+- Correlaciones entre áreas
+- Percentiles
+- Segmentación por clasificación
+- Desviaciones estándar
+
+✅ **Comparación Temporal**
+- Evolución 2024-2025 (solo Aula Regular)
+- Avances y retrocesos por área
 
 ---
 
@@ -10,7 +67,7 @@ Esta aplicación sigue las **recomendaciones metodológicas del ICFES Colombia**
 
 - ✅ **Análisis válidos**: Cada área se analiza de forma independiente, ya que tienen escalas, ponderaciones y criterios de evaluación diferentes
 - ❌ **Análisis NO válidos**: NO se realizan comparaciones entre áreas diferentes (ej: Matemáticas vs Lectura Crítica)
-- ✅ **Comparaciones válidas**: Rankings por puntaje global, análisis por área individual, comparaciones temporales de la misma área
+- ✅ **Comparaciones válidas**: Rankings por puntaje global, análisis por área individual, comparaciones temporales de la misma área, comparaciones entre modelos y grupos
 
 **Fuente**: Guía de Interpretación de Resultados ICFES Saber 11 - ICFES Colombia
 
@@ -68,15 +125,23 @@ source venv/bin/activate
 pip install -r requirements-webapp.txt
 ```
 
-### Paso 2: Verificar el Archivo de Datos
+### Paso 2: Verificar los Archivos de Datos
 
-Asegúrate de que el archivo Excel esté en la ubicación correcta:
+Asegúrate de que ambos archivos Excel estén en la ubicación correcta:
 ```
-/home/proyectos/Escritorio/Resultados-ICFES-2025/RESULTADOS-ICFES-AULA-REGULAR-2025.xlsx
+/home/proyectos/Escritorio/Resultados-ICFES-2025/PCIELO-RESULTADOS-ICFES-MODELO-AULA-REGULAR-2025.xlsx
+/home/proyectos/Escritorio/Resultados-ICFES-2025/PCIELO-RESULTADOS-ICFES-MODELO-FLEXIBLE-2025.xlsx
 ```
 
 ### Paso 3: Ejecutar la Aplicación
 
+**Versión Completa (Recomendada):**
+```bash
+# Desde el directorio del proyecto
+streamlit run app_resultados_icfes_completo.py
+```
+
+**Versión Original (Solo Aula Regular):**
 ```bash
 # Desde el directorio del proyecto
 streamlit run app_resultados_icfes.py
@@ -90,6 +155,88 @@ http://localhost:8501
 ---
 
 ## 📁 Estructura de Archivos
+
+### Archivos de la Aplicación
+
+```
+app_resultados_icfes_completo.py    # Aplicación completa con ambos modelos (RECOMENDADA)
+app_resultados_icfes.py             # Aplicación original (solo Aula Regular)
+app.py                              # Versión simplificada
+```
+
+### Archivos de Datos
+
+```
+PCIELO-RESULTADOS-ICFES-MODELO-AULA-REGULAR-2025.xlsx    # Datos Modelo Aula Regular
+PCIELO-RESULTADOS-ICFES-MODELO-FLEXIBLE-2025.xlsx        # Datos Modelo Flexible
+```
+
+### Archivos de Configuración
+
+```
+requirements-webapp.txt             # Dependencias de la aplicación
+README-WEBAPP.md                    # Esta documentación
+```
+
+---
+
+## 📊 Pestañas de la Aplicación
+
+### 1. 📊 Vista General
+- Resumen de ambos modelos educativos
+- Métricas generales (total estudiantes, promedios)
+- Distribución por clasificación
+- Promedios por área y modelo
+- Distribución de puntaje global
+
+### 2. 🔄 Comparación entre Modelos
+- Estadísticas comparativas Aula Regular vs Modelo Flexible
+- Tests estadísticos de significancia
+- Diagramas de caja y distribuciones
+- Análisis por área seleccionada
+
+### 3. 👥 Comparación entre Grupos
+- Comparación de grupos dentro del mismo modelo
+- Estadísticas descriptivas por grupo
+- Visualizaciones comparativas
+- Tests estadísticos entre grupos
+
+### 4. 👤 Análisis por Estudiante
+- Perfil individual del estudiante
+- Comparación con promedios de modelo y grupo
+- Radar chart de competencias
+- Posición en rankings (global, modelo, grupo)
+- Percentiles por área
+
+### 5. 📚 Análisis por Área
+- Estadísticas generales por área
+- Comparación entre modelos
+- Comparación entre todos los grupos
+- Rankings por área
+- Tests estadísticos
+
+### 6. 🏆 Rankings Generales
+- Ranking global (todos los estudiantes)
+- Rankings por modelo
+- Rankings por grupo
+- Rankings por área
+- Visualizaciones de top 10 y top 20
+
+### 7. 📈 Análisis Estadístico Avanzado
+- Correlaciones entre áreas (heatmaps)
+- Análisis de percentiles
+- Segmentación por clasificación
+- Estadísticas descriptivas avanzadas
+
+### 8. 📅 Comparación Temporal
+- Evolución 2024-2025 (solo Aula Regular)
+- Avances y retrocesos por área
+- Análisis de cambios porcentuales
+- Visualizaciones de tendencias
+
+---
+
+## 📁 Estructura de Archivos (Detallada)
 
 ```
 Resultados-ICFES-2025/
