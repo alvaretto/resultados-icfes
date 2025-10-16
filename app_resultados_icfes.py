@@ -662,8 +662,16 @@ def main():
     </div>
     """, unsafe_allow_html=True)
 
-    # Tabs principales
-    tabs = st.tabs([
+    # ========================================================================
+    # NAVEGACIÓN POR SIDEBAR
+    # ========================================================================
+
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("### 📑 Navegación")
+    st.sidebar.markdown("Selecciona una sección para visualizar:")
+
+    # Opciones de navegación
+    opciones_navegacion = [
         "🏫 Resultados Institucionales",
         "📊 Vista General",
         "🔄 Comparación entre Modelos",
@@ -673,42 +681,53 @@ def main():
         "🏆 Rankings Generales",
         "📈 Análisis Estadístico Avanzado",
         "📅 Comparación Temporal"
-    ])
+    ]
 
-    # TAB 0: Resultados Institucionales
-    with tabs[0]:
+    # Selector de sección en el sidebar
+    seccion_seleccionada = st.sidebar.radio(
+        "Secciones disponibles:",
+        opciones_navegacion,
+        index=0,
+        key='navegacion_principal',
+        label_visibility='collapsed'
+    )
+
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("""
+    <div style='font-size: 0.8em; color: #666;'>
+    💡 <strong>Tip:</strong> Usa el menú de navegación para acceder rápidamente a cualquier sección.
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ========================================================================
+    # RENDERIZAR SECCIÓN SELECCIONADA
+    # ========================================================================
+
+    if seccion_seleccionada == "🏫 Resultados Institucionales":
         mostrar_resultados_institucionales(df)
 
-    # TAB 1: Vista General
-    with tabs[1]:
+    elif seccion_seleccionada == "📊 Vista General":
         mostrar_vista_general(df, info)
 
-    # TAB 2: Comparación entre Modelos
-    with tabs[2]:
+    elif seccion_seleccionada == "🔄 Comparación entre Modelos":
         mostrar_comparacion_modelos(df)
 
-    # TAB 3: Comparación entre Grupos
-    with tabs[3]:
+    elif seccion_seleccionada == "👥 Comparación entre Grupos":
         mostrar_comparacion_grupos(df)
 
-    # TAB 4: Análisis por Estudiante
-    with tabs[4]:
+    elif seccion_seleccionada == "👤 Análisis por Estudiante":
         mostrar_analisis_estudiante(df)
 
-    # TAB 5: Análisis por Área
-    with tabs[5]:
+    elif seccion_seleccionada == "📚 Análisis por Área":
         mostrar_analisis_area(df)
 
-    # TAB 6: Rankings Generales
-    with tabs[6]:
+    elif seccion_seleccionada == "🏆 Rankings Generales":
         mostrar_rankings(df)
 
-    # TAB 7: Análisis Estadístico Avanzado
-    with tabs[7]:
+    elif seccion_seleccionada == "📈 Análisis Estadístico Avanzado":
         mostrar_analisis_avanzado(df)
 
-    # TAB 8: Comparación Temporal
-    with tabs[8]:
+    elif seccion_seleccionada == "📅 Comparación Temporal":
         mostrar_comparacion_temporal(df)
 
 # ============================================================================
