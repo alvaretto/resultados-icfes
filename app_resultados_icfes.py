@@ -191,7 +191,38 @@ def cargar_datos_unificados():
     
     # Unificar DataFrames
     df_unificado = pd.concat(dfs, ignore_index=True)
-    
+
+    # ========================================================================
+    # FILTRAR ESTUDIANTES AUSENTES
+    # ========================================================================
+    # Excluir estudiantes que no presentaron el examen ICFES Saber 11
+    # Criterios: Puntaje Global NaN/0 o todas las áreas con valores NaN
+    #
+    # Estudiantes ausentes identificados (3 en total):
+    # 1. EMANUELE CANO ARANA (P3C, Doc: 1095209138)
+    # 2. SANTIAGO GARCIA ARENAS (P3C, Doc: 1092853166)
+    # 3. JORGE IVAN SOLARTE (P3B, Doc: 1059064946)
+
+    total_antes = len(df_unificado)
+
+    # Filtrar: mantener solo estudiantes con Puntaje Global válido
+    df_unificado = df_unificado[
+        (df_unificado['Puntaje Global'].notna()) &
+        (df_unificado['Puntaje Global'] > 0)
+    ].copy()
+
+    total_despues = len(df_unificado)
+    estudiantes_excluidos = total_antes - total_despues
+
+    if estudiantes_excluidos > 0:
+        st.info(f"""
+        ℹ️ **Nota**: Se excluyeron **{estudiantes_excluidos} estudiantes ausentes**
+        que no presentaron el examen ICFES Saber 11.
+        Todos los análisis se basan en los **{total_despues} estudiantes** que sí presentaron el examen.
+        """)
+
+    # ========================================================================
+
     # Crear nombre completo
     df_unificado['Nombre Completo'] = (
         df_unificado['Primer Nombre'].fillna('') + ' ' +
@@ -199,12 +230,20 @@ def cargar_datos_unificados():
         df_unificado['Primer Apellido'].fillna('') + ' ' +
         df_unificado['Segundo Apellido'].fillna('')
     ).str.strip().str.replace(r'\s+', ' ', regex=True)
-    
+
     # Aplicar clasificación
     df_unificado['Clasificación'] = df_unificado['Puntaje Global'].apply(clasificar_puntaje)
-    
+
+    # Actualizar información con totales correctos (sin ausentes)
     info['total_estudiantes'] = len(df_unificado)
-    
+    info['estudiantes_excluidos'] = estudiantes_excluidos
+
+    # Recalcular totales por modelo (sin ausentes)
+    if info['aula_regular_cargado']:
+        info['estudiantes_aula_regular'] = len(df_unificado[df_unificado['Modelo'] == 'Aula Regular'])
+    if info['modelo_flexible_cargado']:
+        info['estudiantes_modelo_flexible'] = len(df_unificado[df_unificado['Modelo'] == 'Modelo Flexible'])
+
     return df_unificado, info
 
 @st.cache_data
@@ -738,11 +777,12 @@ def mostrar_resultados_institucionales(df):
     """Pestaña 0: Resultados y Comparativas Institucionales Generales"""
     st.header("🏫 Resultados Institucionales Generales")
 
-    st.markdown("""
+    st.markdown(f"""
     <div style='background-color: #e8f4f8; padding: 15px; border-radius: 10px; border-left: 5px solid #3498db;'>
     <strong>📊 Resultados Consolidados de la Institución Educativa Pedacito de Cielo</strong><br>
     Esta sección presenta los resultados globales de <strong>TODA la institución</strong>,
-    combinando los 98 estudiantes de ambos modelos educativos (Aula Regular y Modelo Flexible).
+    combinando los {len(df)} estudiantes que presentaron el examen de ambos modelos educativos
+    (Aula Regular y Modelo Flexible).
     </div>
     """, unsafe_allow_html=True)
 
