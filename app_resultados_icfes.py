@@ -2,8 +2,10 @@
 # -*- coding: utf-8 -*-
 """
 Aplicación Web Interactiva para Visualización y Análisis de Resultados ICFES Saber 11
+Análisis Comparativo: Modelo Aula Regular vs Modelo Flexible
+Institución Educativa Pedacito de Cielo
 Autor: Sistema de Análisis ICFES
-Fecha: 2025-10-14
+Fecha: 2025-10-16
 """
 
 import streamlit as st
@@ -15,17 +17,24 @@ import numpy as np
 from scipy import stats
 from datetime import datetime
 import warnings
+import os
 warnings.filterwarnings('ignore')
 
-# Configuración de la página
+# ============================================================================
+# CONFIGURACIÓN DE LA PÁGINA
+# ============================================================================
+
 st.set_page_config(
-    page_title="Análisis Resultados ICFES Saber 11 - 2025",
+    page_title="Análisis Resultados ICFES - Pedacito de Cielo 2025",
     page_icon="📊",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# Estilos CSS personalizados
+# ============================================================================
+# ESTILOS CSS PERSONALIZADOS
+# ============================================================================
+
 st.markdown("""
 <style>
     .main-header {
@@ -37,11 +46,32 @@ st.markdown("""
         border-bottom: 3px solid #1f77b4;
         margin-bottom: 2rem;
     }
+    .sub-header {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #2c3e50;
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+    }
     .metric-card {
         background-color: #f0f2f6;
         padding: 1rem;
         border-radius: 0.5rem;
         border-left: 4px solid #1f77b4;
+    }
+    .info-box {
+        background-color: #e8f4f8;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        border-left: 4px solid #3498db;
+        margin: 1rem 0;
+    }
+    .warning-box {
+        background-color: #fff3cd;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        border-left: 4px solid #ffc107;
+        margin: 1rem 0;
     }
     .stTabs [data-baseweb="tab-list"] {
         gap: 2rem;
@@ -53,10 +83,19 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Constantes
-ARCHIVO_EXCEL = 'RESULTADOS-ICFES-AULA-REGULAR-2025.xlsx'
+# ============================================================================
+# CONSTANTES GLOBALES
+# ============================================================================
+
+# Archivos de datos
+ARCHIVO_AULA_REGULAR = 'PCIELO-RESULTADOS-ICFES-MODELO-AULA-REGULAR-2025.xlsx'
+ARCHIVO_MODELO_FLEXIBLE = 'PCIELO-RESULTADOS-ICFES-MODELO-FLEXIBLE-2025.xlsx'
+
+# Áreas de evaluación
 AREAS = ['Lectura Crítica', 'Matemáticas', 'Sociales y Ciudadanas', 'Ciencias Naturales', 'Inglés']
-COLORES = {
+
+# Colores por área
+COLORES_AREAS = {
     'Lectura Crítica': '#1f77b4',
     'Matemáticas': '#ff7f0e',
     'Sociales y Ciudadanas': '#2ca02c',
@@ -65,120 +104,399 @@ COLORES = {
     'Puntaje Global': '#8c564b'
 }
 
+# Colores por modelo
+COLORES_MODELOS = {
+    'Aula Regular': '#3498db',
+    'Modelo Flexible': '#e74c3c'
+}
+
+# Colores por grupo
+COLORES_GRUPOS = {
+    '11A': '#3498db',
+    '11B': '#2ecc71',
+    'P3A': '#e74c3c',
+    'P3B': '#f39c12',
+    'P3C': '#9b59b6'
+}
+
+# Clasificaciones por puntaje global
+def clasificar_puntaje(puntaje):
+    """Clasifica el puntaje global según rangos establecidos"""
+    if pd.isna(puntaje):
+        return 'Sin datos'
+    elif puntaje < 200:
+        return 'Bajo'
+    elif puntaje < 300:
+        return 'Medio'
+    elif puntaje < 400:
+        return 'Alto'
+    else:
+        return 'Superior'
+
+# ============================================================================
+# FUNCIONES DE CARGA DE DATOS
+# ============================================================================
+
 @st.cache_data
-def cargar_datos():
-    """Carga y preprocesa los datos del Excel"""
-    try:
-        df = pd.read_excel(ARCHIVO_EXCEL)
-
-        # ⚠️ CORRECCIÓN CRÍTICA: Filtrar solo las 36 filas de estudiantes reales
-        # Las últimas 4 filas (36-39) contienen estadísticas agregadas:
-        # - Fila 36: Vacía (separador)
-        # - Fila 37: Promedios 2025
-        # - Fila 38: Promedios 2024
-        # - Fila 39: Avance (diferencia 2025-2024)
-        # Estas filas NO deben incluirse en el análisis de estudiantes individuales
-
-        # Filtrar solo filas con Grupo no nulo (estudiantes reales)
-        df = df[df['Grupo'].notna()].copy()
-
-        # Validación: debe haber exactamente 36 estudiantes
-        if len(df) != 36:
-            st.warning(f"⚠️ Advertencia: Se esperaban 36 estudiantes, se encontraron {len(df)}")
-
-        # Limpiar datos adicionales
-        df = df.dropna(subset=['Número de documento'])
-
-        # Crear nombre completo
-        df['Nombre Completo'] = (
-            df['Primer Nombre'].fillna('') + ' ' +
-            df['Segundo Nombre'].fillna('') + ' ' +
-            df['Primer Apellido'].fillna('') + ' ' +
-            df['Segundo Apellido'].fillna('')
-        ).str.strip().str.replace(r'\s+', ' ', regex=True)
-
-        # Convertir puntajes a numérico
-        for area in AREAS + ['Puntaje Global']:
-            df[area] = pd.to_numeric(df[area], errors='coerce')
-
-        return df
-    except Exception as e:
-        st.error(f"Error al cargar el archivo: {e}")
-        return None
+def cargar_datos_unificados():
+    """
+    Carga y unifica los datos de ambos modelos educativos.
+    
+    Returns:
+        pd.DataFrame: DataFrame unificado con todos los estudiantes
+        dict: Información sobre la carga de datos
+    """
+    info = {
+        'aula_regular_cargado': False,
+        'modelo_flexible_cargado': False,
+        'total_estudiantes': 0,
+        'estudiantes_aula_regular': 0,
+        'estudiantes_modelo_flexible': 0
+    }
+    
+    dfs = []
+    
+    # Cargar Modelo Aula Regular
+    if os.path.exists(ARCHIVO_AULA_REGULAR):
+        try:
+            df_regular = pd.read_excel(ARCHIVO_AULA_REGULAR)
+            # Filtrar solo estudiantes (excluir filas de estadísticas)
+            df_regular = df_regular[df_regular['Grupo'].notna()].copy()
+            df_regular['Modelo'] = 'Aula Regular'
+            dfs.append(df_regular)
+            info['aula_regular_cargado'] = True
+            info['estudiantes_aula_regular'] = len(df_regular)
+        except Exception as e:
+            st.error(f"Error al cargar {ARCHIVO_AULA_REGULAR}: {e}")
+    
+    # Cargar Modelo Flexible
+    if os.path.exists(ARCHIVO_MODELO_FLEXIBLE):
+        try:
+            df_flexible = pd.read_excel(ARCHIVO_MODELO_FLEXIBLE)
+            # Filtrar solo estudiantes (excluir filas de estadísticas)
+            df_flexible = df_flexible[df_flexible['Grupo'].notna()].copy()
+            df_flexible['Modelo'] = 'Modelo Flexible'
+            # Eliminar columna extra si existe
+            if 'Unnamed: 13' in df_flexible.columns:
+                df_flexible = df_flexible.drop(columns=['Unnamed: 13'])
+            dfs.append(df_flexible)
+            info['modelo_flexible_cargado'] = True
+            info['estudiantes_modelo_flexible'] = len(df_flexible)
+        except Exception as e:
+            st.error(f"Error al cargar {ARCHIVO_MODELO_FLEXIBLE}: {e}")
+    
+    # Verificar que al menos un archivo se haya cargado
+    if not dfs:
+        return None, info
+    
+    # Unificar DataFrames
+    df_unificado = pd.concat(dfs, ignore_index=True)
+    
+    # Crear nombre completo
+    df_unificado['Nombre Completo'] = (
+        df_unificado['Primer Nombre'].fillna('') + ' ' +
+        df_unificado['Segundo Nombre'].fillna('') + ' ' +
+        df_unificado['Primer Apellido'].fillna('') + ' ' +
+        df_unificado['Segundo Apellido'].fillna('')
+    ).str.strip().str.replace(r'\s+', ' ', regex=True)
+    
+    # Aplicar clasificación
+    df_unificado['Clasificación'] = df_unificado['Puntaje Global'].apply(clasificar_puntaje)
+    
+    info['total_estudiantes'] = len(df_unificado)
+    
+    return df_unificado, info
 
 @st.cache_data
 def cargar_datos_historicos():
-    """Carga los datos históricos de comparación entre años"""
-    try:
-        df_completo = pd.read_excel(ARCHIVO_EXCEL)
-
-        # Extraer las filas de datos históricos
-        # Fila 37 (índice 37): Promedios 2025
-        # Fila 38 (índice 38): Promedios 2024
-        # Fila 39 (índice 39): Avance (diferencia)
-
-        if len(df_completo) >= 40:
-            datos_2025 = df_completo.iloc[37][AREAS + ['Puntaje Global']].to_dict()
-            datos_2024 = df_completo.iloc[38][AREAS + ['Puntaje Global']].to_dict()
-            avance = df_completo.iloc[39][AREAS + ['Puntaje Global']].to_dict()
-
-            return {
-                '2025': datos_2025,
-                '2024': datos_2024,
-                'Avance': avance
-            }
-        else:
-            return None
-    except Exception as e:
-        st.error(f"Error al cargar datos históricos: {e}")
-        return None
-
-def calcular_estadisticas(df, columna):
-    """Calcula estadísticas descriptivas para una columna"""
-    datos = df[columna].dropna()
+    """
+    Carga los datos históricos de comparación entre años (2024-2025).
+    Solo disponible para Modelo Aula Regular.
     
+    Returns:
+        dict: Datos históricos por modelo
+    """
+    historicos = {
+        'Aula Regular': None,
+        'Modelo Flexible': None
+    }
+    
+    # Cargar históricos de Aula Regular
+    if os.path.exists(ARCHIVO_AULA_REGULAR):
+        try:
+            df_completo = pd.read_excel(ARCHIVO_AULA_REGULAR)
+            if len(df_completo) >= 40:
+                datos_2025 = df_completo.iloc[37][AREAS + ['Puntaje Global']].to_dict()
+                datos_2024 = df_completo.iloc[38][AREAS + ['Puntaje Global']].to_dict()
+                avance = df_completo.iloc[39][AREAS + ['Puntaje Global']].to_dict()
+                
+                historicos['Aula Regular'] = {
+                    '2025': datos_2025,
+                    '2024': datos_2024,
+                    'Avance': avance
+                }
+        except Exception as e:
+            st.warning(f"No se pudieron cargar datos históricos de Aula Regular: {e}")
+    
+    # Nota: Modelo Flexible no tiene datos 2024 aún
+    
+    return historicos
+
+# ============================================================================
+# FUNCIONES DE ANÁLISIS ESTADÍSTICO
+# ============================================================================
+
+def calcular_estadisticas_descriptivas(df, columna, grupo_por=None):
+    """
+    Calcula estadísticas descriptivas para una columna.
+    
+    Args:
+        df: DataFrame
+        columna: Nombre de la columna a analizar
+        grupo_por: Columna por la cual agrupar (opcional)
+    
+    Returns:
+        dict o DataFrame: Estadísticas descriptivas
+    """
+    if grupo_por:
+        return df.groupby(grupo_por)[columna].agg([
+            ('Promedio', 'mean'),
+            ('Mediana', 'median'),
+            ('Desv. Estándar', 'std'),
+            ('Mínimo', 'min'),
+            ('Máximo', 'max'),
+            ('Cuenta', 'count')
+        ]).round(2)
+    else:
+        return {
+            'Promedio': df[columna].mean(),
+            'Mediana': df[columna].median(),
+            'Desv. Estándar': df[columna].std(),
+            'Mínimo': df[columna].min(),
+            'Máximo': df[columna].max(),
+            'Cuenta': df[columna].count()
+        }
+
+
+def realizar_test_comparacion(df, area, grupo1_filtro, grupo2_filtro, nombre_grupo1, nombre_grupo2):
+    """
+    Realiza un test t de Student para comparar dos grupos.
+
+    Args:
+        df: DataFrame
+        area: Área a comparar
+        grupo1_filtro: Filtro booleano para grupo 1
+        grupo2_filtro: Filtro booleano para grupo 2
+        nombre_grupo1: Nombre del grupo 1
+        nombre_grupo2: Nombre del grupo 2
+
+    Returns:
+        dict: Resultados del test estadístico
+    """
+    datos_grupo1 = df[grupo1_filtro][area].dropna()
+    datos_grupo2 = df[grupo2_filtro][area].dropna()
+
+    if len(datos_grupo1) < 2 or len(datos_grupo2) < 2:
+        return {
+            'valido': False,
+            'mensaje': 'Datos insuficientes para realizar el test'
+        }
+
+    # Test t de Student
+    t_stat, p_value = stats.ttest_ind(datos_grupo1, datos_grupo2)
+
+    # Interpretación
+    if p_value < 0.05:
+        significativo = "Sí (p < 0.05)"
+        interpretacion = f"Existe una diferencia estadísticamente significativa entre {nombre_grupo1} y {nombre_grupo2}"
+    else:
+        significativo = "No (p ≥ 0.05)"
+        interpretacion = f"No existe una diferencia estadísticamente significativa entre {nombre_grupo1} y {nombre_grupo2}"
+
     return {
-        'Promedio': datos.mean(),
-        'Mediana': datos.median(),
-        'Moda': datos.mode()[0] if len(datos.mode()) > 0 else None,
-        'Desv. Estándar': datos.std(),
-        'Mínimo': datos.min(),
-        'Máximo': datos.max(),
-        'Percentil 25': datos.quantile(0.25),
-        'Percentil 50': datos.quantile(0.50),
-        'Percentil 75': datos.quantile(0.75),
-        'Rango': datos.max() - datos.min(),
-        'Coef. Variación': (datos.std() / datos.mean() * 100) if datos.mean() != 0 else 0
+        'valido': True,
+        'n_grupo1': len(datos_grupo1),
+        'n_grupo2': len(datos_grupo2),
+        'media_grupo1': datos_grupo1.mean(),
+        'media_grupo2': datos_grupo2.mean(),
+        'diferencia_medias': datos_grupo1.mean() - datos_grupo2.mean(),
+        't_statistic': t_stat,
+        'p_value': p_value,
+        'significativo': significativo,
+        'interpretacion': interpretacion
     }
 
-def clasificar_por_rango(puntaje):
-    """Clasifica un puntaje global en categorías"""
-    if pd.isna(puntaje):
-        return 'Sin datos'
-    elif puntaje <= 200:
-        return 'Bajo (0-200)'
-    elif puntaje <= 300:
-        return 'Medio (201-300)'
-    elif puntaje <= 400:
-        return 'Alto (301-400)'
-    else:
-        return 'Superior (401-500)'
+def calcular_percentil(df, area, valor):
+    """
+    Calcula el percentil de un valor en una distribución.
 
-def crear_radar_chart(estudiante_data, areas):
-    """Crea un gráfico de radar para un estudiante"""
-    valores = [estudiante_data[area] for area in areas]
-    
+    Args:
+        df: DataFrame
+        area: Área a analizar
+        valor: Valor para calcular percentil
+
+    Returns:
+        float: Percentil (0-100)
+    """
+    datos = df[area].dropna()
+    percentil = stats.percentileofscore(datos, valor, kind='rank')
+    return percentil
+
+def obtener_ranking(df, criterio, top_n=None, ascendente=False):
+    """
+    Obtiene un ranking de estudiantes según un criterio.
+
+    Args:
+        df: DataFrame
+        criterio: Columna por la cual rankear
+        top_n: Número de resultados a retornar (None = todos)
+        ascendente: Si True, ordena de menor a mayor
+
+    Returns:
+        pd.DataFrame: DataFrame rankeado
+    """
+    df_ranking = df[['Nombre Completo', 'Modelo', 'Grupo', criterio]].copy()
+    df_ranking = df_ranking.sort_values(criterio, ascending=ascendente).reset_index(drop=True)
+    df_ranking.index = df_ranking.index + 1
+    df_ranking.index.name = 'Posición'
+
+    if top_n:
+        return df_ranking.head(top_n)
+    return df_ranking
+
+# ============================================================================
+# FUNCIONES DE VISUALIZACIÓN
+# ============================================================================
+
+def crear_grafico_comparacion_modelos(df, area):
+    """
+    Crea un box plot comparando modelos para un área específica.
+
+    Args:
+        df: DataFrame
+        area: Área a comparar
+
+    Returns:
+        plotly.graph_objects.Figure
+    """
     fig = go.Figure()
-    
+
+    for modelo in df['Modelo'].unique():
+        datos = df[df['Modelo'] == modelo][area].dropna()
+        fig.add_trace(go.Box(
+            y=datos,
+            name=modelo,
+            marker_color=COLORES_MODELOS.get(modelo, '#999999'),
+            boxmean='sd'
+        ))
+
+    fig.update_layout(
+        title=f'Comparación de {area} entre Modelos Educativos',
+        yaxis_title='Puntaje',
+        xaxis_title='Modelo',
+        showlegend=True,
+        height=500
+    )
+
+    return fig
+
+def crear_grafico_comparacion_grupos(df, modelo, area):
+    """
+    Crea un box plot comparando grupos dentro de un modelo.
+
+    Args:
+        df: DataFrame
+        modelo: Modelo a filtrar
+        area: Área a comparar
+
+    Returns:
+        plotly.graph_objects.Figure
+    """
+    df_filtrado = df[df['Modelo'] == modelo]
+
+    fig = go.Figure()
+
+    for grupo in sorted(df_filtrado['Grupo'].unique()):
+        datos = df_filtrado[df_filtrado['Grupo'] == grupo][area].dropna()
+        fig.add_trace(go.Box(
+            y=datos,
+            name=grupo,
+            marker_color=COLORES_GRUPOS.get(grupo, '#999999'),
+            boxmean='sd'
+        ))
+
+    fig.update_layout(
+        title=f'Comparación de {area} entre Grupos - {modelo}',
+        yaxis_title='Puntaje',
+        xaxis_title='Grupo',
+        showlegend=True,
+        height=500
+    )
+
+    return fig
+
+def crear_grafico_barras_promedios(df, areas, grupo_por, titulo):
+    """
+    Crea un gráfico de barras agrupadas para comparar promedios.
+
+    Args:
+        df: DataFrame
+        areas: Lista de áreas a comparar
+        grupo_por: Columna por la cual agrupar
+        titulo: Título del gráfico
+
+    Returns:
+        plotly.graph_objects.Figure
+    """
+    fig = go.Figure()
+
+    grupos = sorted(df[grupo_por].unique())
+
+    for area in areas:
+        promedios = [df[df[grupo_por] == grupo][area].mean() for grupo in grupos]
+        fig.add_trace(go.Bar(
+            name=area,
+            x=grupos,
+            y=promedios,
+            marker_color=COLORES_AREAS.get(area, '#999999'),
+            text=[f'{p:.1f}' for p in promedios],
+            textposition='outside'
+        ))
+
+    fig.update_layout(
+        title=titulo,
+        xaxis_title=grupo_por,
+        yaxis_title='Promedio',
+        barmode='group',
+        showlegend=True,
+        height=500
+    )
+
+    return fig
+
+def crear_radar_chart(estudiante, areas):
+    """
+    Crea un gráfico de radar para el perfil de un estudiante.
+
+    Args:
+        estudiante: Serie con datos del estudiante
+        areas: Lista de áreas a incluir
+
+    Returns:
+        plotly.graph_objects.Figure
+    """
+    valores = [estudiante[area] for area in areas]
+
+    fig = go.Figure()
+
     fig.add_trace(go.Scatterpolar(
         r=valores,
         theta=areas,
         fill='toself',
-        name=estudiante_data['Nombre Completo'],
-        line=dict(color='#1f77b4', width=2),
-        fillcolor='rgba(31, 119, 180, 0.3)'
+        name='Estudiante',
+        line_color='#3498db'
     ))
-    
+
     fig.update_layout(
         polar=dict(
             radialaxis=dict(
@@ -187,787 +505,1095 @@ def crear_radar_chart(estudiante_data, areas):
             )
         ),
         showlegend=True,
-        title=f"Perfil de {estudiante_data['Nombre Completo']}",
+        height=400
+    )
+
+    return fig
+
+def crear_heatmap_correlaciones(df, modelo):
+    """
+    Crea un mapa de calor de correlaciones entre áreas.
+
+    Args:
+        df: DataFrame
+        modelo: Modelo a filtrar
+
+    Returns:
+        plotly.graph_objects.Figure
+    """
+    df_filtrado = df[df['Modelo'] == modelo][AREAS + ['Puntaje Global']]
+    correlaciones = df_filtrado.corr()
+
+    fig = go.Figure(data=go.Heatmap(
+        z=correlaciones.values,
+        x=correlaciones.columns,
+        y=correlaciones.columns,
+        colorscale='RdBu',
+        zmid=0,
+        text=correlaciones.values.round(2),
+        texttemplate='%{text}',
+        textfont={"size": 10},
+        colorbar=dict(title="Correlación")
+    ))
+
+    fig.update_layout(
+        title=f'Correlaciones entre Áreas - {modelo}',
+        height=500,
+        xaxis={'side': 'bottom'}
+    )
+
+    return fig
+
+def crear_grafico_distribucion(df, area, modelo=None):
+    """
+    Crea un histograma con curva de densidad.
+
+    Args:
+        df: DataFrame
+        area: Área a analizar
+        modelo: Modelo a filtrar (opcional)
+
+    Returns:
+        plotly.graph_objects.Figure
+    """
+    if modelo:
+        df = df[df['Modelo'] == modelo]
+        titulo = f'Distribución de {area} - {modelo}'
+    else:
+        titulo = f'Distribución de {area} - Todos los Modelos'
+
+    fig = px.histogram(
+        df,
+        x=area,
+        nbins=20,
+        marginal='box',
+        color='Modelo' if not modelo else None,
+        color_discrete_map=COLORES_MODELOS,
+        labels={area: 'Puntaje', 'count': 'Frecuencia'}
+    )
+
+    fig.update_layout(
+        title=titulo,
+        showlegend=True,
         height=500
     )
-    
+
     return fig
+
+
+# ============================================================================
+# FUNCIÓN PRINCIPAL
+# ============================================================================
 
 def main():
     """Función principal de la aplicación"""
-    
+
     # Header
-    st.markdown('<div class="main-header">📊 Análisis de Resultados ICFES Saber 11 - 2025</div>', unsafe_allow_html=True)
-    
+    st.markdown(
+        '<div class="main-header">📊 Análisis de Resultados ICFES Saber 11 - 2025<br>'
+        '<small style="font-size: 1.2rem;">Institución Educativa Pedacito de Cielo</small></div>',
+        unsafe_allow_html=True
+    )
+
     # Cargar datos
-    df = cargar_datos()
-    
+    df, info = cargar_datos_unificados()
+
     if df is None or len(df) == 0:
-        st.error("No se pudieron cargar los datos. Verifica que el archivo Excel exista.")
+        st.error("❌ No se pudieron cargar los datos. Verifica que los archivos Excel existan.")
+        st.info(f"""
+        **Archivos requeridos:**
+        - {ARCHIVO_AULA_REGULAR}
+        - {ARCHIVO_MODELO_FLEXIBLE}
+        """)
         return
-    
+
+    # Mostrar información de carga
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric(
+            "Total Estudiantes",
+            info['total_estudiantes'],
+            help="Total de estudiantes analizados"
+        )
+    with col2:
+        st.metric(
+            "Modelo Aula Regular",
+            info['estudiantes_aula_regular'],
+            help="Estudiantes en grupos 11A y 11B"
+        )
+    with col3:
+        st.metric(
+            "Modelo Flexible",
+            info['estudiantes_modelo_flexible'],
+            help="Estudiantes en grupos P3A, P3B y P3C"
+        )
+
+    # Nota metodológica
+    st.markdown("""
+    <div class="info-box">
+    <strong>📚 Nota Metodológica Importante:</strong><br>
+    Las áreas del ICFES Saber 11 utilizan escalas y criterios de evaluación diferentes.
+    Por esta razón, <strong>NO se comparan promedios entre áreas diferentes</strong> en esta aplicación.
+    Los análisis se realizan por área individual, siguiendo las recomendaciones del ICFES Colombia.
+    </div>
+    """, unsafe_allow_html=True)
 
     # Tabs principales
-    tab6, tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "📅 Comparación 2024-2025",
+    tabs = st.tabs([
         "📊 Vista General",
-        "👤 Por Estudiante",
-        "📚 Por Área",
-        "🏆 Rankings",
-        "📈 Segmentación"
+        "🔄 Comparación entre Modelos",
+        "👥 Comparación entre Grupos",
+        "👤 Análisis por Estudiante",
+        "📚 Análisis por Área",
+        "🏆 Rankings Generales",
+        "📈 Análisis Estadístico Avanzado",
+        "📅 Comparación Temporal"
     ])
 
     # TAB 1: Vista General
-    with tab1:
-        st.header("📊 Resumen General de Resultados")
+    with tabs[0]:
+        mostrar_vista_general(df, info)
 
-        # ⚠️ NOTA METODOLÓGICA IMPORTANTE
-        st.info("""
-        **📚 Importante:** Las áreas del ICFES Saber 11 utilizan escalas y criterios de evaluación diferentes.
-        Por esta razón, **NO se comparan promedios entre áreas diferentes** en esta aplicación.
-        Los análisis se realizan por área individual.
-        """)
+    # TAB 2: Comparación entre Modelos
+    with tabs[1]:
+        mostrar_comparacion_modelos(df)
 
+    # TAB 3: Comparación entre Grupos
+    with tabs[2]:
+        mostrar_comparacion_grupos(df)
+
+    # TAB 4: Análisis por Estudiante
+    with tabs[3]:
+        mostrar_analisis_estudiante(df)
+
+    # TAB 5: Análisis por Área
+    with tabs[4]:
+        mostrar_analisis_area(df)
+
+    # TAB 6: Rankings Generales
+    with tabs[5]:
+        mostrar_rankings(df)
+
+    # TAB 7: Análisis Estadístico Avanzado
+    with tabs[6]:
+        mostrar_analisis_avanzado(df)
+
+    # TAB 8: Comparación Temporal
+    with tabs[7]:
+        mostrar_comparacion_temporal(df)
+
+# ============================================================================
+# PESTAÑAS DE LA APLICACIÓN
+# ============================================================================
+
+def mostrar_vista_general(df, info):
+    """Pestaña 1: Vista General"""
+    st.header("📊 Vista General de Resultados")
+
+    # Resumen por modelo
+    st.subheader("📋 Resumen por Modelo Educativo")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("### Modelo Aula Regular")
+        if info['aula_regular_cargado']:
+            df_regular = df[df['Modelo'] == 'Aula Regular']
+            st.metric("Estudiantes", len(df_regular))
+            st.metric("Promedio Global", f"{df_regular['Puntaje Global'].mean():.1f}")
+            st.metric("Grupos", ", ".join(sorted(df_regular['Grupo'].unique())))
+        else:
+            st.warning("No se cargaron datos de Aula Regular")
+
+    with col2:
+        st.markdown("### Modelo Flexible")
+        if info['modelo_flexible_cargado']:
+            df_flexible = df[df['Modelo'] == 'Modelo Flexible']
+            st.metric("Estudiantes", len(df_flexible))
+            st.metric("Promedio Global", f"{df_flexible['Puntaje Global'].mean():.1f}")
+            st.metric("Grupos", ", ".join(sorted(df_flexible['Grupo'].unique())))
+        else:
+            st.warning("No se cargaron datos de Modelo Flexible")
+
+    st.markdown("---")
+
+    # Distribución de estudiantes por clasificación
+    st.subheader("📊 Distribución por Clasificación de Puntaje")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        # Gráfico de pastel por modelo
+        clasificacion_modelo = df.groupby(['Modelo', 'Clasificación']).size().reset_index(name='Cantidad')
+        fig = px.sunburst(
+            clasificacion_modelo,
+            path=['Modelo', 'Clasificación'],
+            values='Cantidad',
+            color='Modelo',
+            color_discrete_map=COLORES_MODELOS,
+            title='Distribución por Modelo y Clasificación'
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+    with col2:
+        # Tabla de distribución
+        tabla_dist = df.groupby(['Modelo', 'Clasificación']).size().unstack(fill_value=0)
+        st.markdown("### Tabla de Distribución")
+        st.dataframe(tabla_dist, use_container_width=True)
+
+    st.markdown("---")
+
+    # Promedios por área y modelo
+    st.subheader("📚 Promedios por Área y Modelo")
+
+    promedios_modelo = df.groupby('Modelo')[AREAS + ['Puntaje Global']].mean().round(1)
+
+    # Gráfico de barras agrupadas
+    fig = crear_grafico_barras_promedios(
+        df,
+        AREAS,
+        'Modelo',
+        'Comparación de Promedios por Área entre Modelos'
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+    # Tabla de promedios
+    st.markdown("### Tabla de Promedios")
+    st.dataframe(promedios_modelo, use_container_width=True)
+
+    st.markdown("---")
+
+    # Distribución de puntaje global
+    st.subheader("📈 Distribución de Puntaje Global")
+
+    fig = px.histogram(
+        df,
+        x='Puntaje Global',
+        color='Modelo',
+        nbins=25,
+        marginal='box',
+        color_discrete_map=COLORES_MODELOS,
+        labels={'Puntaje Global': 'Puntaje', 'count': 'Frecuencia'},
+        title='Distribución de Puntaje Global por Modelo'
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+def mostrar_comparacion_modelos(df):
+    """Pestaña 2: Comparación entre Modelos"""
+    st.header("🔄 Comparación entre Modelos Educativos")
+
+    st.markdown("""
+    <div class="info-box">
+    <strong>ℹ️ Información:</strong><br>
+    Esta sección compara el desempeño entre el <strong>Modelo Aula Regular</strong> (grupos 11A y 11B)
+    y el <strong>Modelo Flexible</strong> (grupos P3A, P3B y P3C).
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Selector de área
+    area_seleccionada = st.selectbox(
+        "Selecciona un área para análisis detallado:",
+        ['Puntaje Global'] + AREAS,
+        key='area_comp_modelos'
+    )
+
+    st.markdown("---")
+
+    # Estadísticas comparativas
+    st.subheader(f"📊 Estadísticas Comparativas - {area_seleccionada}")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("### Modelo Aula Regular")
+        df_regular = df[df['Modelo'] == 'Aula Regular']
+        stats_regular = calcular_estadisticas_descriptivas(df_regular, area_seleccionada)
+        for key, value in stats_regular.items():
+            st.metric(key, f"{value:.2f}")
+
+    with col2:
+        st.markdown("### Modelo Flexible")
+        df_flexible = df[df['Modelo'] == 'Modelo Flexible']
+        stats_flexible = calcular_estadisticas_descriptivas(df_flexible, area_seleccionada)
+        for key, value in stats_flexible.items():
+            st.metric(key, f"{value:.2f}")
+
+    st.markdown("---")
+
+    # Test estadístico
+    st.subheader("🔬 Test Estadístico de Comparación")
+
+    resultado_test = realizar_test_comparacion(
+        df,
+        area_seleccionada,
+        df['Modelo'] == 'Aula Regular',
+        df['Modelo'] == 'Modelo Flexible',
+        'Aula Regular',
+        'Modelo Flexible'
+    )
+
+    if resultado_test['valido']:
         col1, col2, col3 = st.columns(3)
-
         with col1:
-            st.metric(
-                "Estudiantes Analizados",
-                len(df),
-                help="Total de estudiantes con resultados (36 estudiantes)"
-            )
-
+            st.metric("Diferencia de Medias", f"{resultado_test['diferencia_medias']:.2f}")
         with col2:
-            promedio_global = df['Puntaje Global'].mean()
-            st.metric(
-                "Promedio Global",
-                f"{int(round(promedio_global))}",
-                help="Promedio del puntaje global (0-500)"
-            )
-
+            st.metric("Valor p", f"{resultado_test['p_value']:.4f}")
         with col3:
-            mediana_global = df['Puntaje Global'].median()
-            st.metric(
-                "Mediana Global",
-                f"{int(round(mediana_global))}",
-                help="Mediana del puntaje global (0-500)"
+            st.metric("¿Significativo?", resultado_test['significativo'])
+
+        st.info(f"**Interpretación:** {resultado_test['interpretacion']}")
+    else:
+        st.warning(resultado_test['mensaje'])
+
+    st.markdown("---")
+
+    # Visualizaciones
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.subheader("📦 Diagrama de Caja")
+        fig = crear_grafico_comparacion_modelos(df, area_seleccionada)
+        st.plotly_chart(fig, use_container_width=True)
+
+    with col2:
+        st.subheader("📊 Distribución")
+        fig = crear_grafico_distribucion(df, area_seleccionada)
+        st.plotly_chart(fig, use_container_width=True)
+
+
+def mostrar_comparacion_grupos(df):
+    """Pestaña 3: Comparación entre Grupos"""
+    st.header("👥 Comparación entre Grupos")
+
+    # Selector de modelo
+    modelo_seleccionado = st.radio(
+        "Selecciona el modelo educativo:",
+        df['Modelo'].unique(),
+        horizontal=True,
+        key='modelo_comp_grupos'
+    )
+
+    df_modelo = df[df['Modelo'] == modelo_seleccionado]
+    grupos = sorted(df_modelo['Grupo'].unique())
+
+    st.info(f"**Grupos en {modelo_seleccionado}:** {', '.join(grupos)}")
+
+    # Selector de área
+    area_seleccionada = st.selectbox(
+        "Selecciona un área para análisis:",
+        ['Puntaje Global'] + AREAS,
+        key='area_comp_grupos'
+    )
+
+    st.markdown("---")
+
+    # Estadísticas por grupo
+    st.subheader(f"📊 Estadísticas por Grupo - {area_seleccionada}")
+
+    stats_grupos = calcular_estadisticas_descriptivas(df_modelo, area_seleccionada, 'Grupo')
+    st.dataframe(stats_grupos, use_container_width=True)
+
+    st.markdown("---")
+
+    # Visualizaciones
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.subheader("📦 Comparación entre Grupos")
+        fig = crear_grafico_comparacion_grupos(df, modelo_seleccionado, area_seleccionada)
+        st.plotly_chart(fig, use_container_width=True)
+
+    with col2:
+        st.subheader("📊 Promedios por Grupo")
+        promedios = df_modelo.groupby('Grupo')[area_seleccionada].mean().sort_values(ascending=False)
+        fig = go.Figure(data=[
+            go.Bar(
+                x=promedios.index,
+                y=promedios.values,
+                marker_color=[COLORES_GRUPOS.get(g, '#999999') for g in promedios.index],
+                text=[f'{v:.1f}' for v in promedios.values],
+                textposition='outside'
             )
+        ])
+        fig.update_layout(
+            title=f'Promedio de {area_seleccionada} por Grupo',
+            xaxis_title='Grupo',
+            yaxis_title='Promedio',
+            height=400
+        )
+        st.plotly_chart(fig, use_container_width=True)
 
+    st.markdown("---")
+
+    # Comparación de todas las áreas
+    st.subheader("📚 Comparación de Todas las Áreas")
+
+    fig = crear_grafico_barras_promedios(
+        df_modelo,
+        AREAS,
+        'Grupo',
+        f'Promedios por Área y Grupo - {modelo_seleccionado}'
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+    # Tests estadísticos entre grupos (si hay más de un grupo)
+    if len(grupos) >= 2:
         st.markdown("---")
+        st.subheader("🔬 Tests Estadísticos entre Grupos")
 
-        # Estadísticas por área (sin comparaciones)
+        # Selector de grupos a comparar
         col1, col2 = st.columns(2)
-
         with col1:
-            st.subheader("📊 Estadísticas por Área")
-            st.markdown("*Cada área se analiza de forma independiente*")
-
-            stats_data = []
-            for area in AREAS:
-                stats_data.append({
-                    'Área': area,
-                    'Promedio': f"{int(round(df[area].mean()))}",
-                    'Mediana': f"{int(round(df[area].median()))}",
-                    'Desv. Std': f"{df[area].std():.1f}"
-                })
-
-            stats_df = pd.DataFrame(stats_data)
-            st.dataframe(stats_df, use_container_width=True, hide_index=True)
-        
+            grupo1 = st.selectbox("Grupo 1:", grupos, key='grupo1_test')
         with col2:
-            st.subheader("📈 Distribución del Puntaje Global")
-            fig = px.histogram(
-                df,
-                x='Puntaje Global',
-                nbins=20,
-                labels={'Puntaje Global': 'Puntaje Global', 'count': 'Frecuencia'},
-                color_discrete_sequence=['#1f77b4']
-            )
-            fig.add_vline(
-                x=df['Puntaje Global'].mean(),
-                line_dash="dash",
-                line_color="red",
-                annotation_text=f"Promedio: {int(round(df['Puntaje Global'].mean()))}"
-            )
-            fig.update_layout(height=400)
-            st.plotly_chart(fig, use_container_width=True)
-        
-        st.markdown("---")
+            grupos_disponibles = [g for g in grupos if g != grupo1]
+            if grupos_disponibles:
+                grupo2 = st.selectbox("Grupo 2:", grupos_disponibles, key='grupo2_test')
 
-        # Información adicional
-        st.subheader("📋 Información del Grupo")
+                resultado_test = realizar_test_comparacion(
+                    df_modelo,
+                    area_seleccionada,
+                    df_modelo['Grupo'] == grupo1,
+                    df_modelo['Grupo'] == grupo2,
+                    grupo1,
+                    grupo2
+                )
 
-        col1, col2, col3 = st.columns(3)
+                if resultado_test['valido']:
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        st.metric("Diferencia de Medias", f"{resultado_test['diferencia_medias']:.2f}")
+                    with col2:
+                        st.metric("Valor p", f"{resultado_test['p_value']:.4f}")
+                    with col3:
+                        st.metric("¿Significativo?", resultado_test['significativo'])
 
-        with col1:
-            st.metric(
-                "Puntaje Máximo",
-                f"{int(round(df['Puntaje Global'].max()))}",
-                help="Mejor puntaje global del grupo"
-            )
+                    st.info(f"**Interpretación:** {resultado_test['interpretacion']}")
 
-        with col2:
-            st.metric(
-                "Puntaje Mínimo",
-                f"{int(round(df['Puntaje Global'].min()))}",
-                help="Menor puntaje global del grupo"
-            )
+def mostrar_analisis_estudiante(df):
+    """Pestaña 4: Análisis por Estudiante"""
+    st.header("👤 Análisis Individual por Estudiante")
 
-        with col3:
-            st.metric(
-                "Rango",
-                f"{int(round(df['Puntaje Global'].max() - df['Puntaje Global'].min()))}",
-                help="Diferencia entre el máximo y mínimo"
-            )
+    # Selector de modelo
+    modelo_seleccionado = st.selectbox(
+        "Selecciona el modelo educativo:",
+        df['Modelo'].unique(),
+        key='modelo_estudiante'
+    )
 
-    # TAB 2: Por Estudiante
-    with tab2:
-        st.header("👤 Análisis por Estudiante Individual")
-        
-        # Búsqueda de estudiante
-        col1, col2 = st.columns([3, 1])
-        
-        with col1:
-            busqueda = st.text_input(
-                "🔍 Buscar estudiante por nombre o documento",
-                placeholder="Escribe el nombre o número de documento..."
-            )
-        
-        with col2:
-            st.markdown("<br>", unsafe_allow_html=True)
-            mostrar_todos = st.checkbox("Mostrar todos", value=False)
-        
-        # Filtrar estudiantes
-        if busqueda:
-            df_filtrado = df[
-                df['Nombre Completo'].str.contains(busqueda, case=False, na=False) |
-                df['Número de documento'].astype(str).str.contains(busqueda, na=False)
-            ]
-        elif mostrar_todos:
-            df_filtrado = df
-        else:
-            df_filtrado = df.head(5)
-        
-        if len(df_filtrado) == 0:
-            st.warning("No se encontraron estudiantes con ese criterio de búsqueda.")
-        else:
-            st.info(f"Mostrando {len(df_filtrado)} estudiante(s)")
-            
-            # Selector de estudiante
-            estudiante_seleccionado = st.selectbox(
-                "Selecciona un estudiante para ver su perfil detallado:",
-                df_filtrado['Nombre Completo'].tolist()
-            )
-            
-            if estudiante_seleccionado:
-                estudiante = df_filtrado[df_filtrado['Nombre Completo'] == estudiante_seleccionado].iloc[0]
-                
-                st.markdown("---")
-                
-                # Información del estudiante
-                col1, col2, col3 = st.columns(3)
-                
-                with col1:
-                    st.markdown("### 📋 Datos Personales")
-                    st.write(f"**Nombre:** {estudiante['Nombre Completo']}")
-                    st.write(f"**Documento:** {estudiante['Tipo documento']} {estudiante['Número de documento']}")
-                    if 'Grupo' in estudiante and pd.notna(estudiante['Grupo']):
-                        st.write(f"**Grupo:** {estudiante['Grupo']}")
-                
-                with col2:
-                    st.markdown("### 🎯 Puntaje Global")
-                    puntaje_global = estudiante['Puntaje Global']
-                    st.metric("Puntaje Total", f"{int(round(puntaje_global))}/500")
-                    clasificacion = clasificar_por_rango(puntaje_global)
-                    st.write(f"**Clasificación:** {clasificacion}")
-                
-                with col3:
-                    st.markdown("### 📊 Posición")
-                    ranking = (df['Puntaje Global'] > puntaje_global).sum() + 1
-                    st.metric("Ranking General", f"{ranking}° de {len(df)}")
-                    percentil = ((len(df) - ranking + 1) / len(df)) * 100
-                    st.write(f"**Percentil:** {percentil:.1f}%")
-                
-                st.markdown("---")
-                
-                # Puntajes por área
-                col1, col2 = st.columns(2)
-                
-                with col1:
-                    st.markdown("### 📚 Puntajes por Área")
-                    for area in AREAS:
-                        puntaje = estudiante[area]
-                        promedio_area = df[area].mean()
-                        diferencia = puntaje - promedio_area
-                        
-                        col_a, col_b, col_c = st.columns([2, 1, 1])
-                        with col_a:
-                            st.write(f"**{area}:**")
-                        with col_b:
-                            st.write(f"{int(round(puntaje))}/100")
-                        with col_c:
-                            if diferencia > 0:
-                                st.write(f"🟢 +{int(round(diferencia))}")
-                            else:
-                                st.write(f"🔴 {int(round(diferencia))}")
-                
-                with col2:
-                    st.markdown("### 🎯 Perfil de Competencias")
-                    fig_radar = crear_radar_chart(estudiante, AREAS)
-                    st.plotly_chart(fig_radar, use_container_width=True)
+    df_modelo = df[df['Modelo'] == modelo_seleccionado]
 
-    # TAB 3: Por Área
-    with tab3:
-        st.header("📚 Análisis por Área de Conocimiento")
+    # Selector de estudiante
+    estudiantes = sorted(df_modelo['Nombre Completo'].unique())
+    estudiante_seleccionado = st.selectbox(
+        "Selecciona un estudiante:",
+        estudiantes,
+        key='estudiante_sel'
+    )
 
-        # Selector de área
-        area_seleccionada = st.selectbox(
-            "Selecciona un área para análisis detallado:",
-            AREAS + ['Puntaje Global']
+    # Obtener datos del estudiante
+    estudiante = df_modelo[df_modelo['Nombre Completo'] == estudiante_seleccionado].iloc[0]
+
+    st.markdown("---")
+
+    # Información básica
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        st.metric("Modelo", estudiante['Modelo'])
+    with col2:
+        st.metric("Grupo", estudiante['Grupo'])
+    with col3:
+        st.metric("Puntaje Global", f"{estudiante['Puntaje Global']:.0f}")
+    with col4:
+        st.metric("Clasificación", estudiante['Clasificación'])
+
+    st.markdown("---")
+
+    # Comparación con promedios
+    st.subheader("📊 Comparación con Promedios")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("### Puntajes por Área")
+
+        # Calcular promedios
+        promedio_modelo = df_modelo[AREAS].mean()
+        promedio_grupo = df_modelo[df_modelo['Grupo'] == estudiante['Grupo']][AREAS].mean()
+
+        # Tabla comparativa
+        datos_comparacion = []
+        for area in AREAS:
+            puntaje_est = estudiante[area]
+            prom_mod = promedio_modelo[area]
+            prom_grp = promedio_grupo[area]
+
+            datos_comparacion.append({
+                'Área': area,
+                'Estudiante': f"{puntaje_est:.1f}",
+                'Prom. Modelo': f"{prom_mod:.1f}",
+                'Dif. Modelo': f"{puntaje_est - prom_mod:+.1f}",
+                'Prom. Grupo': f"{prom_grp:.1f}",
+                'Dif. Grupo': f"{puntaje_est - prom_grp:+.1f}"
+            })
+
+        df_comparacion = pd.DataFrame(datos_comparacion)
+        st.dataframe(df_comparacion, use_container_width=True, hide_index=True)
+
+    with col2:
+        st.markdown("### Perfil de Competencias")
+        fig = crear_radar_chart(estudiante, AREAS)
+        st.plotly_chart(fig, use_container_width=True)
+
+    st.markdown("---")
+
+    # Posición en rankings
+    st.subheader("🏆 Posición en Rankings")
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        # Ranking global
+        ranking_global = obtener_ranking(df, 'Puntaje Global')
+        posicion_global = ranking_global[ranking_global['Nombre Completo'] == estudiante_seleccionado].index[0]
+        st.metric("Ranking Global", f"#{posicion_global} de {len(df)}")
+
+    with col2:
+        # Ranking en modelo
+        ranking_modelo = obtener_ranking(df_modelo, 'Puntaje Global')
+        posicion_modelo = ranking_modelo[ranking_modelo['Nombre Completo'] == estudiante_seleccionado].index[0]
+        st.metric(f"Ranking en {modelo_seleccionado}", f"#{posicion_modelo} de {len(df_modelo)}")
+
+    with col3:
+        # Ranking en grupo
+        df_grupo = df_modelo[df_modelo['Grupo'] == estudiante['Grupo']]
+        ranking_grupo = obtener_ranking(df_grupo, 'Puntaje Global')
+        posicion_grupo = ranking_grupo[ranking_grupo['Nombre Completo'] == estudiante_seleccionado].index[0]
+        st.metric(f"Ranking en {estudiante['Grupo']}", f"#{posicion_grupo} de {len(df_grupo)}")
+
+    st.markdown("---")
+
+    # Percentiles
+    st.subheader("📈 Percentiles por Área")
+
+    percentiles_data = []
+    for area in AREAS:
+        percentil = calcular_percentil(df_modelo, area, estudiante[area])
+        percentiles_data.append({
+            'Área': area,
+            'Puntaje': f"{estudiante[area]:.1f}",
+            'Percentil': f"{percentil:.1f}%"
+        })
+
+    df_percentiles = pd.DataFrame(percentiles_data)
+
+    fig = go.Figure(data=[
+        go.Bar(
+            x=df_percentiles['Área'],
+            y=[float(p.strip('%')) for p in df_percentiles['Percentil']],
+            marker_color=COLORES_AREAS.values(),
+            text=df_percentiles['Percentil'],
+            textposition='outside'
+        )
+    ])
+    fig.update_layout(
+        title='Percentiles del Estudiante por Área',
+        xaxis_title='Área',
+        yaxis_title='Percentil (%)',
+        yaxis_range=[0, 105],
+        height=400
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+
+def mostrar_analisis_area(df):
+    """Pestaña 5: Análisis por Área"""
+    st.header("📚 Análisis por Área")
+
+    # Selector de área
+    area_seleccionada = st.selectbox(
+        "Selecciona un área para análisis detallado:",
+        AREAS,
+        key='area_analisis'
+    )
+
+    st.markdown("---")
+
+    # Estadísticas generales del área
+    st.subheader(f"📊 Estadísticas Generales - {area_seleccionada}")
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.markdown("### Todos los Estudiantes")
+        stats_general = calcular_estadisticas_descriptivas(df, area_seleccionada)
+        for key, value in stats_general.items():
+            st.metric(key, f"{value:.2f}")
+
+    with col2:
+        st.markdown("### Por Modelo")
+        stats_modelo = calcular_estadisticas_descriptivas(df, area_seleccionada, 'Modelo')
+        st.dataframe(stats_modelo, use_container_width=True)
+
+    with col3:
+        st.markdown("### Por Grupo")
+        stats_grupo = calcular_estadisticas_descriptivas(df, area_seleccionada, 'Grupo')
+        st.dataframe(stats_grupo, use_container_width=True)
+
+    st.markdown("---")
+
+    # Comparación entre modelos
+    st.subheader("🔄 Comparación entre Modelos")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        fig = crear_grafico_comparacion_modelos(df, area_seleccionada)
+        st.plotly_chart(fig, use_container_width=True)
+
+    with col2:
+        # Test estadístico
+        resultado_test = realizar_test_comparacion(
+            df,
+            area_seleccionada,
+            df['Modelo'] == 'Aula Regular',
+            df['Modelo'] == 'Modelo Flexible',
+            'Aula Regular',
+            'Modelo Flexible'
         )
 
-        st.markdown("---")
+        if resultado_test['valido']:
+            st.markdown("### Test Estadístico")
+            st.metric("Diferencia de Medias", f"{resultado_test['diferencia_medias']:.2f}")
+            st.metric("Valor p", f"{resultado_test['p_value']:.4f}")
+            st.metric("¿Significativo?", resultado_test['significativo'])
+            st.info(resultado_test['interpretacion'])
 
-        # Estadísticas del área
-        st.subheader(f"📊 Estadísticas de {area_seleccionada}")
+    st.markdown("---")
 
-        stats_area = calcular_estadisticas(df, area_seleccionada)
+    # Comparación entre todos los grupos
+    st.subheader("👥 Comparación entre Todos los Grupos")
 
-        col1, col2, col3, col4, col5 = st.columns(5)
+    fig = crear_grafico_barras_promedios(
+        df,
+        [area_seleccionada],
+        'Grupo',
+        f'Promedio de {area_seleccionada} por Grupo'
+    )
+    st.plotly_chart(fig, use_container_width=True)
 
-        with col1:
-            st.metric("Promedio", f"{int(round(stats_area['Promedio']))}")
-        with col2:
-            st.metric("Mediana", f"{int(round(stats_area['Mediana']))}")
-        with col3:
-            st.metric("Desv. Estándar", f"{stats_area['Desv. Estándar']:.2f}")
-        with col4:
-            st.metric("Mínimo", f"{int(round(stats_area['Mínimo']))}")
-        with col5:
-            st.metric("Máximo", f"{int(round(stats_area['Máximo']))}")
+    # Box plot de todos los grupos
+    fig = go.Figure()
+    for grupo in sorted(df['Grupo'].unique()):
+        datos = df[df['Grupo'] == grupo][area_seleccionada].dropna()
+        fig.add_trace(go.Box(
+            y=datos,
+            name=grupo,
+            marker_color=COLORES_GRUPOS.get(grupo, '#999999'),
+            boxmean='sd'
+        ))
 
-        st.markdown("---")
+    fig.update_layout(
+        title=f'Distribución de {area_seleccionada} por Grupo',
+        yaxis_title='Puntaje',
+        xaxis_title='Grupo',
+        height=500
+    )
+    st.plotly_chart(fig, use_container_width=True)
 
-        col1, col2 = st.columns(2)
+    st.markdown("---")
 
-        with col1:
-            # Histograma de distribución
-            st.subheader("📈 Distribución de Puntajes")
-            fig = px.histogram(
-                df,
-                x=area_seleccionada,
-                nbins=15,
-                labels={area_seleccionada: 'Puntaje', 'count': 'Frecuencia'},
-                color_discrete_sequence=[COLORES.get(area_seleccionada, '#1f77b4')]
+    # Rankings del área
+    st.subheader(f"🏆 Top 10 en {area_seleccionada}")
+
+    ranking_area = obtener_ranking(df, area_seleccionada, top_n=10)
+    st.dataframe(ranking_area, use_container_width=True)
+
+    # Opción de ver ranking completo
+    if st.checkbox(f"Ver ranking completo de {area_seleccionada}", key=f'ranking_completo_{area_seleccionada}'):
+        ranking_completo = obtener_ranking(df, area_seleccionada)
+        st.dataframe(ranking_completo, use_container_width=True, height=400)
+
+def mostrar_rankings(df):
+    """Pestaña 6: Rankings Generales"""
+    st.header("🏆 Rankings Generales")
+
+    # Tipo de ranking
+    tipo_ranking = st.radio(
+        "Selecciona el tipo de ranking:",
+        ["Global (Todos)", "Por Modelo", "Por Grupo", "Por Área"],
+        horizontal=True,
+        key='tipo_ranking'
+    )
+
+    st.markdown("---")
+
+    if tipo_ranking == "Global (Todos)":
+        st.subheader("🥇 Ranking Global por Puntaje Global")
+
+        ranking = obtener_ranking(df, 'Puntaje Global')
+
+        # Top 10
+        st.markdown("### Top 10")
+        st.dataframe(ranking.head(10), use_container_width=True)
+
+        # Opción de ver completo
+        if st.checkbox("Ver ranking completo", key='ranking_global_completo'):
+            st.dataframe(ranking, use_container_width=True, height=400)
+
+        # Gráfico de top 20
+        st.markdown("### Visualización Top 20")
+        top_20 = ranking.head(20).reset_index()
+        fig = go.Figure(data=[
+            go.Bar(
+                x=top_20['Puntaje Global'],
+                y=top_20['Nombre Completo'],
+                orientation='h',
+                marker_color=[COLORES_MODELOS.get(m, '#999999') for m in top_20['Modelo']],
+                text=top_20['Puntaje Global'].round(1),
+                textposition='outside'
             )
-            fig.add_vline(
-                x=stats_area['Promedio'],
-                line_dash="dash",
-                line_color="red",
-                annotation_text=f"Promedio: {int(round(stats_area['Promedio']))}"
-            )
-            fig.add_vline(
-                x=stats_area['Mediana'],
-                line_dash="dot",
-                line_color="green",
-                annotation_text=f"Mediana: {int(round(stats_area['Mediana']))}"
-            )
-            st.plotly_chart(fig, use_container_width=True)
+        ])
+        fig.update_layout(
+            title='Top 20 Estudiantes por Puntaje Global',
+            xaxis_title='Puntaje Global',
+            yaxis_title='',
+            height=600,
+            yaxis={'categoryorder': 'total ascending'}
+        )
+        st.plotly_chart(fig, use_container_width=True)
 
-        with col2:
-            # Box plot detallado
-            st.subheader("📦 Análisis de Dispersión")
-            fig = go.Figure()
-            fig.add_trace(go.Box(
-                y=df[area_seleccionada],
-                name=area_seleccionada,
-                marker_color=COLORES.get(area_seleccionada, '#1f77b4'),
-                boxmean='sd',
-                boxpoints='all',
-                jitter=0.3,
-                pointpos=-1.8
-            ))
-            fig.update_layout(
-                yaxis_title="Puntaje",
-                showlegend=False,
-                height=400
-            )
-            st.plotly_chart(fig, use_container_width=True)
+    elif tipo_ranking == "Por Modelo":
+        modelo_seleccionado = st.selectbox(
+            "Selecciona el modelo:",
+            df['Modelo'].unique(),
+            key='modelo_ranking'
+        )
 
-        st.markdown("---")
+        df_modelo = df[df['Modelo'] == modelo_seleccionado]
 
-        # Tabla de percentiles
-        col1, col2 = st.columns(2)
+        st.subheader(f"🥇 Ranking de {modelo_seleccionado}")
 
-        with col1:
-            st.subheader("📊 Percentiles")
-            percentiles_df = pd.DataFrame({
-                'Percentil': ['25%', '50%', '75%'],
-                'Puntaje': [
-                    f"{stats_area['Percentil 25']:.2f}",
-                    f"{stats_area['Percentil 50']:.2f}",
-                    f"{stats_area['Percentil 75']:.2f}"
-                ]
-            })
-            st.dataframe(percentiles_df, use_container_width=True, hide_index=True)
+        ranking = obtener_ranking(df_modelo, 'Puntaje Global')
 
-        with col2:
-            st.subheader("📈 Métricas Adicionales")
-            metricas_df = pd.DataFrame({
-                'Métrica': ['Rango', 'Coef. Variación', 'Moda'],
-                'Valor': [
-                    f"{stats_area['Rango']:.2f}",
-                    f"{stats_area['Coef. Variación']:.2f}%",
-                    f"{stats_area['Moda']:.2f}" if stats_area['Moda'] is not None else 'N/A'
-                ]
-            })
-            st.dataframe(metricas_df, use_container_width=True, hide_index=True)
+        # Top 10
+        st.markdown("### Top 10")
+        st.dataframe(ranking.head(10), use_container_width=True)
 
-        st.markdown("---")
+        # Opción de ver completo
+        if st.checkbox(f"Ver ranking completo de {modelo_seleccionado}", key='ranking_modelo_completo'):
+            st.dataframe(ranking, use_container_width=True, height=400)
 
-        # Top 10 y Bottom 10
-        col1, col2 = st.columns(2)
+    elif tipo_ranking == "Por Grupo":
+        grupo_seleccionado = st.selectbox(
+            "Selecciona el grupo:",
+            sorted(df['Grupo'].unique()),
+            key='grupo_ranking'
+        )
 
-        with col1:
-            st.subheader(f"🏆 Top 10 en {area_seleccionada}")
-            top_10 = df.nlargest(10, area_seleccionada)[['Nombre Completo', area_seleccionada]].copy()
-            # Redondear puntajes a enteros (manejar NaN)
-            top_10[area_seleccionada] = top_10[area_seleccionada].fillna(0).round(0).astype(int)
-            top_10 = top_10.reset_index(drop=True)
-            top_10.index = top_10.index + 1
-            st.dataframe(top_10, use_container_width=True)
+        df_grupo = df[df['Grupo'] == grupo_seleccionado]
 
-        with col2:
-            st.subheader(f"📉 Estudiantes que Requieren Apoyo")
-            bottom_10 = df.nsmallest(10, area_seleccionada)[['Nombre Completo', area_seleccionada]].copy()
-            # Redondear puntajes a enteros (manejar NaN)
-            bottom_10[area_seleccionada] = bottom_10[area_seleccionada].fillna(0).round(0).astype(int)
-            bottom_10 = bottom_10.reset_index(drop=True)
-            bottom_10.index = bottom_10.index + 1
-            st.dataframe(bottom_10, use_container_width=True)
+        st.subheader(f"🥇 Ranking del Grupo {grupo_seleccionado}")
 
-    # TAB 4: Rankings y Estudiantes Destacados
-    with tab4:
-        st.header("🏆 Rankings y Estudiantes Destacados")
+        ranking = obtener_ranking(df_grupo, 'Puntaje Global')
+        st.dataframe(ranking, use_container_width=True)
 
-        # ⚠️ NOTA METODOLÓGICA IMPORTANTE
-        st.info("""
-        **📚 Nota Metodológica del ICFES:**
-
-        Las áreas evaluadas en el ICFES Saber 11 (Lectura Crítica, Matemáticas, Sociales, Ciencias, Inglés)
-        utilizan **escalas, ponderaciones y criterios de evaluación diferentes**. Por esta razón, **NO es
-        metodológicamente válido comparar puntajes entre áreas diferentes** (por ejemplo, comparar Matemáticas
-        vs Lectura Crítica).
-
-        Los análisis válidos son:
-        - ✅ Rankings de estudiantes por puntaje global
-        - ✅ Rankings por área individual
-        - ✅ Comparación de la MISMA área entre diferentes años
-        - ✅ Análisis de desempeño individual por área
-        """)
-
-        # Ranking general
-        st.subheader("🥇 Ranking General por Puntaje Global")
-
-        df_ranking = df[['Nombre Completo', 'Puntaje Global'] + AREAS].copy()
-        # Redondear puntajes a enteros (manejar NaN)
-        for col in ['Puntaje Global'] + AREAS:
-            df_ranking[col] = df_ranking[col].fillna(0).round(0).astype(int)
-        df_ranking = df_ranking.sort_values('Puntaje Global', ascending=False).reset_index(drop=True)
-        df_ranking.index = df_ranking.index + 1
-        df_ranking.index.name = 'Posición'
-
-        # Mostrar top 10 por defecto
-        mostrar_completo = st.checkbox("Mostrar ranking completo", value=False)
-
-        if mostrar_completo:
-            st.dataframe(df_ranking, use_container_width=True)
-        else:
-            st.dataframe(df_ranking.head(10), use_container_width=True)
-
-        st.markdown("---")
-
-        # Rankings por área individual
-        st.subheader("📊 Rankings por Área Individual")
-
-        area_ranking = st.selectbox(
-            "Selecciona un área para ver su ranking:",
+    else:  # Por Área
+        area_seleccionada = st.selectbox(
+            "Selecciona el área:",
             AREAS,
             key='area_ranking'
         )
 
-        df_area_ranking = df[['Nombre Completo', area_ranking]].copy()
-        # Redondear puntajes a enteros (manejar NaN)
-        df_area_ranking[area_ranking] = df_area_ranking[area_ranking].fillna(0).round(0).astype(int)
-        df_area_ranking = df_area_ranking.sort_values(area_ranking, ascending=False).reset_index(drop=True)
-        df_area_ranking.index = df_area_ranking.index + 1
-        df_area_ranking.index.name = 'Posición'
+        st.subheader(f"🥇 Ranking por {area_seleccionada}")
 
+        ranking = obtener_ranking(df, area_seleccionada)
+
+        # Top 10
+        st.markdown("### Top 10")
+        st.dataframe(ranking.head(10), use_container_width=True)
+
+        # Opción de ver completo
+        if st.checkbox(f"Ver ranking completo de {area_seleccionada}", key='ranking_area_completo'):
+            st.dataframe(ranking, use_container_width=True, height=400)
+
+def mostrar_analisis_avanzado(df):
+    """Pestaña 7: Análisis Estadístico Avanzado"""
+    st.header("📈 Análisis Estadístico Avanzado")
+
+    # Selector de modelo para análisis
+    modelo_seleccionado = st.selectbox(
+        "Selecciona el modelo para análisis:",
+        ['Todos'] + list(df['Modelo'].unique()),
+        key='modelo_avanzado'
+    )
+
+    if modelo_seleccionado != 'Todos':
+        df_analisis = df[df['Modelo'] == modelo_seleccionado]
+    else:
+        df_analisis = df
+
+    st.markdown("---")
+
+    # Correlaciones entre áreas
+    st.subheader("🔗 Correlaciones entre Áreas")
+
+    st.info("""
+    **Nota:** Las correlaciones muestran la relación entre diferentes áreas.
+    Un valor cercano a 1 indica una correlación positiva fuerte,
+    mientras que un valor cercano a -1 indica una correlación negativa fuerte.
+    """)
+
+    if modelo_seleccionado != 'Todos':
+        fig = crear_heatmap_correlaciones(df, modelo_seleccionado)
+        st.plotly_chart(fig, use_container_width=True)
+    else:
         col1, col2 = st.columns(2)
-
         with col1:
-            st.markdown(f"### 🥇 Top 10 en {area_ranking}")
-            st.dataframe(df_area_ranking.head(10), use_container_width=True)
-
+            if 'Aula Regular' in df['Modelo'].unique():
+                fig = crear_heatmap_correlaciones(df, 'Aula Regular')
+                st.plotly_chart(fig, use_container_width=True)
         with col2:
-            st.markdown(f"### 📉 Últimos 10 en {area_ranking}")
-            st.dataframe(df_area_ranking.tail(10), use_container_width=True)
+            if 'Modelo Flexible' in df['Modelo'].unique():
+                fig = crear_heatmap_correlaciones(df, 'Modelo Flexible')
+                st.plotly_chart(fig, use_container_width=True)
 
-        st.markdown("---")
+    st.markdown("---")
 
-        # Identificar estudiantes destacados
-        st.subheader("⭐ Estudiantes Destacados (Top 10%)")
+    # Análisis de percentiles
+    st.subheader("📊 Análisis de Percentiles")
 
-        percentil_90 = df['Puntaje Global'].quantile(0.90)
-        destacados = df[df['Puntaje Global'] >= percentil_90][['Nombre Completo', 'Puntaje Global'] + AREAS].copy()
-        # Redondear puntajes a enteros (manejar NaN)
-        for col in ['Puntaje Global'] + AREAS:
-            destacados[col] = destacados[col].fillna(0).round(0).astype(int)
-        destacados = destacados.sort_values('Puntaje Global', ascending=False).reset_index(drop=True)
-        destacados.index = destacados.index + 1
+    area_percentil = st.selectbox(
+        "Selecciona un área:",
+        ['Puntaje Global'] + AREAS,
+        key='area_percentil'
+    )
 
-        st.info(f"Estudiantes con puntaje global ≥ {int(round(percentil_90))} (Top 10%)")
-        st.dataframe(destacados, use_container_width=True)
+    # Calcular percentiles
+    percentiles = [10, 25, 50, 75, 90]
+    valores_percentiles = [np.percentile(df_analisis[area_percentil].dropna(), p) for p in percentiles]
 
-    # TAB 5: Segmentación
-    with tab5:
-        st.header("📈 Segmentación y Categorización")
+    df_percentiles = pd.DataFrame({
+        'Percentil': [f'P{p}' for p in percentiles],
+        'Valor': valores_percentiles
+    })
 
-        # Clasificar estudiantes por rango
-        df['Clasificación'] = df['Puntaje Global'].apply(clasificar_por_rango)
+    col1, col2 = st.columns(2)
 
-        # Distribución por clasificación
-        st.subheader("📊 Distribución por Rango de Puntaje")
+    with col1:
+        st.markdown("### Tabla de Percentiles")
+        st.dataframe(df_percentiles, use_container_width=True, hide_index=True)
 
-        col1, col2 = st.columns(2)
-
-        with col1:
-            clasificacion_counts = df['Clasificación'].value_counts()
-
-            fig = px.pie(
-                values=clasificacion_counts.values,
-                names=clasificacion_counts.index,
-                title="Distribución de Estudiantes por Clasificación",
-                color_discrete_sequence=px.colors.sequential.Blues_r
+    with col2:
+        st.markdown("### Visualización")
+        fig = go.Figure(data=[
+            go.Bar(
+                x=df_percentiles['Percentil'],
+                y=df_percentiles['Valor'],
+                marker_color='#3498db',
+                text=[f'{v:.1f}' for v in df_percentiles['Valor']],
+                textposition='outside'
             )
-            fig.update_traces(textposition='inside', textinfo='percent+label')
-            st.plotly_chart(fig, use_container_width=True)
-
-        with col2:
-            st.markdown("### 📋 Resumen por Clasificación")
-            resumen_df = pd.DataFrame({
-                'Clasificación': clasificacion_counts.index,
-                'Cantidad': clasificacion_counts.values,
-                'Porcentaje': (clasificacion_counts.values / len(df) * 100).round(1)
-            })
-            st.dataframe(resumen_df, use_container_width=True, hide_index=True)
-
-        st.markdown("---")
-
-        # Estudiantes que requieren apoyo
-        st.subheader("🎯 Estudiantes que Requieren Apoyo (Bottom 20%)")
-
-        percentil_20 = df['Puntaje Global'].quantile(0.20)
-        apoyo = df[df['Puntaje Global'] <= percentil_20][['Nombre Completo', 'Puntaje Global'] + AREAS].copy()
-        # Redondear puntajes a enteros (manejar NaN)
-        for col in ['Puntaje Global'] + AREAS:
-            apoyo[col] = apoyo[col].fillna(0).round(0).astype(int)
-        apoyo = apoyo.sort_values('Puntaje Global').reset_index(drop=True)
-        apoyo.index = apoyo.index + 1
-
-        st.warning(f"Estudiantes con puntaje global ≤ {int(round(percentil_20))} (Bottom 20%)")
-        st.dataframe(apoyo, use_container_width=True)
-
-        st.markdown("---")
-
-        # ⚠️ SECCIÓN ELIMINADA: Análisis de Consistencia
-        # Esta sección calculaba la desviación estándar entre áreas diferentes,
-        # lo cual NO es metodológicamente válido según el ICFES, ya que cada área
-        # tiene escalas y criterios de evaluación diferentes.
-
-        st.markdown("---")
-
-        # Tabla completa con filtros
-        st.subheader("📋 Tabla Completa de Resultados")
-
-        # Filtros
-        col1, col2 = st.columns(2)
-
-        with col1:
-            filtro_clasificacion = st.multiselect(
-                "Filtrar por clasificación:",
-                options=df['Clasificación'].unique(),
-                default=df['Clasificación'].unique()
-            )
-
-        with col2:
-            rango_puntaje = st.slider(
-                "Rango de puntaje global:",
-                float(df['Puntaje Global'].min()),
-                float(df['Puntaje Global'].max()),
-                (float(df['Puntaje Global'].min()), float(df['Puntaje Global'].max()))
-            )
-
-        # Aplicar filtros
-        df_filtrado = df[
-            (df['Clasificación'].isin(filtro_clasificacion)) &
-            (df['Puntaje Global'] >= rango_puntaje[0]) &
-            (df['Puntaje Global'] <= rango_puntaje[1])
-        ]
-
-        st.info(f"Mostrando {len(df_filtrado)} de {len(df)} estudiantes")
-
-        # Mostrar tabla
-        columnas_mostrar = ['Nombre Completo', 'Puntaje Global'] + AREAS + ['Clasificación']
-        df_mostrar = df_filtrado[columnas_mostrar].copy()
-        # Redondear puntajes a enteros (manejar NaN)
-        for col in ['Puntaje Global'] + AREAS:
-            df_mostrar[col] = df_mostrar[col].fillna(0).round(0).astype(int)
-        df_mostrar = df_mostrar.sort_values('Puntaje Global', ascending=False).reset_index(drop=True)
-        df_mostrar.index = df_mostrar.index + 1
-
-        st.dataframe(df_mostrar, use_container_width=True, height=400)
-
-        # Botón de descarga
-        csv = df_mostrar.to_csv(index=False).encode('utf-8')
-        st.download_button(
-            label="📥 Descargar datos filtrados (CSV)",
-            data=csv,
-            file_name=f"resultados_icfes_filtrados_{datetime.now().strftime('%Y%m%d')}.csv",
-            mime="text/csv"
+        ])
+        fig.update_layout(
+            title=f'Percentiles de {area_percentil}',
+            xaxis_title='Percentil',
+            yaxis_title='Puntaje',
+            height=400
         )
+        st.plotly_chart(fig, use_container_width=True)
 
-    # TAB 6: Comparación 2024-2025
-    with tab6:
-        st.header("📅 Comparación de Resultados 2024 vs 2025")
+    st.markdown("---")
 
-        # Cargar datos históricos
-        datos_historicos = cargar_datos_historicos()
+    # Segmentación por clasificación
+    st.subheader("📋 Segmentación por Clasificación")
 
-        if datos_historicos is None:
-            st.warning("⚠️ No se encontraron datos históricos de comparación en el archivo Excel.")
-            st.info("Los datos históricos deben estar en las filas 37-39 del archivo Excel.")
+    segmentacion = df_analisis.groupby('Clasificación').agg({
+        'Nombre Completo': 'count',
+        'Puntaje Global': ['mean', 'min', 'max']
+    }).round(2)
+
+    segmentacion.columns = ['Cantidad', 'Promedio', 'Mínimo', 'Máximo']
+    segmentacion = segmentacion.reset_index()
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.dataframe(segmentacion, use_container_width=True, hide_index=True)
+
+    with col2:
+        fig = px.pie(
+            segmentacion,
+            values='Cantidad',
+            names='Clasificación',
+            title='Distribución por Clasificación'
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+
+def mostrar_comparacion_temporal(df):
+    """Pestaña 8: Comparación Temporal (2024-2025)"""
+    st.header("📅 Comparación Temporal 2024-2025")
+
+    st.markdown("""
+    <div class="warning-box">
+    <strong>⚠️ Advertencia:</strong><br>
+    Los datos históricos de comparación 2024-2025 solo están disponibles para el
+    <strong>Modelo Aula Regular</strong>. El Modelo Flexible aún no cuenta con datos del año 2024.
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Cargar datos históricos
+    historicos = cargar_datos_historicos()
+
+    if historicos['Aula Regular'] is None:
+        st.error("No se pudieron cargar los datos históricos de Aula Regular.")
+        return
+
+    datos_hist = historicos['Aula Regular']
+
+    st.markdown("---")
+
+    # Tabla comparativa
+    st.subheader("📊 Comparación de Promedios 2024 vs 2025")
+
+    # Crear DataFrame comparativo
+    areas_comparacion = AREAS + ['Puntaje Global']
+    datos_comparacion = []
+
+    for area in areas_comparacion:
+        datos_comparacion.append({
+            'Área': area,
+            '2024': f"{datos_hist['2024'][area]:.2f}",
+            '2025': f"{datos_hist['2025'][area]:.2f}",
+            'Avance': f"{datos_hist['Avance'][area]:+.2f}",
+            'Cambio %': f"{(datos_hist['Avance'][area] / datos_hist['2024'][area] * 100):+.2f}%"
+        })
+
+    df_comparacion = pd.DataFrame(datos_comparacion)
+    st.dataframe(df_comparacion, use_container_width=True, hide_index=True)
+
+    st.markdown("---")
+
+    # Gráfico de barras comparativo
+    st.subheader("📈 Evolución de Promedios por Área")
+
+    fig = go.Figure()
+
+    # Datos 2024
+    valores_2024 = [datos_hist['2024'][area] for area in AREAS]
+    fig.add_trace(go.Bar(
+        name='2024',
+        x=AREAS,
+        y=valores_2024,
+        marker_color='#95a5a6',
+        text=[f'{v:.1f}' for v in valores_2024],
+        textposition='outside'
+    ))
+
+    # Datos 2025
+    valores_2025 = [datos_hist['2025'][area] for area in AREAS]
+    fig.add_trace(go.Bar(
+        name='2025',
+        x=AREAS,
+        y=valores_2025,
+        marker_color='#3498db',
+        text=[f'{v:.1f}' for v in valores_2025],
+        textposition='outside'
+    ))
+
+    fig.update_layout(
+        title='Comparación de Promedios 2024 vs 2025 - Modelo Aula Regular',
+        xaxis_title='Área',
+        yaxis_title='Promedio',
+        barmode='group',
+        height=500
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.markdown("---")
+
+    # Gráfico de avances
+    st.subheader("📊 Avances y Retrocesos por Área")
+
+    avances = [datos_hist['Avance'][area] for area in AREAS]
+    colores_avance = ['#2ecc71' if a > 0 else '#e74c3c' for a in avances]
+
+    fig = go.Figure(data=[
+        go.Bar(
+            x=AREAS,
+            y=avances,
+            marker_color=colores_avance,
+            text=[f'{a:+.1f}' for a in avances],
+            textposition='outside'
+        )
+    ])
+
+    fig.add_hline(y=0, line_dash="dash", line_color="gray")
+
+    fig.update_layout(
+        title='Avances (+) y Retrocesos (-) por Área',
+        xaxis_title='Área',
+        yaxis_title='Cambio en Promedio',
+        height=500
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.markdown("---")
+
+    # Análisis de avances
+    st.subheader("📋 Análisis de Avances")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("### Áreas con Mejora")
+        mejoras = [(area, datos_hist['Avance'][area]) for area in AREAS if datos_hist['Avance'][area] > 0]
+        if mejoras:
+            for area, avance in sorted(mejoras, key=lambda x: x[1], reverse=True):
+                st.success(f"**{area}:** +{avance:.2f} puntos")
         else:
-            # Nota metodológica
-            st.info("""
-            **📚 Comparación Válida:** Esta sección compara los promedios de la MISMA área entre diferentes años.
-            Esta es una comparación metodológicamente válida según las recomendaciones del ICFES.
-            """)
+            st.info("No hay áreas con mejora")
 
-            st.markdown("---")
+    with col2:
+        st.markdown("### Áreas con Retroceso")
+        retrocesos = [(area, datos_hist['Avance'][area]) for area in AREAS if datos_hist['Avance'][area] < 0]
+        if retrocesos:
+            for area, avance in sorted(retrocesos, key=lambda x: x[1]):
+                st.error(f"**{area}:** {avance:.2f} puntos")
+        else:
+            st.info("No hay áreas con retroceso")
 
-            # Métricas principales
-            st.subheader("📊 Resumen de Avance General")
+    # Resumen general
+    st.markdown("---")
+    st.subheader("📌 Resumen General")
 
-            col1, col2, col3 = st.columns(3)
+    avance_global = datos_hist['Avance']['Puntaje Global']
 
-            with col1:
-                puntaje_2025 = datos_historicos['2025']['Puntaje Global']
-                st.metric(
-                    "Puntaje Global 2025",
-                    f"{int(round(puntaje_2025))}",
-                    help="Promedio del puntaje global en 2025"
-                )
+    if avance_global > 0:
+        st.success(f"""
+        **Resultado General:** El Modelo Aula Regular muestra una **mejora** en el puntaje global
+        de **+{avance_global:.2f} puntos** respecto al año 2024.
+        """)
+    elif avance_global < 0:
+        st.error(f"""
+        **Resultado General:** El Modelo Aula Regular muestra un **retroceso** en el puntaje global
+        de **{avance_global:.2f} puntos** respecto al año 2024.
+        """)
+    else:
+        st.info("""
+        **Resultado General:** El Modelo Aula Regular mantiene el mismo puntaje global
+        respecto al año 2024.
+        """)
 
-            with col2:
-                puntaje_2024 = datos_historicos['2024']['Puntaje Global']
-                st.metric(
-                    "Puntaje Global 2024",
-                    f"{int(round(puntaje_2024))}",
-                    help="Promedio del puntaje global en 2024"
-                )
-
-            with col3:
-                avance_global = datos_historicos['Avance']['Puntaje Global']
-                delta_color = "normal" if avance_global >= 0 else "inverse"
-                st.metric(
-                    "Avance",
-                    f"{int(round(avance_global))}",
-                    delta=f"{int(round(avance_global))} puntos",
-                    help="Diferencia entre 2025 y 2024"
-                )
-
-            st.markdown("---")
-
-            # Comparación por área
-            st.subheader("📈 Comparación por Área de Conocimiento")
-
-            # Crear DataFrame para comparación
-            comparacion_data = []
-            for area in AREAS:
-                comparacion_data.append({
-                    'Área': area,
-                    '2024': datos_historicos['2024'][area],
-                    '2025': datos_historicos['2025'][area],
-                    'Avance': datos_historicos['Avance'][area],
-                    'Avance %': (datos_historicos['Avance'][area] / datos_historicos['2024'][area] * 100) if datos_historicos['2024'][area] != 0 else 0
-                })
-
-            df_comparacion = pd.DataFrame(comparacion_data)
-
-            # Gráfico de barras comparativo
-            col1, col2 = st.columns(2)
-
-            with col1:
-                st.markdown("### 📊 Comparación de Promedios")
-
-                fig = go.Figure()
-
-                fig.add_trace(go.Bar(
-                    name='2024',
-                    x=AREAS,
-                    y=[datos_historicos['2024'][area] for area in AREAS],
-                    marker_color='#ff7f0e',
-                    text=[f"{int(round(datos_historicos['2024'][area]))}" for area in AREAS],
-                    textposition='outside'
-                ))
-
-                fig.add_trace(go.Bar(
-                    name='2025',
-                    x=AREAS,
-                    y=[datos_historicos['2025'][area] for area in AREAS],
-                    marker_color='#1f77b4',
-                    text=[f"{int(round(datos_historicos['2025'][area]))}" for area in AREAS],
-                    textposition='outside'
-                ))
-
-                fig.update_layout(
-                    barmode='group',
-                    xaxis_title='Área',
-                    yaxis_title='Puntaje Promedio',
-                    yaxis=dict(range=[0, 100]),
-                    height=500,
-                    showlegend=True,
-                    legend=dict(
-                        orientation="h",
-                        yanchor="bottom",
-                        y=1.02,
-                        xanchor="right",
-                        x=1
-                    )
-                )
-
-                st.plotly_chart(fig, use_container_width=True)
-
-            with col2:
-                st.markdown("### 📉 Avance por Área")
-
-                # Crear gráfico de avance
-                colores_avance = ['#2ca02c' if x >= 0 else '#d62728' for x in df_comparacion['Avance']]
-
-                fig = go.Figure()
-
-                fig.add_trace(go.Bar(
-                    x=AREAS,
-                    y=df_comparacion['Avance'],
-                    marker_color=colores_avance,
-                    text=[f"{int(round(x)):+d}" for x in df_comparacion['Avance']],
-                    textposition='outside'
-                ))
-
-                fig.add_hline(y=0, line_dash="dash", line_color="gray")
-
-                fig.update_layout(
-                    xaxis_title='Área',
-                    yaxis_title='Avance (puntos)',
-                    height=500,
-                    showlegend=False
-                )
-
-                st.plotly_chart(fig, use_container_width=True)
-
-            st.markdown("---")
-
-            # Tabla detallada
-            st.subheader("📋 Tabla Detallada de Comparación")
-
-            # Formatear tabla
-            df_tabla = df_comparacion.copy()
-            df_tabla['2024'] = df_tabla['2024'].apply(lambda x: f"{int(round(x))}")
-            df_tabla['2025'] = df_tabla['2025'].apply(lambda x: f"{int(round(x))}")
-            df_tabla['Avance'] = df_tabla['Avance'].apply(lambda x: f"{int(round(x)):+d}")
-            df_tabla['Avance %'] = df_tabla['Avance %'].apply(lambda x: f"{x:+.2f}%")
-
-            st.dataframe(df_tabla, use_container_width=True, hide_index=True)
-
-            st.markdown("---")
-
-            # Análisis de tendencias
-            st.subheader("🔍 Análisis de Tendencias")
-
-            col1, col2 = st.columns(2)
-
-            with col1:
-                st.markdown("### ✅ Áreas con Mejor Desempeño")
-                areas_mejora = df_comparacion.nlargest(3, 'Avance')[['Área', 'Avance', 'Avance %']]
-
-                if areas_mejora['Avance'].iloc[0] > 0:
-                    for idx, row in areas_mejora.iterrows():
-                        st.success(f"**{row['Área']}**: {int(round(row['Avance'])):+d} puntos ({row['Avance %']:+.2f}%)")
-                else:
-                    st.warning("No hay áreas con avance positivo")
-
-            with col2:
-                st.markdown("### ⚠️ Áreas que Requieren Atención")
-                areas_atencion = df_comparacion.nsmallest(3, 'Avance')[['Área', 'Avance', 'Avance %']]
-
-                for idx, row in areas_atencion.iterrows():
-                    if row['Avance'] < 0:
-                        st.error(f"**{row['Área']}**: {int(round(row['Avance'])):+d} puntos ({row['Avance %']:+.2f}%)")
-                    else:
-                        st.info(f"**{row['Área']}**: {int(round(row['Avance'])):+d} puntos ({row['Avance %']:+.2f}%)")
-
-            st.markdown("---")
-
-            # Recomendaciones
-            st.subheader("💡 Recomendaciones")
-
-            avance_promedio = df_comparacion['Avance'].mean()
-
-            if avance_promedio > 0:
-                st.success(f"""
-                **✅ Tendencia General Positiva**
-
-                El avance promedio es de **{int(round(avance_promedio)):+d} puntos**. Se observa una mejora general en el desempeño.
-
-                **Recomendaciones:**
-                - Mantener las estrategias pedagógicas actuales
-                - Reforzar las áreas con menor avance
-                - Compartir buenas prácticas de las áreas con mayor mejora
-                """)
-            elif avance_promedio < 0:
-                st.warning(f"""
-                **⚠️ Tendencia General Negativa**
-
-                El avance promedio es de **{int(round(avance_promedio)):+d} puntos**. Se observa una disminución en el desempeño.
-
-                **Recomendaciones:**
-                - Revisar las estrategias pedagógicas actuales
-                - Implementar planes de mejoramiento específicos por área
-                - Analizar factores externos que puedan estar afectando el rendimiento
-                - Considerar refuerzo académico en las áreas más afectadas
-                """)
-            else:
-                st.info("""
-                **➡️ Desempeño Estable**
-
-                El avance promedio es cercano a cero. El desempeño se mantiene estable.
-
-                **Recomendaciones:**
-                - Implementar estrategias de mejora continua
-                - Establecer metas de crecimiento para el próximo año
-                """)
-
-            # Botón de descarga
-            st.markdown("---")
-            csv_comparacion = df_comparacion.to_csv(index=False).encode('utf-8')
-            st.download_button(
-                label="📥 Descargar comparación (CSV)",
-                data=csv_comparacion,
-                file_name=f"comparacion_2024_2025_{datetime.now().strftime('%Y%m%d')}.csv",
-                mime="text/csv"
-            )
+# ============================================================================
+# PUNTO DE ENTRADA DE LA APLICACIÓN
+# ============================================================================
 
 if __name__ == "__main__":
     main()
+
 
