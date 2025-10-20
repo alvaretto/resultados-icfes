@@ -911,18 +911,21 @@ def mostrar_resultados_institucionales(df):
         except (KeyError, ValueError, TypeError) as e:
             pass  # Silenciosamente ignorar errores de conversión
 
-    # Calcular avance institucional (promedio ponderado)
+    # Calcular avance institucional global (basado en puntajes consolidados)
     if avance_aula_regular is not None and avance_modelo_flexible is not None:
         try:
-            # Ponderado por cantidad de estudiantes
-            total_est = len(df)
-            est_ar = len(df[df['Grupo'].isin(['11A', '11B'])])
-            est_mf = len(df[df['Grupo'].isin(['P3A', 'P3B', 'P3C'])])
+            # Obtener puntajes globales consolidados de 2025 y 2024
+            # 2025: Promedio de todos los estudiantes en el archivo consolidado
+            puntaje_2025_consolidado = df['Puntaje Global'].mean()
 
-            if total_est > 0:
-                avance_institucional_global = (avance_aula_regular * est_ar + avance_modelo_flexible * est_mf) / total_est
-                # REGLA DE REDONDEO: Avances deben ser números enteros (sin decimales)
-                avance_institucional_global = int(round(avance_institucional_global, 0))
+            # 2024: Valor fijo de 219 (del PDF ponderado2024A.pdf)
+            # Este es el puntaje global institucional de 2024
+            puntaje_2024_consolidado = 219
+
+            # Calcular avance como diferencia directa
+            avance_institucional_global = puntaje_2025_consolidado - puntaje_2024_consolidado
+            # REGLA DE REDONDEO: Avances deben ser números enteros (sin decimales)
+            avance_institucional_global = int(round(avance_institucional_global, 0))
         except Exception as e:
             st.warning(f"Error al calcular avance institucional: {e}")
 
