@@ -108,7 +108,8 @@ python3 test_app_completa.py
 ### Modelo Flexible
 - **Grupos:** P3A (20 estudiantes), P3B (21 estudiantes), P3C (21 estudiantes)
 - **Total:** 62 estudiantes
-- **Datos:** 2025 (datos 2024 pendientes)
+- **Datos 2025:** Completos (todas las áreas)
+- **Datos 2024:** Solo puntaje global (203 puntos). Áreas pendientes de definición
 
 ### Total General
 - **98 estudiantes** analizados
@@ -186,8 +187,8 @@ pip install -r requirements-webapp.txt
 - ✅ Cada área se analiza de forma independiente
 
 ### Datos Históricos
-- ⚠️ Modelo Flexible no tiene datos 2024 (pendiente)
-- ✅ Modelo Aula Regular tiene datos 2024 y 2025
+- ✅ Modelo Flexible: Puntaje global 2024 disponible (203 puntos). Áreas de 2024 pendientes
+- ✅ Modelo Aula Regular: Datos completos 2024 y 2025
 
 ### Tamaños de Muestra
 - ⚠️ Considerar diferencia de tamaños (36 vs 62 estudiantes)
@@ -268,11 +269,17 @@ Para preguntas, problemas o sugerencias sobre la aplicación:
 
 ## 🔄 Actualizaciones Futuras
 
+### Completados Recientemente
+
+1. **✅ Puntaje global 2024 del Modelo Flexible**
+   - ✅ Puntaje global 2024 agregado (203 puntos)
+   - ✅ Comparación temporal implementada para MF (puntaje global)
+
 ### Pendientes para Futuras Versiones
 
-1. **Datos históricos del Modelo Flexible**
-   - Añadir cuando estén disponibles los datos 2024
-   - Implementar comparación temporal para MF
+1. **Datos por área de 2024 del Modelo Flexible**
+   - Agregar cuando estén disponibles los puntajes por área de 2024
+   - Implementar comparación temporal completa para MF
 
 2. **Exportación de reportes**
    - Generar PDFs

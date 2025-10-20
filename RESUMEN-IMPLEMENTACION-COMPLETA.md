@@ -24,7 +24,8 @@
 **Modelo Flexible:**
 - Grupos: P3A (20 estudiantes), P3B (21 estudiantes), P3C (21 estudiantes)
 - Total: 62 estudiantes
-- Datos: 2025 (datos 2024 pendientes para futuras actualizaciones)
+- Datos 2025: Completos (todas las áreas)
+- Datos 2024: Solo puntaje global (203 puntos). Áreas pendientes de definición
 
 **Total General:** 98 estudiantes analizados
 
@@ -292,7 +293,7 @@ streamlit run app_resultados_icfes.py
 
 ### Advertencias Implementadas
 
-- ⚠️ Modelo Flexible no tiene datos 2024 (claramente indicado)
+- ⚠️ Modelo Flexible: Solo puntaje global 2024 disponible (203 puntos). Áreas pendientes
 - ⚠️ Diferentes tamaños de muestra (considerado en análisis)
 - ⚠️ Nota metodológica del ICFES (visible en todas las pestañas relevantes)
 
@@ -300,11 +301,11 @@ streamlit run app_resultados_icfes.py
 
 ## 🔮 Futuras Mejoras Sugeridas
 
-### Pendientes
+### Completados
 
-1. **Datos históricos del Modelo Flexible**
-   - Añadir datos 2024 cuando estén disponibles
-   - Implementar comparación temporal para MF
+1. **✅ Puntaje global 2024 del Modelo Flexible**
+   - ✅ Puntaje global 2024 agregado (203 puntos)
+   - ✅ Comparación temporal implementada para MF (puntaje global)
 
 2. **Exportación de Reportes**
    - Generar PDFs de análisis

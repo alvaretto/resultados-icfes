@@ -250,8 +250,8 @@ def cargar_datos_unificados():
 def cargar_datos_historicos():
     """
     Carga los datos históricos de comparación entre años (2024-2025).
-    Solo disponible para Modelo Aula Regular.
-    
+    Disponible para Modelo Aula Regular y Modelo Flexible.
+
     Returns:
         dict: Datos históricos por modelo
     """
@@ -259,7 +259,7 @@ def cargar_datos_historicos():
         'Aula Regular': None,
         'Modelo Flexible': None
     }
-    
+
     # Cargar históricos de Aula Regular
     if os.path.exists(ARCHIVO_AULA_REGULAR):
         try:
@@ -268,7 +268,7 @@ def cargar_datos_historicos():
                 datos_2025 = df_completo.iloc[37][AREAS + ['Puntaje Global']].to_dict()
                 datos_2024 = df_completo.iloc[38][AREAS + ['Puntaje Global']].to_dict()
                 avance = df_completo.iloc[39][AREAS + ['Puntaje Global']].to_dict()
-                
+
                 historicos['Aula Regular'] = {
                     '2025': datos_2025,
                     '2024': datos_2024,
@@ -276,9 +276,31 @@ def cargar_datos_historicos():
                 }
         except Exception as e:
             st.warning(f"No se pudieron cargar datos históricos de Aula Regular: {e}")
-    
-    # Nota: Modelo Flexible no tiene datos 2024 aún
-    
+
+    # Cargar históricos de Modelo Flexible
+    if os.path.exists(ARCHIVO_MODELO_FLEXIBLE):
+        try:
+            df_completo = pd.read_excel(ARCHIVO_MODELO_FLEXIBLE)
+            if len(df_completo) >= 64:
+                # Nota: Hay 2 filas vacías (61-62) antes de los datos históricos
+                # Por lo que: Fila 63 Excel = índice 61 pandas (2025)
+                #            Fila 64 Excel = índice 62 pandas (2024)
+                #            Fila 65 Excel = índice 63 pandas (Avance)
+                datos_2025 = df_completo.iloc[61][AREAS + ['Puntaje Global']].to_dict()
+                datos_2024 = df_completo.iloc[62][AREAS + ['Puntaje Global']].to_dict()
+                avance = df_completo.iloc[63][AREAS + ['Puntaje Global']].to_dict()
+
+                # Nota: Para Modelo Flexible, solo el puntaje global de 2024 está disponible
+                # Las áreas individuales de 2024 están pendientes
+                historicos['Modelo Flexible'] = {
+                    '2025': datos_2025,
+                    '2024': datos_2024,
+                    'Avance': avance,
+                    'areas_2024_disponibles': False  # Indicador de que las áreas de 2024 no están disponibles
+                }
+        except Exception as e:
+            st.warning(f"No se pudieron cargar datos históricos de Modelo Flexible: {e}")
+
     return historicos
 
 # ============================================================================
@@ -1944,29 +1966,58 @@ def mostrar_comparacion_temporal(df):
     st.header("📅 Comparación Temporal 2024-2025")
 
     st.markdown("""
-    <div class="warning-box">
-    <strong>⚠️ Advertencia:</strong><br>
-    Los datos históricos de comparación 2024-2025 solo están disponibles para el
-    <strong>Modelo Aula Regular</strong>. El Modelo Flexible aún no cuenta con datos del año 2024.
+    <div class="info-box">
+    <strong>ℹ️ Información:</strong><br>
+    Los datos históricos de comparación 2024-2025 están disponibles para ambos modelos educativos:
+    <strong>Modelo Aula Regular</strong> y <strong>Modelo Flexible</strong>.
     </div>
     """, unsafe_allow_html=True)
 
     # Cargar datos históricos
     historicos = cargar_datos_historicos()
 
-    if historicos['Aula Regular'] is None:
-        st.error("No se pudieron cargar los datos históricos de Aula Regular.")
-        return
-
-    datos_hist = historicos['Aula Regular']
+    # Selector de modelo
+    modelo_seleccionado = st.selectbox(
+        "Selecciona el modelo para análisis temporal:",
+        ['Modelo Aula Regular', 'Modelo Flexible'],
+        key='modelo_temporal'
+    )
 
     st.markdown("---")
 
+    # Obtener datos del modelo seleccionado
+    if modelo_seleccionado == 'Modelo Aula Regular':
+        if historicos['Aula Regular'] is None:
+            st.error("No se pudieron cargar los datos históricos de Aula Regular.")
+            return
+        datos_hist = historicos['Aula Regular']
+        areas_disponibles_2024 = True
+        color_modelo = COLORES_MODELOS['Aula Regular']
+    else:
+        if historicos['Modelo Flexible'] is None:
+            st.error("No se pudieron cargar los datos históricos de Modelo Flexible.")
+            return
+        datos_hist = historicos['Modelo Flexible']
+        areas_disponibles_2024 = datos_hist.get('areas_2024_disponibles', False)
+        color_modelo = COLORES_MODELOS['Modelo Flexible']
+
+        # Mostrar advertencia si las áreas de 2024 no están disponibles
+        if not areas_disponibles_2024:
+            st.info("""
+            ⚠️ **Nota:** Para el Modelo Flexible, solo el puntaje global de 2024 está disponible (203 puntos).
+            Los datos por área de 2024 están pendientes de definición y se agregarán en futuras actualizaciones.
+            """)
+
     # Tabla comparativa
-    st.subheader("📊 Comparación de Promedios 2024 vs 2025")
+    st.subheader(f"📊 Comparación de Promedios 2024 vs 2025 - {modelo_seleccionado}")
 
     # Crear DataFrame comparativo
-    areas_comparacion = AREAS + ['Puntaje Global']
+    if areas_disponibles_2024:
+        areas_comparacion = AREAS + ['Puntaje Global']
+    else:
+        # Solo mostrar puntaje global si las áreas no están disponibles
+        areas_comparacion = ['Puntaje Global']
+
     datos_comparacion = []
 
     for area in areas_comparacion:
@@ -1975,14 +2026,14 @@ def mostrar_comparacion_temporal(df):
         avance = datos_hist['Avance'][area]
 
         # Calcular cambio porcentual con manejo de división por cero
-        cambio_pct = (avance / val_2024 * 100) if val_2024 != 0 else 0
+        cambio_pct = (avance / val_2024 * 100) if (pd.notna(val_2024) and val_2024 != 0) else 0
 
         datos_comparacion.append({
             'Área': area,
-            '2024': f"{val_2024:.0f}",
-            '2025': f"{val_2025:.0f}",
-            'Avance': f"{avance:+.0f}",
-            'Cambio %': f"{cambio_pct:+.2f}%"
+            '2024': f"{val_2024:.0f}" if pd.notna(val_2024) else "N/D",
+            '2025': f"{val_2025:.0f}" if pd.notna(val_2025) else "N/D",
+            'Avance': f"{avance:+.0f}" if pd.notna(avance) else "N/D",
+            'Cambio %': f"{cambio_pct:+.2f}%" if pd.notna(cambio_pct) else "N/D"
         })
 
     df_comparacion = pd.DataFrame(datos_comparacion)
@@ -1990,110 +2041,117 @@ def mostrar_comparacion_temporal(df):
 
     st.markdown("---")
 
-    # Gráfico de barras comparativo
-    st.subheader("📈 Evolución de Promedios por Área")
+    # Gráfico de barras comparativo - solo si las áreas están disponibles
+    if areas_disponibles_2024:
+        st.subheader("📈 Evolución de Promedios por Área")
 
-    fig = go.Figure()
+        fig = go.Figure()
 
-    # Datos 2024
-    valores_2024 = []
-    for area in AREAS:
-        val = datos_hist['2024'][area]
-        valores_2024.append(round(val, 0) if pd.notna(val) else 0)
+        # Datos 2024
+        valores_2024 = []
+        for area in AREAS:
+            val = datos_hist['2024'][area]
+            valores_2024.append(round(val, 0) if pd.notna(val) else 0)
 
-    fig.add_trace(go.Bar(
-        name='2024',
-        x=AREAS,
-        y=valores_2024,
-        marker_color='#95a5a6',
-        text=[f'{int(v)}' for v in valores_2024],
-        textposition='outside'
-    ))
-
-    # Datos 2025
-    valores_2025 = []
-    for area in AREAS:
-        val = datos_hist['2025'][area]
-        valores_2025.append(round(val, 0) if pd.notna(val) else 0)
-
-    fig.add_trace(go.Bar(
-        name='2025',
-        x=AREAS,
-        y=valores_2025,
-        marker_color='#3498db',
-        text=[f'{int(v)}' for v in valores_2025],
-        textposition='outside'
-    ))
-
-    fig.update_layout(
-        title='Comparación de Promedios 2024 vs 2025 - Modelo Aula Regular',
-        xaxis_title='Área',
-        yaxis_title='Promedio',
-        barmode='group',
-        height=500
-    )
-
-    st.plotly_chart(fig, use_container_width=True, key='comp_temporal_2024_2025')
-
-    st.markdown("---")
-
-    # Gráfico de avances
-    st.subheader("📊 Avances y Retrocesos por Área")
-
-    avances = []
-    for area in AREAS:
-        val = datos_hist['Avance'][area]
-        avances.append(round(val, 0) if pd.notna(val) else 0)
-
-    colores_avance = ['#2ecc71' if a > 0 else '#e74c3c' for a in avances]
-
-    fig = go.Figure(data=[
-        go.Bar(
+        fig.add_trace(go.Bar(
+            name='2024',
             x=AREAS,
-            y=avances,
-            marker_color=colores_avance,
-            text=[f'{int(a):+d}' for a in avances],
+            y=valores_2024,
+            marker_color='#95a5a6',
+            text=[f'{int(v)}' for v in valores_2024],
             textposition='outside'
+        ))
+
+        # Datos 2025
+        valores_2025 = []
+        for area in AREAS:
+            val = datos_hist['2025'][area]
+            valores_2025.append(round(val, 0) if pd.notna(val) else 0)
+
+        fig.add_trace(go.Bar(
+            name='2025',
+            x=AREAS,
+            y=valores_2025,
+            marker_color=color_modelo,
+            text=[f'{int(v)}' for v in valores_2025],
+            textposition='outside'
+        ))
+
+        fig.update_layout(
+            title=f'Comparación de Promedios 2024 vs 2025 - {modelo_seleccionado}',
+            xaxis_title='Área',
+            yaxis_title='Promedio',
+            barmode='group',
+            height=500
         )
-    ])
 
-    fig.add_hline(y=0, line_dash="dash", line_color="gray")
+        st.plotly_chart(fig, use_container_width=True, key='comp_temporal_2024_2025')
 
-    fig.update_layout(
-        title='Avances (+) y Retrocesos (-) por Área',
-        xaxis_title='Área',
-        yaxis_title='Cambio en Promedio',
-        height=500
-    )
+        st.markdown("---")
 
-    st.plotly_chart(fig, use_container_width=True, key='avances_retrocesos')
+        # Gráfico de avances
+        st.subheader("📊 Avances y Retrocesos por Área")
+
+        avances = []
+        for area in AREAS:
+            val = datos_hist['Avance'][area]
+            avances.append(round(val, 0) if pd.notna(val) else 0)
+
+        colores_avance = ['#2ecc71' if a > 0 else '#e74c3c' for a in avances]
+
+        fig = go.Figure(data=[
+            go.Bar(
+                x=AREAS,
+                y=avances,
+                marker_color=colores_avance,
+                text=[f'{int(a):+d}' for a in avances],
+                textposition='outside'
+            )
+        ])
+
+        fig.add_hline(y=0, line_dash="dash", line_color="gray")
+
+        fig.update_layout(
+            title='Avances (+) y Retrocesos (-) por Área',
+            xaxis_title='Área',
+            yaxis_title='Cambio en Promedio',
+            height=500
+        )
+
+        st.plotly_chart(fig, use_container_width=True, key='avances_retrocesos')
+    else:
+        st.info("Los gráficos por área no están disponibles porque los datos de 2024 por área aún no han sido definidos.")
+        st.markdown("---")
 
     st.markdown("---")
 
-    # Análisis de avances
-    st.subheader("📋 Análisis de Avances")
+    # Análisis de avances - solo si las áreas están disponibles
+    if areas_disponibles_2024:
+        st.subheader("📋 Análisis de Avances")
 
-    col1, col2 = st.columns(2)
+        col1, col2 = st.columns(2)
 
-    with col1:
-        st.markdown("### Áreas con Mejora")
-        mejoras = [(area, datos_hist['Avance'][area]) for area in AREAS if datos_hist['Avance'][area] > 0]
-        if mejoras:
-            for area, avance in sorted(mejoras, key=lambda x: x[1], reverse=True):
-                avance_val = round(avance, 0) if pd.notna(avance) else 0
-                st.success(f"**{area}:** +{int(avance_val)} puntos")
-        else:
-            st.info("No hay áreas con mejora")
+        with col1:
+            st.markdown("### Áreas con Mejora")
+            mejoras = [(area, datos_hist['Avance'][area]) for area in AREAS if pd.notna(datos_hist['Avance'][area]) and datos_hist['Avance'][area] > 0]
+            if mejoras:
+                for area, avance in sorted(mejoras, key=lambda x: x[1], reverse=True):
+                    avance_val = round(avance, 0) if pd.notna(avance) else 0
+                    st.success(f"**{area}:** +{int(avance_val)} puntos")
+            else:
+                st.info("No hay áreas con mejora")
 
-    with col2:
-        st.markdown("### Áreas con Retroceso")
-        retrocesos = [(area, datos_hist['Avance'][area]) for area in AREAS if datos_hist['Avance'][area] < 0]
-        if retrocesos:
-            for area, avance in sorted(retrocesos, key=lambda x: x[1]):
-                avance_val = round(avance, 0) if pd.notna(avance) else 0
-                st.error(f"**{area}:** {int(avance_val)} puntos")
-        else:
-            st.info("No hay áreas con retroceso")
+        with col2:
+            st.markdown("### Áreas con Retroceso")
+            retrocesos = [(area, datos_hist['Avance'][area]) for area in AREAS if pd.notna(datos_hist['Avance'][area]) and datos_hist['Avance'][area] < 0]
+            if retrocesos:
+                for area, avance in sorted(retrocesos, key=lambda x: x[1]):
+                    avance_val = round(avance, 0) if pd.notna(avance) else 0
+                    st.error(f"**{area}:** {int(avance_val)} puntos")
+            else:
+                st.info("No hay áreas con retroceso")
+    else:
+        st.info("El análisis por área no está disponible porque los datos de 2024 por área aún no han sido definidos.")
 
     # Resumen general
     st.markdown("---")
@@ -2104,17 +2162,17 @@ def mostrar_comparacion_temporal(df):
 
     if avance_global > 0:
         st.success(f"""
-        **Resultado General:** El Modelo Aula Regular muestra una **mejora** en el puntaje global
+        **Resultado General:** El {modelo_seleccionado} muestra una **mejora** en el puntaje global
         de **+{int(avance_global)} puntos** respecto al año 2024.
         """)
     elif avance_global < 0:
         st.error(f"""
-        **Resultado General:** El Modelo Aula Regular muestra un **retroceso** en el puntaje global
+        **Resultado General:** El {modelo_seleccionado} muestra un **retroceso** en el puntaje global
         de **{int(avance_global)} puntos** respecto al año 2024.
         """)
     else:
-        st.info("""
-        **Resultado General:** El Modelo Aula Regular mantiene el mismo puntaje global
+        st.info(f"""
+        **Resultado General:** El {modelo_seleccionado} mantiene el mismo puntaje global
         respecto al año 2024.
         """)
 

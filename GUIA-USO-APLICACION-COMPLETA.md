@@ -190,11 +190,14 @@ La aplicación se abrirá automáticamente en: `http://localhost:8501`
 ### Pestaña 8: Comparación Temporal
 
 **¿Qué puedo hacer aquí?**
-- Ver la evolución 2024-2025 del Modelo Aula Regular
+- Ver la evolución 2024-2025 de ambos modelos educativos
+- Seleccionar entre Modelo Aula Regular o Modelo Flexible
 - Identificar áreas con mejora o retroceso
 - Analizar cambios porcentuales
 
-**Nota:** Solo disponible para Modelo Aula Regular (Modelo Flexible no tiene datos 2024)
+**Nota sobre disponibilidad de datos:**
+- **Modelo Aula Regular:** Datos completos 2024-2025 (todas las áreas disponibles)
+- **Modelo Flexible:** Solo puntaje global 2024 disponible (203 puntos). Los datos por área de 2024 están pendientes de definición
 
 **Cómo usar:**
 1. Revisa la tabla comparativa 2024 vs 2025
@@ -267,8 +270,8 @@ R: Cada área del ICFES tiene escalas y criterios de evaluación diferentes. Com
 **P: ¿Qué significa "p < 0.05" en los tests estadísticos?**
 R: Significa que hay menos del 5% de probabilidad de que la diferencia observada sea por azar. Es decir, la diferencia es estadísticamente significativa.
 
-**P: ¿Por qué el Modelo Flexible no tiene datos 2024?**
-R: Los datos históricos del Modelo Flexible aún no están disponibles. Se añadirán en futuras actualizaciones.
+**P: ¿Dónde están los datos 2024 del Modelo Flexible?**
+R: Para el Modelo Flexible, solo el puntaje global de 2024 está disponible (203 puntos). Los datos por área de 2024 (Lectura Crítica, Matemáticas, Sociales y Ciudadanas, Ciencias Naturales e Inglés) aún no han sido definidos y se agregarán en futuras actualizaciones. Puedes ver el puntaje global en la pestaña "Comparación Temporal" seleccionando "Modelo Flexible".
 
 **P: ¿Cómo interpreto el radar chart?**
 R: El radar chart muestra el perfil de competencias del estudiante. Áreas más alejadas del centro indican mejor desempeño.

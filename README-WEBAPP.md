@@ -19,7 +19,8 @@ Aplicación web interactiva desarrollada con **Streamlit** para visualización y
 2. **Modelo Flexible**
    - Grupos: P3A, P3B y P3C
    - Total: 62 estudiantes
-   - Datos: 2025 (datos 2024 pendientes)
+   - Datos 2025: Completos (todas las áreas)
+   - Datos 2024: Solo puntaje global (203 puntos). Áreas pendientes
 
 ### Tipos de Análisis Disponibles
 
