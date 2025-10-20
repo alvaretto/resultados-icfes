@@ -940,22 +940,26 @@ def mostrar_resultados_institucionales(df):
                 color_border = "#28a745"  # Verde
                 emoji = "📈"
                 signo = "+"
+                descripcion = f"Avance: {abs(avance_institucional_global)} puntos"
             elif avance_institucional_global < 0:
                 color_bg = "#f8d7da"  # Rojo claro
                 color_border = "#dc3545"  # Rojo
                 emoji = "📉"
                 signo = ""
+                descripcion = f"Retroceso: {abs(avance_institucional_global)} puntos"
             else:
                 color_bg = "#e2e3e5"  # Gris
                 color_border = "#6c757d"  # Gris oscuro
                 emoji = "➡️"
                 signo = ""
+                descripcion = "Sin cambios"
 
             st.markdown(f"""
             <div style='background-color: {color_bg}; padding: 20px; border-radius: 10px; border-left: 5px solid {color_border};'>
-            <strong style='font-size: 1.2em;'>{emoji} Avance Institucional Global</strong><br>
+            <div style='font-size: 2em; margin-bottom: 10px;'>{emoji}</div>
+            <strong style='font-size: 1.2em;'>Avance Institucional Global</strong><br>
             <span style='font-size: 2em; font-weight: bold; color: {color_border};'>{signo}{avance_institucional_global:+.0f} puntos</span><br>
-            <span style='font-size: 0.9em; color: #666;'>Cambio promedio 2024-2025</span>
+            <span style='font-size: 0.9em; color: #666;'>{descripcion}</span>
             </div>
             """, unsafe_allow_html=True)
         else:
@@ -969,22 +973,26 @@ def mostrar_resultados_institucionales(df):
                 color_border = "#28a745"  # Verde
                 emoji = "📈"
                 signo = "+"
+                descripcion = f"Avance: {abs(avance_aula_regular)} puntos"
             elif avance_aula_regular < 0:
                 color_bg = "#f8d7da"  # Rojo claro
                 color_border = "#dc3545"  # Rojo
                 emoji = "📉"
                 signo = ""
+                descripcion = f"Retroceso: {abs(avance_aula_regular)} puntos"
             else:
                 color_bg = "#e2e3e5"  # Gris
                 color_border = "#6c757d"  # Gris oscuro
                 emoji = "➡️"
                 signo = ""
+                descripcion = "Sin cambios"
 
             st.markdown(f"""
             <div style='background-color: {color_bg}; padding: 20px; border-radius: 10px; border-left: 5px solid {color_border};'>
-            <strong style='font-size: 1.2em;'>{emoji} Modelo Aula Regular</strong><br>
+            <div style='font-size: 2em; margin-bottom: 10px;'>{emoji}</div>
+            <strong style='font-size: 1.2em;'>Modelo Aula Regular</strong><br>
             <span style='font-size: 2em; font-weight: bold; color: {color_border};'>{signo}{avance_aula_regular:+.0f} puntos</span><br>
-            <span style='font-size: 0.9em; color: #666;'>Cambio 2024-2025</span>
+            <span style='font-size: 0.9em; color: #666;'>{descripcion}</span>
             </div>
             """, unsafe_allow_html=True)
         else:
@@ -998,22 +1006,26 @@ def mostrar_resultados_institucionales(df):
                 color_border = "#28a745"  # Verde
                 emoji = "📈"
                 signo = "+"
+                descripcion = f"Avance: {abs(avance_modelo_flexible)} puntos"
             elif avance_modelo_flexible < 0:
                 color_bg = "#f8d7da"  # Rojo claro
                 color_border = "#dc3545"  # Rojo
                 emoji = "📉"
                 signo = ""
+                descripcion = f"Retroceso: {abs(avance_modelo_flexible)} puntos"
             else:
                 color_bg = "#e2e3e5"  # Gris
                 color_border = "#6c757d"  # Gris oscuro
                 emoji = "➡️"
                 signo = ""
+                descripcion = "Sin cambios"
 
             st.markdown(f"""
             <div style='background-color: {color_bg}; padding: 20px; border-radius: 10px; border-left: 5px solid {color_border};'>
-            <strong style='font-size: 1.2em;'>{emoji} Modelo Flexible</strong><br>
+            <div style='font-size: 2em; margin-bottom: 10px;'>{emoji}</div>
+            <strong style='font-size: 1.2em;'>Modelo Flexible</strong><br>
             <span style='font-size: 2em; font-weight: bold; color: {color_border};'>{signo}{avance_modelo_flexible:+.0f} puntos</span><br>
-            <span style='font-size: 0.9em; color: #666;'>Cambio 2024-2025</span>
+            <span style='font-size: 0.9em; color: #666;'>{descripcion}</span>
             </div>
             """, unsafe_allow_html=True)
         else:
