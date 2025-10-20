@@ -811,6 +811,133 @@ def mostrar_resultados_institucionales(df):
     st.markdown("---")
 
     # ========================================================================
+    # SECCIÓN DE AVANCES 2024-2025
+    # ========================================================================
+
+    st.subheader("📊 Avances Institucionales 2024-2025")
+
+    # Cargar datos históricos
+    historicos = cargar_datos_historicos()
+
+    # Calcular avance institucional global
+    avance_institucional_global = None
+    avance_aula_regular = None
+    avance_modelo_flexible = None
+
+    # Avance Aula Regular
+    if historicos['Aula Regular'] is not None:
+        avance_ar = historicos['Aula Regular']['Avance']['Puntaje Global']
+        avance_aula_regular = round(avance_ar, 2) if pd.notna(avance_ar) else None
+
+    # Avance Modelo Flexible
+    if historicos['Modelo Flexible'] is not None:
+        avance_mf = historicos['Modelo Flexible']['Avance']['Puntaje Global']
+        avance_modelo_flexible = round(avance_mf, 2) if pd.notna(avance_mf) else None
+
+    # Calcular avance institucional (promedio ponderado)
+    if avance_aula_regular is not None and avance_modelo_flexible is not None:
+        # Ponderado por cantidad de estudiantes
+        total_est = len(df)
+        est_ar = len(df[df['Grupo'].isin(['11A', '11B'])])
+        est_mf = len(df[df['Grupo'].isin(['P3A', 'P3B', 'P3C'])])
+
+        if total_est > 0:
+            avance_institucional_global = (avance_aula_regular * est_ar + avance_modelo_flexible * est_mf) / total_est
+            avance_institucional_global = round(avance_institucional_global, 2)
+
+    # Mostrar avances con colores
+    col1, col2, col3 = st.columns(3)
+
+    # Avance Institucional Global
+    with col1:
+        if avance_institucional_global is not None:
+            if avance_institucional_global > 0:
+                color_bg = "#d4edda"  # Verde claro
+                color_border = "#28a745"  # Verde
+                emoji = "📈"
+                signo = "+"
+            elif avance_institucional_global < 0:
+                color_bg = "#f8d7da"  # Rojo claro
+                color_border = "#dc3545"  # Rojo
+                emoji = "📉"
+                signo = ""
+            else:
+                color_bg = "#e2e3e5"  # Gris
+                color_border = "#6c757d"  # Gris oscuro
+                emoji = "➡️"
+                signo = ""
+
+            st.markdown(f"""
+            <div style='background-color: {color_bg}; padding: 20px; border-radius: 10px; border-left: 5px solid {color_border};'>
+            <strong style='font-size: 1.2em;'>{emoji} Avance Institucional Global</strong><br>
+            <span style='font-size: 2em; font-weight: bold; color: {color_border};'>{signo}{avance_institucional_global:+.2f} puntos</span><br>
+            <span style='font-size: 0.9em; color: #666;'>Cambio promedio 2024-2025</span>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.info("Datos de avance no disponibles")
+
+    # Avance Aula Regular
+    with col2:
+        if avance_aula_regular is not None:
+            if avance_aula_regular > 0:
+                color_bg = "#d4edda"  # Verde claro
+                color_border = "#28a745"  # Verde
+                emoji = "📈"
+                signo = "+"
+            elif avance_aula_regular < 0:
+                color_bg = "#f8d7da"  # Rojo claro
+                color_border = "#dc3545"  # Rojo
+                emoji = "📉"
+                signo = ""
+            else:
+                color_bg = "#e2e3e5"  # Gris
+                color_border = "#6c757d"  # Gris oscuro
+                emoji = "➡️"
+                signo = ""
+
+            st.markdown(f"""
+            <div style='background-color: {color_bg}; padding: 20px; border-radius: 10px; border-left: 5px solid {color_border};'>
+            <strong style='font-size: 1.2em;'>{emoji} Modelo Aula Regular</strong><br>
+            <span style='font-size: 2em; font-weight: bold; color: {color_border};'>{signo}{avance_aula_regular:+.2f} puntos</span><br>
+            <span style='font-size: 0.9em; color: #666;'>Cambio 2024-2025</span>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.info("Datos no disponibles")
+
+    # Avance Modelo Flexible
+    with col3:
+        if avance_modelo_flexible is not None:
+            if avance_modelo_flexible > 0:
+                color_bg = "#d4edda"  # Verde claro
+                color_border = "#28a745"  # Verde
+                emoji = "📈"
+                signo = "+"
+            elif avance_modelo_flexible < 0:
+                color_bg = "#f8d7da"  # Rojo claro
+                color_border = "#dc3545"  # Rojo
+                emoji = "📉"
+                signo = ""
+            else:
+                color_bg = "#e2e3e5"  # Gris
+                color_border = "#6c757d"  # Gris oscuro
+                emoji = "➡️"
+                signo = ""
+
+            st.markdown(f"""
+            <div style='background-color: {color_bg}; padding: 20px; border-radius: 10px; border-left: 5px solid {color_border};'>
+            <strong style='font-size: 1.2em;'>{emoji} Modelo Flexible</strong><br>
+            <span style='font-size: 2em; font-weight: bold; color: {color_border};'>{signo}{avance_modelo_flexible:+.2f} puntos</span><br>
+            <span style='font-size: 0.9em; color: #666;'>Cambio 2024-2025</span>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.info("Datos no disponibles")
+
+    st.markdown("---")
+
+    # ========================================================================
     # 1. PROMEDIOS INSTITUCIONALES GLOBALES
     # ========================================================================
 
