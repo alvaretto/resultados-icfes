@@ -896,7 +896,8 @@ def mostrar_resultados_institucionales(df):
         try:
             avance_ar = obtener_valor_seguro(historicos['Aula Regular']['Avance'], 'Puntaje Global')
             if avance_ar is not None:
-                avance_aula_regular = round(float(avance_ar), 2)
+                # REGLA DE REDONDEO: Avances deben ser números enteros (sin decimales)
+                avance_aula_regular = int(round(float(avance_ar), 0))
         except (KeyError, ValueError, TypeError) as e:
             pass  # Silenciosamente ignorar errores de conversión
 
@@ -905,7 +906,8 @@ def mostrar_resultados_institucionales(df):
         try:
             avance_mf = obtener_valor_seguro(historicos['Modelo Flexible']['Avance'], 'Puntaje Global')
             if avance_mf is not None:
-                avance_modelo_flexible = round(float(avance_mf), 2)
+                # REGLA DE REDONDEO: Avances deben ser números enteros (sin decimales)
+                avance_modelo_flexible = int(round(float(avance_mf), 0))
         except (KeyError, ValueError, TypeError) as e:
             pass  # Silenciosamente ignorar errores de conversión
 
@@ -919,7 +921,8 @@ def mostrar_resultados_institucionales(df):
 
             if total_est > 0:
                 avance_institucional_global = (avance_aula_regular * est_ar + avance_modelo_flexible * est_mf) / total_est
-                avance_institucional_global = round(avance_institucional_global, 2)
+                # REGLA DE REDONDEO: Avances deben ser números enteros (sin decimales)
+                avance_institucional_global = int(round(avance_institucional_global, 0))
         except Exception as e:
             st.warning(f"Error al calcular avance institucional: {e}")
 
@@ -948,7 +951,7 @@ def mostrar_resultados_institucionales(df):
             st.markdown(f"""
             <div style='background-color: {color_bg}; padding: 20px; border-radius: 10px; border-left: 5px solid {color_border};'>
             <strong style='font-size: 1.2em;'>{emoji} Avance Institucional Global</strong><br>
-            <span style='font-size: 2em; font-weight: bold; color: {color_border};'>{signo}{avance_institucional_global:+.2f} puntos</span><br>
+            <span style='font-size: 2em; font-weight: bold; color: {color_border};'>{signo}{avance_institucional_global:+.0f} puntos</span><br>
             <span style='font-size: 0.9em; color: #666;'>Cambio promedio 2024-2025</span>
             </div>
             """, unsafe_allow_html=True)
@@ -977,7 +980,7 @@ def mostrar_resultados_institucionales(df):
             st.markdown(f"""
             <div style='background-color: {color_bg}; padding: 20px; border-radius: 10px; border-left: 5px solid {color_border};'>
             <strong style='font-size: 1.2em;'>{emoji} Modelo Aula Regular</strong><br>
-            <span style='font-size: 2em; font-weight: bold; color: {color_border};'>{signo}{avance_aula_regular:+.2f} puntos</span><br>
+            <span style='font-size: 2em; font-weight: bold; color: {color_border};'>{signo}{avance_aula_regular:+.0f} puntos</span><br>
             <span style='font-size: 0.9em; color: #666;'>Cambio 2024-2025</span>
             </div>
             """, unsafe_allow_html=True)
@@ -1006,7 +1009,7 @@ def mostrar_resultados_institucionales(df):
             st.markdown(f"""
             <div style='background-color: {color_bg}; padding: 20px; border-radius: 10px; border-left: 5px solid {color_border};'>
             <strong style='font-size: 1.2em;'>{emoji} Modelo Flexible</strong><br>
-            <span style='font-size: 2em; font-weight: bold; color: {color_border};'>{signo}{avance_modelo_flexible:+.2f} puntos</span><br>
+            <span style='font-size: 2em; font-weight: bold; color: {color_border};'>{signo}{avance_modelo_flexible:+.0f} puntos</span><br>
             <span style='font-size: 0.9em; color: #666;'>Cambio 2024-2025</span>
             </div>
             """, unsafe_allow_html=True)
