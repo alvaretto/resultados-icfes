@@ -246,6 +246,26 @@ def cargar_datos_unificados():
 
     return df_unificado, info
 
+def obtener_valor_seguro(diccionario, clave, valor_defecto=None):
+    """
+    Obtiene un valor de un diccionario de forma segura, manejando NaN y None.
+
+    Args:
+        diccionario: Diccionario del cual obtener el valor
+        clave: Clave a buscar
+        valor_defecto: Valor a retornar si no se encuentra o es NaN
+
+    Returns:
+        El valor encontrado o el valor por defecto
+    """
+    try:
+        valor = diccionario.get(clave, valor_defecto)
+        if pd.isna(valor):
+            return valor_defecto
+        return valor
+    except:
+        return valor_defecto
+
 @st.cache_data
 def cargar_datos_historicos():
     """
@@ -264,42 +284,89 @@ def cargar_datos_historicos():
     if os.path.exists(ARCHIVO_AULA_REGULAR):
         try:
             df_completo = pd.read_excel(ARCHIVO_AULA_REGULAR)
-            if len(df_completo) >= 40:
-                datos_2025 = df_completo.iloc[37][AREAS + ['Puntaje Global']].to_dict()
-                datos_2024 = df_completo.iloc[38][AREAS + ['Puntaje Global']].to_dict()
-                avance = df_completo.iloc[39][AREAS + ['Puntaje Global']].to_dict()
 
-                historicos['Aula Regular'] = {
-                    '2025': datos_2025,
-                    '2024': datos_2024,
-                    'Avance': avance
-                }
+            # Validar que el DataFrame tiene suficientes filas
+            if len(df_completo) < 40:
+                st.warning(f"Archivo {ARCHIVO_AULA_REGULAR} tiene menos de 40 filas. Datos históricos no disponibles.")
+                return historicos
+
+            # Validar que existen las columnas necesarias
+            columnas_requeridas = AREAS + ['Puntaje Global']
+            columnas_faltantes = [col for col in columnas_requeridas if col not in df_completo.columns]
+            if columnas_faltantes:
+                st.warning(f"Columnas faltantes en {ARCHIVO_AULA_REGULAR}: {columnas_faltantes}")
+                return historicos
+
+            # Extraer datos de las filas específicas
+            fila_2025 = df_completo.iloc[37]
+            fila_2024 = df_completo.iloc[38]
+            fila_avance = df_completo.iloc[39]
+
+            # Validar que los datos no sean completamente NaN
+            if pd.isna(fila_2025['Puntaje Global']) or pd.isna(fila_2024['Puntaje Global']):
+                st.warning(f"Datos incompletos en {ARCHIVO_AULA_REGULAR}. Puntajes Global no encontrados.")
+                return historicos
+
+            datos_2025 = fila_2025[columnas_requeridas].to_dict()
+            datos_2024 = fila_2024[columnas_requeridas].to_dict()
+            avance = fila_avance[columnas_requeridas].to_dict()
+
+            historicos['Aula Regular'] = {
+                '2025': datos_2025,
+                '2024': datos_2024,
+                'Avance': avance
+            }
+        except FileNotFoundError:
+            st.warning(f"Archivo no encontrado: {ARCHIVO_AULA_REGULAR}")
         except Exception as e:
-            st.warning(f"No se pudieron cargar datos históricos de Aula Regular: {e}")
+            st.warning(f"Error al cargar datos históricos de Aula Regular: {str(e)}")
 
     # Cargar históricos de Modelo Flexible
     if os.path.exists(ARCHIVO_MODELO_FLEXIBLE):
         try:
             df_completo = pd.read_excel(ARCHIVO_MODELO_FLEXIBLE)
-            if len(df_completo) >= 64:
-                # Nota: Hay 2 filas vacías (61-62) antes de los datos históricos
-                # Por lo que: Fila 63 Excel = índice 61 pandas (2025)
-                #            Fila 64 Excel = índice 62 pandas (2024)
-                #            Fila 65 Excel = índice 63 pandas (Avance)
-                datos_2025 = df_completo.iloc[61][AREAS + ['Puntaje Global']].to_dict()
-                datos_2024 = df_completo.iloc[62][AREAS + ['Puntaje Global']].to_dict()
-                avance = df_completo.iloc[63][AREAS + ['Puntaje Global']].to_dict()
 
-                # Nota: Para Modelo Flexible, solo el puntaje global de 2024 está disponible
-                # Las áreas individuales de 2024 están pendientes
-                historicos['Modelo Flexible'] = {
-                    '2025': datos_2025,
-                    '2024': datos_2024,
-                    'Avance': avance,
-                    'areas_2024_disponibles': False  # Indicador de que las áreas de 2024 no están disponibles
-                }
+            # Validar que el DataFrame tiene suficientes filas
+            if len(df_completo) < 64:
+                st.warning(f"Archivo {ARCHIVO_MODELO_FLEXIBLE} tiene menos de 64 filas. Datos históricos no disponibles.")
+                return historicos
+
+            # Validar que existen las columnas necesarias
+            columnas_requeridas = AREAS + ['Puntaje Global']
+            columnas_faltantes = [col for col in columnas_requeridas if col not in df_completo.columns]
+            if columnas_faltantes:
+                st.warning(f"Columnas faltantes en {ARCHIVO_MODELO_FLEXIBLE}: {columnas_faltantes}")
+                return historicos
+
+            # Nota: Hay 2 filas vacías (61-62) antes de los datos históricos
+            # Por lo que: Fila 63 Excel = índice 61 pandas (2025)
+            #            Fila 64 Excel = índice 62 pandas (2024)
+            #            Fila 65 Excel = índice 63 pandas (Avance)
+            fila_2025 = df_completo.iloc[61]
+            fila_2024 = df_completo.iloc[62]
+            fila_avance = df_completo.iloc[63]
+
+            # Validar que los datos no sean completamente NaN
+            if pd.isna(fila_2025['Puntaje Global']) or pd.isna(fila_2024['Puntaje Global']):
+                st.warning(f"Datos incompletos en {ARCHIVO_MODELO_FLEXIBLE}. Puntajes Global no encontrados.")
+                return historicos
+
+            datos_2025 = fila_2025[columnas_requeridas].to_dict()
+            datos_2024 = fila_2024[columnas_requeridas].to_dict()
+            avance = fila_avance[columnas_requeridas].to_dict()
+
+            # Nota: Para Modelo Flexible, solo el puntaje global de 2024 está disponible
+            # Las áreas individuales de 2024 están pendientes
+            historicos['Modelo Flexible'] = {
+                '2025': datos_2025,
+                '2024': datos_2024,
+                'Avance': avance,
+                'areas_2024_disponibles': False  # Indicador de que las áreas de 2024 no están disponibles
+            }
+        except FileNotFoundError:
+            st.warning(f"Archivo no encontrado: {ARCHIVO_MODELO_FLEXIBLE}")
         except Exception as e:
-            st.warning(f"No se pudieron cargar datos históricos de Modelo Flexible: {e}")
+            st.warning(f"Error al cargar datos históricos de Modelo Flexible: {str(e)}")
 
     return historicos
 
@@ -826,24 +893,35 @@ def mostrar_resultados_institucionales(df):
 
     # Avance Aula Regular
     if historicos['Aula Regular'] is not None:
-        avance_ar = historicos['Aula Regular']['Avance']['Puntaje Global']
-        avance_aula_regular = round(avance_ar, 2) if pd.notna(avance_ar) else None
+        try:
+            avance_ar = obtener_valor_seguro(historicos['Aula Regular']['Avance'], 'Puntaje Global')
+            if avance_ar is not None:
+                avance_aula_regular = round(float(avance_ar), 2)
+        except (KeyError, ValueError, TypeError) as e:
+            pass  # Silenciosamente ignorar errores de conversión
 
     # Avance Modelo Flexible
     if historicos['Modelo Flexible'] is not None:
-        avance_mf = historicos['Modelo Flexible']['Avance']['Puntaje Global']
-        avance_modelo_flexible = round(avance_mf, 2) if pd.notna(avance_mf) else None
+        try:
+            avance_mf = obtener_valor_seguro(historicos['Modelo Flexible']['Avance'], 'Puntaje Global')
+            if avance_mf is not None:
+                avance_modelo_flexible = round(float(avance_mf), 2)
+        except (KeyError, ValueError, TypeError) as e:
+            pass  # Silenciosamente ignorar errores de conversión
 
     # Calcular avance institucional (promedio ponderado)
     if avance_aula_regular is not None and avance_modelo_flexible is not None:
-        # Ponderado por cantidad de estudiantes
-        total_est = len(df)
-        est_ar = len(df[df['Grupo'].isin(['11A', '11B'])])
-        est_mf = len(df[df['Grupo'].isin(['P3A', 'P3B', 'P3C'])])
+        try:
+            # Ponderado por cantidad de estudiantes
+            total_est = len(df)
+            est_ar = len(df[df['Grupo'].isin(['11A', '11B'])])
+            est_mf = len(df[df['Grupo'].isin(['P3A', 'P3B', 'P3C'])])
 
-        if total_est > 0:
-            avance_institucional_global = (avance_aula_regular * est_ar + avance_modelo_flexible * est_mf) / total_est
-            avance_institucional_global = round(avance_institucional_global, 2)
+            if total_est > 0:
+                avance_institucional_global = (avance_aula_regular * est_ar + avance_modelo_flexible * est_mf) / total_est
+                avance_institucional_global = round(avance_institucional_global, 2)
+        except Exception as e:
+            st.warning(f"Error al calcular avance institucional: {e}")
 
     # Mostrar avances con colores
     col1, col2, col3 = st.columns(3)
