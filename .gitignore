@@ -44,6 +44,12 @@ logs/*.txt
 INSCRITOS_EXAMEN*.xls
 INSCRITOS_EXAMEN*.xlsx
 
+# EXCEPCIONES: Permitir archivos necesarios para la aplicación web
+!data/RESULTADOS-ICFES-AULA-REGULAR-2025.xlsx
+!data/RESULTADOS-ICFES-EJEMPLO.xlsx
+!data/RESULTADOS*.xlsx
+!data/Resultados*.xlsx
+
 # Archivos de lock de LibreOffice/OpenOffice
 .~lock.*
 
