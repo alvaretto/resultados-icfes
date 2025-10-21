@@ -420,7 +420,6 @@ def main():
                 "🎓 Estadísticas por Grado",
                 "📚 Estadísticas por Área",
                 "🏫 Estadísticas por Modelo",
-                "📈 Análisis de Avances",
                 "🏆 Rankings y Destacados",
                 "📥 Descargar Datos"
             ]
@@ -454,9 +453,6 @@ def main():
 
     elif pagina == "🏫 Estadísticas por Modelo":
         mostrar_estadisticas_modelo(datos_2024, stats_regular_2025, stats_flexible_2025)
-
-    elif pagina == "📈 Análisis de Avances":
-        mostrar_analisis_avances(datos_2024, stats_regular_2025, stats_flexible_2025, stats_institucional_2025)
 
     elif pagina == "🏆 Rankings y Destacados":
         mostrar_rankings(datos_2025_raw)
@@ -1259,104 +1255,6 @@ def mostrar_estadisticas_modelo(datos_2024, stats_regular_2025, stats_flexible_2
     with col2:
         fig2 = crear_grafico_avances(datos_2024_modelo, datos_2025_modelo)
         st.plotly_chart(fig2, use_container_width=True)
-
-def mostrar_analisis_avances(datos_2024, stats_regular_2025, stats_flexible_2025, stats_institucional_2025):
-    """Página de análisis detallado de avances"""
-
-    st.markdown('<div class="subtitle">📈 Análisis Detallado de Avances 2024 → 2025</div>', unsafe_allow_html=True)
-
-    # Avances institucionales
-    st.markdown("#### 🏛️ Avances Institucionales")
-
-    avance_institucional = calcular_avance(
-        datos_2024['Institucional']['puntaje_global'],
-        stats_institucional_2025['puntaje_global']
-    )
-
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.metric("Puntaje Global 2024", datos_2024['Institucional']['puntaje_global'])
-
-    with col2:
-        st.metric("Puntaje Global 2025", stats_institucional_2025['puntaje_global'])
-
-    with col3:
-        texto_avance, clase_avance = formatear_avance(avance_institucional)
-        st.markdown(f'<div class="{clase_avance}">{texto_avance}</div>', unsafe_allow_html=True)
-
-    # Tabla de avances por área
-    st.markdown("#### 📚 Avances por Área de Conocimiento")
-
-    tabla_avances = []
-    for area in AREAS:
-        puntaje_2024 = datos_2024['Institucional']['areas'][area]['promedio']
-        puntaje_2025 = stats_institucional_2025['areas'][area]['promedio']
-        avance = calcular_avance(puntaje_2024, puntaje_2025)
-
-        tabla_avances.append({
-            'Área': area,
-            '2024': puntaje_2024,
-            '2025': puntaje_2025,
-            'Avance (puntos)': avance,
-            'Avance (%)': round((avance / puntaje_2024) * 100, 1) if puntaje_2024 > 0 else 0
-        })
-
-    df_avances = pd.DataFrame(tabla_avances)
-    st.dataframe(df_avances, use_container_width=True, hide_index=True)
-
-    # Gráfico de avances
-    fig = crear_grafico_avances(datos_2024['Institucional'], stats_institucional_2025)
-    st.plotly_chart(fig, use_container_width=True)
-
-    st.markdown("---")
-
-    # Avances por modelo educativo
-    st.markdown("#### 🏫 Avances por Modelo Educativo")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.markdown("**📘 Aula Regular**")
-        avance_regular = calcular_avance(
-            datos_2024['Aula Regular']['puntaje_global'],
-            stats_regular_2025['puntaje_global']
-        )
-        texto_avance_regular, clase_avance_regular = formatear_avance(avance_regular)
-        st.markdown(f'<div class="{clase_avance_regular}">{texto_avance_regular}</div>', unsafe_allow_html=True)
-
-        # Tabla de avances por área - Aula Regular
-        tabla_regular = []
-        for area in AREAS:
-            avance = calcular_avance(
-                datos_2024['Aula Regular']['areas'][area]['promedio'],
-                stats_regular_2025['areas'][area]['promedio']
-            )
-            tabla_regular.append({'Área': area, 'Avance': avance})
-
-        df_regular = pd.DataFrame(tabla_regular)
-        st.dataframe(df_regular, use_container_width=True, hide_index=True)
-
-    with col2:
-        st.markdown("**📙 Modelo Flexible**")
-        avance_flexible = calcular_avance(
-            datos_2024['Modelo Flexible']['puntaje_global'],
-            stats_flexible_2025['puntaje_global']
-        )
-        texto_avance_flexible, clase_avance_flexible = formatear_avance(avance_flexible)
-        st.markdown(f'<div class="{clase_avance_flexible}">{texto_avance_flexible}</div>', unsafe_allow_html=True)
-
-        # Tabla de avances por área - Modelo Flexible
-        tabla_flexible = []
-        for area in AREAS:
-            avance = calcular_avance(
-                datos_2024['Modelo Flexible']['areas'][area]['promedio'],
-                stats_flexible_2025['areas'][area]['promedio']
-            )
-            tabla_flexible.append({'Área': area, 'Avance': avance})
-
-        df_flexible = pd.DataFrame(tabla_flexible)
-        st.dataframe(df_flexible, use_container_width=True, hide_index=True)
 
 def mostrar_rankings(datos_2025_raw):
     """Página de rankings y estudiantes destacados"""
