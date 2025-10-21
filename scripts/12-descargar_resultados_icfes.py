@@ -19,7 +19,7 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from webdriver_manager.firefox import GeckoDriverManager
 
 # Configuración
-EXCEL_PATH = '/home/proyectos/Escritorio/Resultados-ICFES-2025/INSCRITOS_EXAMEN SABER 11 (36).xls'
+EXCEL_PATH = 'data/INSCRITOS_EXAMEN SABER 11 (36).xls'
 URL_ICFES = 'http://resultadossaber11.icfes.edu.co/'
 CARPETA_PDFS = 'pdfs_descargados'
 CARPETA_LOGS = 'logs'

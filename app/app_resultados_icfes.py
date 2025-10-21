@@ -88,8 +88,8 @@ st.markdown("""
 # ============================================================================
 
 # Archivos de datos
-ARCHIVO_AULA_REGULAR = 'PCIELO-RESULTADOS-ICFES-MODELO-AULA-REGULAR-2025.xlsx'
-ARCHIVO_MODELO_FLEXIBLE = 'PCIELO-RESULTADOS-ICFES-MODELO-FLEXIBLE-2025.xlsx'
+ARCHIVO_AULA_REGULAR = 'data/PCIELO-RESULTADOS-ICFES-MODELO-AULA-REGULAR-2025.xlsx'
+ARCHIVO_MODELO_FLEXIBLE = 'data/PCIELO-RESULTADOS-ICFES-MODELO-FLEXIBLE-2025.xlsx'
 
 # Áreas de evaluación
 AREAS = ['Lectura Crítica', 'Matemáticas', 'Sociales y Ciudadanas', 'Ciencias Naturales', 'Inglés']
@@ -355,13 +355,18 @@ def cargar_datos_historicos():
             datos_2024 = fila_2024[columnas_requeridas].to_dict()
             avance = fila_avance[columnas_requeridas].to_dict()
 
-            # Nota: Para Modelo Flexible, solo el puntaje global de 2024 está disponible
-            # Las áreas individuales de 2024 están pendientes
+            # Verificar si las áreas de 2024 están disponibles
+            # Se consideran disponibles si al menos una área (no Puntaje Global) tiene datos
+            areas_disponibles = any(
+                pd.notna(datos_2024.get(area))
+                for area in AREAS
+            )
+
             historicos['Modelo Flexible'] = {
                 '2025': datos_2025,
                 '2024': datos_2024,
                 'Avance': avance,
-                'areas_2024_disponibles': False  # Indicador de que las áreas de 2024 no están disponibles
+                'areas_2024_disponibles': areas_disponibles
             }
         except FileNotFoundError:
             st.warning(f"Archivo no encontrado: {ARCHIVO_MODELO_FLEXIBLE}")

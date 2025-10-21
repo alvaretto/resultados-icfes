@@ -10,7 +10,7 @@ import os
 import re
 
 # Configuración
-ARCHIVO_EXCEL = 'INSCRITOS_EXAMEN SABER 11 (36).xls'
+ARCHIVO_EXCEL = 'data/INSCRITOS_EXAMEN SABER 11 (36).xls'
 CARPETA_PDFS = 'pdfs_descargados'
 
 def construir_nombre_archivo(estudiante):

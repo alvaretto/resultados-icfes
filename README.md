@@ -155,38 +155,81 @@ python3 13-verificar_pdfs_completos.py
 ## 📁 Estructura del Proyecto
 
 ```
-resultados-icfes/
+Resultados-ICFES-2025/
 │
-├── 00-INDICE.md                          📑 Índice completo del proyecto ⭐
-├── 01-README.md                          📚 Documentación detallada
-├── 02-INICIO_RAPIDO.txt                  📚 Guía rápida de inicio
+├── README.md                             📚 Este archivo
 │
-├── 03-verificar_configuracion.py        ⚙️ Verificación de configuración
+├── 📁 app/                               🎨 Aplicaciones Streamlit
+│   ├── app.py                            ← Aplicación principal
+│   ├── app_resultados_icfes.py           ← Aplicación de resultados ⭐
+│   ├── test_app_completa.py
+│   ├── test_cambios.py
+│   └── generar_datos_ejemplo.py
 │
-├── 04-analizar_excel.py                  🔍 Análisis del archivo Excel
-├── 05-RESUMEN_ANALISIS.md                🔍 Resumen del análisis
+├── 📁 scripts/                           🐍 Scripts Python
+│   ├── 12-descargar_resultados_icfes.py  ← SCRIPT PRINCIPAL ⭐⭐⭐
+│   ├── 13-verificar_pdfs_completos.py    ← Verificación post-descarga ⭐
+│   ├── 03-verificar_configuracion.py     ← Verificación de configuración
+│   ├── 04-analizar_excel.py              ← Análisis del archivo Excel
+│   ├── 21-extraer_puntajes_desde_web.py  ← Extracción desde web
+│   ├── extraer_puntajes_de_pdfs.py       ← Extracción desde PDFs
+│   ├── 20-mostrar_ayuda.py               ← Utilidades
+│   ├── 06-11-*.py                        ← Scripts de inspección (desarrollo)
+│   └── ...
 │
-├── 06-11-*.py                            🔬 Scripts de inspección (desarrollo)
+├── 📁 data/                              📊 Archivos de datos
+│   ├── INSCRITOS_EXAMEN SABER 11 (36).xls
+│   ├── PCIELO-RESULTADOS-ICFES-MODELO-AULA-REGULAR-2025.xlsx
+│   ├── PCIELO-RESULTADOS-ICFES-MODELO-FLEXIBLE-2025.xlsx
+│   ├── RESULTADOS-ICFES-AULA-REGULAR-2025.xlsx
+│   └── ...
 │
-├── 12-descargar_resultados_icfes.py      🚀 SCRIPT PRINCIPAL ⭐⭐⭐
+├── 📁 config/                            ⚙️ Configuración
+│   ├── requirements.txt
+│   ├── requirements-webapp.txt
+│   └── .streamlit/
 │
-├── 13-verificar_pdfs_completos.py        ✅ Verificación post-descarga ⭐
+├── 📁 docs-proyecto/                     📖 Documentación del proyecto
+│   ├── 00-INDICE.md                      ← Índice completo ⭐
+│   ├── 01-README.md                      ← Documentación detallada
+│   ├── 02-INICIO_RAPIDO.txt              ← Guía rápida de inicio
+│   ├── 14-NOTAS_TECNICAS.md
+│   ├── 15-SOLUCION_FINAL.md
+│   ├── 16-RESUMEN_FINAL_DESCARGA.md
+│   ├── 17-CHANGELOG.md
+│   ├── 19-GITHUB_SYNC.md
+│   └── ...
 │
-├── 14-NOTAS_TECNICAS.md                  📖 Notas técnicas
-├── 15-SOLUCION_FINAL.md                  📖 Solución técnica completa
-├── 16-RESUMEN_FINAL_DESCARGA.md          📖 Resumen de descarga exitosa
-├── 17-CHANGELOG.md                       📖 Historial de cambios
+├── 📁 docs-plan/                         📋 Planificación e implementación
+│   ├── PLAN-READAPTACION-3-FASES.md
+│   ├── RECOMENDACIONES-IMPLEMENTACION.md
+│   ├── INDICE-ANALISIS-PROYECTO.md
+│   └── ...
 │
-├── 18-sincronizar_github.sh              🔄 Sincronización con GitHub ⭐
-├── 19-GITHUB_SYNC.md                     🔄 Guía de sincronización
+├── 📁 docs-analisis/                     🔍 Análisis técnico
+│   ├── RESUMEN-EJECUTIVO-ANALISIS.md     ← Resumen ejecutivo ⭐
+│   ├── ANALISIS-PROYECTO-COMPLETO.md
+│   ├── ANALISIS-TECNICO-DETALLADO.md
+│   ├── TABLA-RESUMEN-ANALISIS.md
+│   ├── RESUMEN-ANALISIS-VISUAL.md
+│   └── ...
 │
-├── 20-mostrar_ayuda.py                   🛠️ Utilidades
+├── 📁 scripts-shell/                     🔧 Scripts de shell
+│   ├── 18-sincronizar_github.sh          ← Sincronización con GitHub ⭐
+│   ├── push_a_github.sh
+│   ├── diagnosticar_streamlit.sh
+│   └── ...
 │
-├── pdfs_descargados/                     📄 PDFs descargados
+├── 📁 pdfs_descargados/                  📄 PDFs descargados
 │   └── *.pdf                             (no se suben a GitHub)
 │
-└── logs/                                 📝 Logs de ejecución
-    └── *.txt                             (no se suben a GitHub)
+├── 📁 logs/                              📝 Logs de ejecución
+│   └── *.txt                             (no se suben a GitHub)
+│
+├── 📁 venv/                              🐍 Entorno virtual Python
+│   └── ...                               (no se sube a GitHub)
+│
+└── .gitignore                            🚫 Archivos excluidos de Git
 ```
 
 ---
@@ -293,15 +336,16 @@ Si encuentras problemas:
 
 1. Revisa los logs en la carpeta `logs/`
 2. Consulta la documentación:
-   - `00-INDICE.md` - Índice completo del proyecto
-   - `01-README.md` - Documentación detallada (este archivo)
-   - `02-INICIO_RAPIDO.txt` - Guía rápida de inicio
-   - `15-SOLUCION_FINAL.md` - Solución técnica completa
-   - `14-NOTAS_TECNICAS.md` - Notas técnicas del fix de tipos de documento
-   - `16-RESUMEN_FINAL_DESCARGA.md` - Resumen de la descarga exitosa
-   - `19-GITHUB_SYNC.md` - Guía de sincronización con GitHub
+   - `docs-proyecto/00-INDICE.md` - Índice completo del proyecto
+   - `docs-proyecto/01-README.md` - Documentación detallada
+   - `docs-proyecto/02-INICIO_RAPIDO.txt` - Guía rápida de inicio
+   - `docs-proyecto/15-SOLUCION_FINAL.md` - Solución técnica completa
+   - `docs-proyecto/14-NOTAS_TECNICAS.md` - Notas técnicas
+   - `docs-proyecto/16-RESUMEN_FINAL_DESCARGA.md` - Resumen de la descarga exitosa
+   - `docs-proyecto/19-GITHUB_SYNC.md` - Guía de sincronización con GitHub
+   - `docs-analisis/RESUMEN-EJECUTIVO-ANALISIS.md` - Resumen ejecutivo del análisis
 3. Verifica que el portal del ICFES esté disponible: http://resultadossaber11.icfes.gov.co/
-4. Ejecuta el script de verificación: `python3 13-verificar_pdfs_completos.py`
+4. Ejecuta el script de verificación: `python3 scripts/13-verificar_pdfs_completos.py`
 
 ---
 

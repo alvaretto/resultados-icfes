@@ -56,8 +56,8 @@ COLORES = {
 # Determinar qué archivo usar
 def obtener_archivo_datos():
     """Determina qué archivo de datos usar (real o ejemplo)"""
-    archivo_real = 'RESULTADOS-ICFES-AULA-REGULAR-2025.xlsx'
-    archivo_ejemplo = 'RESULTADOS-ICFES-EJEMPLO.xlsx'
+    archivo_real = 'data/RESULTADOS-ICFES-AULA-REGULAR-2025.xlsx'
+    archivo_ejemplo = 'data/RESULTADOS-ICFES-EJEMPLO.xlsx'
     
     if os.path.exists(archivo_real):
         return archivo_real, False  # False = no es ejemplo

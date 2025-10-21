@@ -68,8 +68,8 @@ def verificar_firefox():
 def verificar_archivo_excel():
     """Verifica que el archivo Excel exista"""
     print('\n📄 Verificando archivo Excel...')
-    
-    ruta = '/home/proyectos/Escritorio/Resultados-ICFES-2025/INSCRITOS_EXAMEN SABER 11 (36).xls'
+
+    ruta = 'data/INSCRITOS_EXAMEN SABER 11 (36).xls'
     
     if os.path.exists(ruta):
         size = os.path.getsize(ruta)

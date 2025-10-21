@@ -21,8 +21,8 @@ from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.support.ui import Select
 
 # Configuración
-ARCHIVO_EXCEL_ENTRADA = 'INSCRITOS_EXAMEN SABER 11 (36).xls'
-ARCHIVO_EXCEL_SALIDA = 'RESULTADOS-ICFES-AULA-REGULAR.xlsx'
+ARCHIVO_EXCEL_ENTRADA = 'data/INSCRITOS_EXAMEN SABER 11 (36).xls'
+ARCHIVO_EXCEL_SALIDA = 'data/RESULTADOS-ICFES-AULA-REGULAR.xlsx'
 CARPETA_LOGS = 'logs'
 URL_ICFES = 'http://resultadossaber11.icfes.edu.co/'
 
