@@ -1003,16 +1003,13 @@ def mostrar_estadisticas_estudiante(datos_2025_raw):
     estudiante_data = df_todos[df_todos['Nombre Completo'] == estudiante_seleccionado].iloc[0]
 
     # Mostrar información
-    col1, col2, col3 = st.columns(3)
+    col1, col2 = st.columns(2)
 
     with col1:
         st.info(f"**Grupo:** {estudiante_data['Grupo']}")
         st.info(f"**Modelo:** {estudiante_data['Modelo']}")
 
     with col2:
-        st.info(f"**Documento:** {estudiante_data['Número de documento']}")
-
-    with col3:
         st.metric("Puntaje Global", int(estudiante_data['Puntaje Global']))
 
     # Puntajes por área
@@ -1507,14 +1504,18 @@ def mostrar_descarga_datos(datos_2025_raw):
     )
 
     if conjunto_datos == "Todos los estudiantes":
-        df_descarga = df_todos
+        df_descarga = df_todos.copy()
         nombre_archivo = "resultados_icfes_2025_todos"
     elif conjunto_datos == "Aula Regular":
-        df_descarga = df_regular
+        df_descarga = df_regular.copy()
         nombre_archivo = "resultados_icfes_2025_aula_regular"
     else:
-        df_descarga = df_flexible
+        df_descarga = df_flexible.copy()
         nombre_archivo = "resultados_icfes_2025_modelo_flexible"
+
+    # Eliminar columnas sensibles (número de documento y tipo de documento)
+    columnas_a_eliminar = ['Número de documento', 'Tipo documento']
+    df_descarga = df_descarga.drop(columns=[col for col in columnas_a_eliminar if col in df_descarga.columns])
 
     # Mostrar preview
     st.markdown("#### 👀 Vista Previa de los Datos")
