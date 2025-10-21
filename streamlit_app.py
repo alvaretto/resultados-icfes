@@ -945,7 +945,7 @@ def mostrar_rankings(datos_2025_raw):
         title="Top 10 Estudiantes - Puntaje Global",
         color_discrete_map={'Aula Regular': '#667eea', 'Modelo Flexible': '#764ba2'}
     )
-    fig.update_xaxis(tickangle=-45)
+    fig.update_xaxes(tickangle=-45)
     st.plotly_chart(fig, use_container_width=True)
 
     st.markdown("---")
