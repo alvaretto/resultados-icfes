@@ -217,14 +217,14 @@ def cargar_datos_2025():
 @st.cache_data
 def calcular_estadisticas_2025(df, modelo='Todos'):
     """Calcula estadísticas para datos de 2025"""
-    
+
     if df is None or len(df) == 0:
         return None
-    
+
     # Filtrar por modelo si es necesario
     if modelo != 'Todos':
         df = df[df['Modelo'] == modelo].copy()
-    
+
     estadisticas = {
         'modelo': modelo,
         'estudiantes': len(df),
@@ -232,15 +232,52 @@ def calcular_estadisticas_2025(df, modelo='Todos'):
         'desv_global': df['Puntaje Global'].std(),
         'areas': {}
     }
-    
+
     for area in AREAS:
         if area in df.columns:
             estadisticas['areas'][area] = {
                 'promedio': int(round(df[area].mean())),
                 'desviacion': df[area].std()
             }
-    
+
     return estadisticas
+
+@st.cache_data
+def calcular_estadisticas_por_grupo(df):
+    """Calcula estadísticas para cada grupo individual"""
+
+    if df is None or len(df) == 0:
+        return None
+
+    grupos_stats = {}
+    grupos_unicos = sorted(df['Grupo'].dropna().unique())
+
+    for grupo in grupos_unicos:
+        df_grupo = df[df['Grupo'] == grupo].copy()
+
+        # Determinar el modelo del grupo
+        if grupo in ['11A', '11B']:
+            modelo = 'Aula Regular'
+        else:
+            modelo = 'Modelo Flexible'
+
+        grupos_stats[grupo] = {
+            'grupo': grupo,
+            'modelo': modelo,
+            'estudiantes': len(df_grupo),
+            'puntaje_global': int(round(df_grupo['Puntaje Global'].mean())),
+            'desv_global': df_grupo['Puntaje Global'].std(),
+            'areas': {}
+        }
+
+        for area in AREAS:
+            if area in df_grupo.columns:
+                grupos_stats[grupo]['areas'][area] = {
+                    'promedio': int(round(df_grupo[area].mean())),
+                    'desviacion': df_grupo[area].std()
+                }
+
+    return grupos_stats
 
 # ============================================================================
 # FUNCIONES DE CÁLCULO DE AVANCES
@@ -364,6 +401,9 @@ def main():
     stats_flexible_2025 = calcular_estadisticas_2025(datos_2025_raw['df_flexible'], 'Modelo Flexible')
     stats_institucional_2025 = calcular_estadisticas_2025(datos_2025_raw['df_todos'], 'Todos')
 
+    # Calcular estadísticas por grupo
+    stats_grupos_2025 = calcular_estadisticas_por_grupo(datos_2025_raw['df_todos'])
+
     # ========================================================================
     # SIDEBAR - NAVEGACIÓN
     # ========================================================================
@@ -401,7 +441,7 @@ def main():
     # ========================================================================
 
     if pagina == "🏠 Inicio - Comparativo General":
-        mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025, stats_institucional_2025)
+        mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025, stats_institucional_2025, stats_grupos_2025, datos_2025_raw)
 
     elif pagina == "📊 Estadísticas por Estudiante":
         mostrar_estadisticas_estudiante(datos_2025_raw)
@@ -428,7 +468,7 @@ def main():
 # PÁGINAS DE LA APLICACIÓN
 # ============================================================================
 
-def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025, stats_institucional_2025):
+def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025, stats_institucional_2025, stats_grupos_2025, datos_2025_raw):
     """Página principal con comparativo general 2024 vs 2025"""
 
     st.markdown('<div class="subtitle">📊 Comparativo Institucional 2024 vs 2025</div>', unsafe_allow_html=True)
@@ -526,6 +566,171 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025, s
         st.metric("Puntaje Global 2024", datos_2024['Modelo Flexible']['puntaje_global'])
         st.metric("Puntaje Global 2025", stats_flexible_2025['puntaje_global'])
         st.markdown(f'<div class="{clase_avance_flexible}">{texto_avance_flexible}</div>', unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    # Comparativo por grupos individuales
+    st.markdown('<div class="subtitle">👥 Comparativo por Grupos 2025</div>', unsafe_allow_html=True)
+
+    # Tabla comparativa de todos los grupos
+    tabla_grupos = []
+    for grupo in sorted(stats_grupos_2025.keys()):
+        stats = stats_grupos_2025[grupo]
+        tabla_grupos.append({
+            'Grupo': grupo,
+            'Modelo': stats['modelo'],
+            'Estudiantes': stats['estudiantes'],
+            'Puntaje Global': stats['puntaje_global'],
+            'Lectura Crítica': stats['areas']['Lectura Crítica']['promedio'],
+            'Matemáticas': stats['areas']['Matemáticas']['promedio'],
+            'Sociales y Ciudadanas': stats['areas']['Sociales y Ciudadanas']['promedio'],
+            'Ciencias Naturales': stats['areas']['Ciencias Naturales']['promedio'],
+            'Inglés': stats['areas']['Inglés']['promedio']
+        })
+
+    df_grupos = pd.DataFrame(tabla_grupos)
+    st.dataframe(df_grupos, use_container_width=True, hide_index=True)
+
+    # Gráfico comparativo de puntaje global por grupo
+    fig_grupos = px.bar(
+        df_grupos,
+        x='Grupo',
+        y='Puntaje Global',
+        color='Modelo',
+        title="Puntaje Global por Grupo",
+        color_discrete_map={'Aula Regular': '#667eea', 'Modelo Flexible': '#764ba2'},
+        text='Puntaje Global'
+    )
+    fig_grupos.update_traces(textposition='outside')
+    fig_grupos.update_layout(height=400)
+    st.plotly_chart(fig_grupos, use_container_width=True)
+
+    st.markdown("---")
+
+    # Comparación entre grupos del mismo modelo
+    st.markdown('<div class="subtitle">🔄 Comparación entre Grupos por Modelo</div>', unsafe_allow_html=True)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("#### 📘 Grupos de Aula Regular (11A vs 11B)")
+
+        # Comparar 11A vs 11B
+        grupos_regular = ['11A', '11B']
+        datos_regular = []
+        for grupo in grupos_regular:
+            if grupo in stats_grupos_2025:
+                for area in AREAS:
+                    datos_regular.append({
+                        'Grupo': grupo,
+                        'Área': area,
+                        'Puntaje': stats_grupos_2025[grupo]['areas'][area]['promedio']
+                    })
+
+        df_regular = pd.DataFrame(datos_regular)
+        fig_regular = px.bar(
+            df_regular,
+            x='Área',
+            y='Puntaje',
+            color='Grupo',
+            barmode='group',
+            title="Comparación por Áreas - Aula Regular",
+            color_discrete_sequence=['#667eea', '#4c5fd5']
+        )
+        fig_regular.update_xaxes(tickangle=-45)
+        fig_regular.update_layout(height=400)
+        st.plotly_chart(fig_regular, use_container_width=True)
+
+        # Métricas comparativas
+        if '11A' in stats_grupos_2025 and '11B' in stats_grupos_2025:
+            diff = stats_grupos_2025['11A']['puntaje_global'] - stats_grupos_2025['11B']['puntaje_global']
+            if diff > 0:
+                st.info(f"📊 11A supera a 11B por {diff} puntos en puntaje global")
+            elif diff < 0:
+                st.info(f"📊 11B supera a 11A por {abs(diff)} puntos en puntaje global")
+            else:
+                st.info(f"📊 11A y 11B tienen el mismo puntaje global")
+
+    with col2:
+        st.markdown("#### 📙 Grupos de Modelo Flexible (P3A vs P3B vs P3C)")
+
+        # Comparar P3A vs P3B vs P3C
+        grupos_flexible = ['P3A', 'P3B', 'P3C']
+        datos_flexible = []
+        for grupo in grupos_flexible:
+            if grupo in stats_grupos_2025:
+                for area in AREAS:
+                    datos_flexible.append({
+                        'Grupo': grupo,
+                        'Área': area,
+                        'Puntaje': stats_grupos_2025[grupo]['areas'][area]['promedio']
+                    })
+
+        df_flexible = pd.DataFrame(datos_flexible)
+        fig_flexible = px.bar(
+            df_flexible,
+            x='Área',
+            y='Puntaje',
+            color='Grupo',
+            barmode='group',
+            title="Comparación por Áreas - Modelo Flexible",
+            color_discrete_sequence=['#764ba2', '#9b59b6', '#8e44ad']
+        )
+        fig_flexible.update_xaxes(tickangle=-45)
+        fig_flexible.update_layout(height=400)
+        st.plotly_chart(fig_flexible, use_container_width=True)
+
+        # Métricas comparativas
+        grupos_flex_ordenados = sorted(
+            [(g, stats_grupos_2025[g]['puntaje_global']) for g in grupos_flexible if g in stats_grupos_2025],
+            key=lambda x: x[1],
+            reverse=True
+        )
+        if grupos_flex_ordenados:
+            mejor_grupo = grupos_flex_ordenados[0][0]
+            mejor_puntaje = grupos_flex_ordenados[0][1]
+            st.info(f"🏆 {mejor_grupo} es el mejor grupo de Modelo Flexible con {mejor_puntaje} puntos")
+
+    st.markdown("---")
+
+    # Comparación de todos los grupos combinados
+    st.markdown('<div class="subtitle">🌐 Comparación Global de Todos los Grupos</div>', unsafe_allow_html=True)
+
+    # Crear datos para gráfico de radar/spider
+    df_todos = datos_2025_raw['df_todos']
+
+    # Gráfico de áreas por grupo
+    datos_areas_grupos = []
+    for grupo in sorted(stats_grupos_2025.keys()):
+        for area in AREAS:
+            datos_areas_grupos.append({
+                'Grupo': grupo,
+                'Área': area,
+                'Puntaje': stats_grupos_2025[grupo]['areas'][area]['promedio'],
+                'Modelo': stats_grupos_2025[grupo]['modelo']
+            })
+
+    df_areas_grupos = pd.DataFrame(datos_areas_grupos)
+
+    # Gráfico de líneas para comparar todos los grupos
+    fig_lineas = px.line(
+        df_areas_grupos,
+        x='Área',
+        y='Puntaje',
+        color='Grupo',
+        markers=True,
+        title="Comparación de Todas las Áreas por Grupo",
+        color_discrete_sequence=px.colors.qualitative.Set2
+    )
+    fig_lineas.update_xaxes(tickangle=-45)
+    fig_lineas.update_layout(height=500)
+    st.plotly_chart(fig_lineas, use_container_width=True)
+
+    # Ranking de grupos por puntaje global
+    st.markdown("#### 🏆 Ranking de Grupos por Puntaje Global")
+    df_ranking = df_grupos[['Grupo', 'Modelo', 'Estudiantes', 'Puntaje Global']].sort_values('Puntaje Global', ascending=False)
+    df_ranking.insert(0, 'Posición', range(1, len(df_ranking) + 1))
+    st.dataframe(df_ranking, use_container_width=True, hide_index=True)
 
 def mostrar_estadisticas_estudiante(datos_2025_raw):
     """Página de estadísticas por estudiante individual"""
