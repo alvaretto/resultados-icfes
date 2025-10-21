@@ -471,387 +471,603 @@ def main():
 def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025, stats_institucional_2025, stats_grupos_2025, datos_2025_raw):
     """Página principal con comparativo general 2024 vs 2025"""
 
-    st.markdown('<div class="subtitle">📊 Comparativo Institucional 2024 vs 2025</div>', unsafe_allow_html=True)
-
-    # Métricas principales
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.metric(
-            "Puntaje Global 2024",
-            datos_2024['Institucional']['puntaje_global'],
-            delta=None
-        )
-
-    with col2:
-        st.metric(
-            "Puntaje Global 2025",
-            stats_institucional_2025['puntaje_global'],
-            delta=None
-        )
-
-    with col3:
-        avance_global = calcular_avance(
-            datos_2024['Institucional']['puntaje_global'],
-            stats_institucional_2025['puntaje_global']
-        )
-        texto_avance, clase_avance = formatear_avance(avance_global)
-        st.markdown(f'<div class="{clase_avance}">{texto_avance}</div>', unsafe_allow_html=True)
-
+    st.markdown('<div class="title">📊 Comparativo General 2024 vs 2025</div>', unsafe_allow_html=True)
     st.markdown("---")
 
-    # Comparativo por áreas
-    st.markdown('<div class="subtitle">📚 Comparativo por Áreas de Conocimiento</div>', unsafe_allow_html=True)
+    # Crear pestañas principales
+    tab1, tab2, tab3, tab4 = st.tabs([
+        "🏫 Avance Institucional Global",
+        "📚 Avances por Modelos Educativos",
+        "📊 Avances por Áreas de Conocimiento",
+        "👥 Resultados por Grupos"
+    ])
 
-    # Tabla comparativa
-    tabla_comparativa = []
-    for area in AREAS:
-        puntaje_2024 = datos_2024['Institucional']['areas'][area]['promedio']
-        puntaje_2025 = stats_institucional_2025['areas'][area]['promedio']
-        avance = calcular_avance(puntaje_2024, puntaje_2025)
-        texto_avance, _ = formatear_avance(avance)
+    # ==================== PESTAÑA 1: AVANCE INSTITUCIONAL GLOBAL ====================
+    with tab1:
+        st.markdown('<div class="subtitle">🏫 Avance Institucional Global 2024 vs 2025</div>', unsafe_allow_html=True)
+        st.info("📌 Esta sección muestra el comparativo general de toda la institución (todos los estudiantes combinados)")
 
-        tabla_comparativa.append({
-            'Área': area,
-            '2024': puntaje_2024,
-            '2025': puntaje_2025,
-            'Avance': texto_avance
-        })
+        # Métricas principales
+        col1, col2, col3 = st.columns(3)
 
-    df_comparativa = pd.DataFrame(tabla_comparativa)
-    st.dataframe(df_comparativa, use_container_width=True, hide_index=True)
+        with col1:
+            st.metric(
+                "Puntaje Global 2024",
+                datos_2024['Institucional']['puntaje_global'],
+                delta=None
+            )
 
-    # Gráficos
-    col1, col2 = st.columns(2)
+        with col2:
+            st.metric(
+                "Puntaje Global 2025",
+                stats_institucional_2025['puntaje_global'],
+                delta=None
+            )
 
-    with col1:
-        fig1 = crear_grafico_comparativo_areas(
-            datos_2024['Institucional'],
-            stats_institucional_2025,
-            "Comparativo por Áreas - Institucional"
+        with col3:
+            avance_global = calcular_avance(
+                datos_2024['Institucional']['puntaje_global'],
+                stats_institucional_2025['puntaje_global']
+            )
+            texto_avance, clase_avance = formatear_avance(avance_global)
+            st.markdown(f'<div class="{clase_avance}">{texto_avance}</div>', unsafe_allow_html=True)
+
+        st.markdown("---")
+
+        # Gráfico comparativo de puntaje global
+        st.markdown("#### 📈 Evolución del Puntaje Global Institucional")
+
+        fig_global = go.Figure()
+        fig_global.add_trace(go.Bar(
+            x=['2024', '2025'],
+            y=[datos_2024['Institucional']['puntaje_global'], stats_institucional_2025['puntaje_global']],
+            marker_color=['#667eea', '#764ba2'],
+            text=[datos_2024['Institucional']['puntaje_global'], stats_institucional_2025['puntaje_global']],
+            textposition='outside'
+        ))
+        fig_global.update_layout(
+            title="Puntaje Global Institucional 2024 → 2025",
+            yaxis_title="Puntaje Global",
+            height=400,
+            showlegend=False
         )
-        st.plotly_chart(fig1, use_container_width=True)
+        st.plotly_chart(fig_global, use_container_width=True)
 
-    with col2:
-        fig2 = crear_grafico_avances(datos_2024['Institucional'], stats_institucional_2025)
-        st.plotly_chart(fig2, use_container_width=True)
+        st.markdown("---")
 
-    st.markdown("---")
+        # Tabla comparativa por áreas
+        st.markdown("#### 📚 Comparativo por Áreas de Conocimiento")
 
-    # Comparativo por modelo educativo
-    st.markdown('<div class="subtitle">🏫 Comparativo por Modelo Educativo 2024 vs 2025</div>', unsafe_allow_html=True)
-
-    # Métricas de puntaje global por modelo
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.markdown("#### 📘 Aula Regular")
-        avance_regular = calcular_avance(
-            datos_2024['Aula Regular']['puntaje_global'],
-            stats_regular_2025['puntaje_global']
-        )
-        texto_avance_regular, clase_avance_regular = formatear_avance(avance_regular)
-
-        st.metric("Puntaje Global 2024", datos_2024['Aula Regular']['puntaje_global'])
-        st.metric("Puntaje Global 2025", stats_regular_2025['puntaje_global'])
-        st.markdown(f'<div class="{clase_avance_regular}">{texto_avance_regular}</div>', unsafe_allow_html=True)
-
-    with col2:
-        st.markdown("#### 📙 Modelo Flexible")
-        avance_flexible = calcular_avance(
-            datos_2024['Modelo Flexible']['puntaje_global'],
-            stats_flexible_2025['puntaje_global']
-        )
-        texto_avance_flexible, clase_avance_flexible = formatear_avance(avance_flexible)
-
-        st.metric("Puntaje Global 2024", datos_2024['Modelo Flexible']['puntaje_global'])
-        st.metric("Puntaje Global 2025", stats_flexible_2025['puntaje_global'])
-        st.markdown(f'<div class="{clase_avance_flexible}">{texto_avance_flexible}</div>', unsafe_allow_html=True)
-
-    st.markdown("---")
-
-    # Comparativo detallado por áreas - Aula Regular
-    st.markdown("#### 📊 Avances por Área - Aula Regular")
-
-    tabla_regular = []
-    for area in AREAS:
-        puntaje_2024 = datos_2024['Aula Regular']['areas'][area]['promedio']
-        puntaje_2025 = stats_regular_2025['areas'][area]['promedio']
-        avance = calcular_avance(puntaje_2024, puntaje_2025)
-        texto_avance, _ = formatear_avance(avance)
-
-        tabla_regular.append({
-            'Área': area,
-            '2024': puntaje_2024,
-            '2025': puntaje_2025,
-            'Avance': avance,
-            'Estado': texto_avance
-        })
-
-    df_regular = pd.DataFrame(tabla_regular)
-    st.dataframe(df_regular, use_container_width=True, hide_index=True)
-
-    # Gráfico de avances por área - Aula Regular
-    fig_avances_regular = go.Figure(go.Bar(
-        x=df_regular['Área'],
-        y=df_regular['Avance'],
-        marker_color=['#28a745' if a > 0 else '#dc3545' if a < 0 else '#ffc107' for a in df_regular['Avance']],
-        text=[f"{a:+d}" for a in df_regular['Avance']],
-        textposition='outside',
-        name='Avance'
-    ))
-
-    fig_avances_regular.update_layout(
-        title="Avances por Área - Aula Regular (2024 → 2025)",
-        xaxis_title="Áreas de Conocimiento",
-        yaxis_title="Cambio en Puntos",
-        height=400,
-        showlegend=False
-    )
-    fig_avances_regular.add_hline(y=0, line_dash="dash", line_color="gray")
-    fig_avances_regular.update_xaxes(tickangle=-45)
-
-    st.plotly_chart(fig_avances_regular, use_container_width=True)
-
-    st.markdown("---")
-
-    # Comparativo detallado por áreas - Modelo Flexible
-    st.markdown("#### 📊 Avances por Área - Modelo Flexible")
-
-    tabla_flexible = []
-    for area in AREAS:
-        puntaje_2024 = datos_2024['Modelo Flexible']['areas'][area]['promedio']
-        puntaje_2025 = stats_flexible_2025['areas'][area]['promedio']
-        avance = calcular_avance(puntaje_2024, puntaje_2025)
-        texto_avance, _ = formatear_avance(avance)
-
-        tabla_flexible.append({
-            'Área': area,
-            '2024': puntaje_2024,
-            '2025': puntaje_2025,
-            'Avance': avance,
-            'Estado': texto_avance
-        })
-
-    df_flexible = pd.DataFrame(tabla_flexible)
-    st.dataframe(df_flexible, use_container_width=True, hide_index=True)
-
-    # Gráfico de avances por área - Modelo Flexible
-    fig_avances_flexible = go.Figure(go.Bar(
-        x=df_flexible['Área'],
-        y=df_flexible['Avance'],
-        marker_color=['#28a745' if a > 0 else '#dc3545' if a < 0 else '#ffc107' for a in df_flexible['Avance']],
-        text=[f"{a:+d}" for a in df_flexible['Avance']],
-        textposition='outside',
-        name='Avance'
-    ))
-
-    fig_avances_flexible.update_layout(
-        title="Avances por Área - Modelo Flexible (2024 → 2025)",
-        xaxis_title="Áreas de Conocimiento",
-        yaxis_title="Cambio en Puntos",
-        height=400,
-        showlegend=False
-    )
-    fig_avances_flexible.add_hline(y=0, line_dash="dash", line_color="gray")
-    fig_avances_flexible.update_xaxes(tickangle=-45)
-
-    st.plotly_chart(fig_avances_flexible, use_container_width=True)
-
-    st.markdown("---")
-
-    # Comparación lado a lado de avances
-    st.markdown("#### 🔄 Comparación de Avances entre Modelos")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.markdown("**📘 Áreas con Mayor Avance - Aula Regular**")
-        df_regular_sorted = df_regular.sort_values('Avance', ascending=False)
-        for idx, row in df_regular_sorted.head(3).iterrows():
-            if row['Avance'] > 0:
-                st.success(f"✅ {row['Área']}: +{row['Avance']} puntos")
-            elif row['Avance'] < 0:
-                st.error(f"❌ {row['Área']}: {row['Avance']} puntos")
-            else:
-                st.info(f"⚪ {row['Área']}: Sin cambio")
-
-    with col2:
-        st.markdown("**📙 Áreas con Mayor Avance - Modelo Flexible**")
-        df_flexible_sorted = df_flexible.sort_values('Avance', ascending=False)
-        for idx, row in df_flexible_sorted.head(3).iterrows():
-            if row['Avance'] > 0:
-                st.success(f"✅ {row['Área']}: +{row['Avance']} puntos")
-            elif row['Avance'] < 0:
-                st.error(f"❌ {row['Área']}: {row['Avance']} puntos")
-            else:
-                st.info(f"⚪ {row['Área']}: Sin cambio")
-
-    st.markdown("---")
-
-    # Comparativo por grupos individuales
-    st.markdown('<div class="subtitle">👥 Resultados por Grupos - Año 2025</div>', unsafe_allow_html=True)
-    st.info("ℹ️ Esta sección muestra únicamente los resultados del año 2025 por grupo. Los datos de 2024 no están disponibles por grupos individuales, solo por modelo educativo.")
-
-    # Tabla comparativa de todos los grupos
-    tabla_grupos = []
-    for grupo in sorted(stats_grupos_2025.keys()):
-        stats = stats_grupos_2025[grupo]
-        tabla_grupos.append({
-            'Grupo': grupo,
-            'Modelo': stats['modelo'],
-            'Estudiantes': stats['estudiantes'],
-            'Puntaje Global': stats['puntaje_global'],
-            'Lectura Crítica': stats['areas']['Lectura Crítica']['promedio'],
-            'Matemáticas': stats['areas']['Matemáticas']['promedio'],
-            'Sociales y Ciudadanas': stats['areas']['Sociales y Ciudadanas']['promedio'],
-            'Ciencias Naturales': stats['areas']['Ciencias Naturales']['promedio'],
-            'Inglés': stats['areas']['Inglés']['promedio']
-        })
-
-    df_grupos = pd.DataFrame(tabla_grupos)
-    st.dataframe(df_grupos, use_container_width=True, hide_index=True)
-
-    # Gráfico comparativo de puntaje global por grupo
-    fig_grupos = px.bar(
-        df_grupos,
-        x='Grupo',
-        y='Puntaje Global',
-        color='Modelo',
-        title="Puntaje Global por Grupo",
-        color_discrete_map={'Aula Regular': '#667eea', 'Modelo Flexible': '#764ba2'},
-        text='Puntaje Global'
-    )
-    fig_grupos.update_traces(textposition='outside')
-    fig_grupos.update_layout(height=400)
-    st.plotly_chart(fig_grupos, use_container_width=True)
-
-    st.markdown("---")
-
-    # Comparación entre grupos del mismo modelo
-    st.markdown('<div class="subtitle">🔄 Comparación entre Grupos por Modelo</div>', unsafe_allow_html=True)
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.markdown("#### 📘 Grupos de Aula Regular (11A vs 11B)")
-
-        # Comparar 11A vs 11B
-        grupos_regular = ['11A', '11B']
-        datos_regular = []
-        for grupo in grupos_regular:
-            if grupo in stats_grupos_2025:
-                for area in AREAS:
-                    datos_regular.append({
-                        'Grupo': grupo,
-                        'Área': area,
-                        'Puntaje': stats_grupos_2025[grupo]['areas'][area]['promedio']
-                    })
-
-        df_regular = pd.DataFrame(datos_regular)
-        fig_regular = px.bar(
-            df_regular,
-            x='Área',
-            y='Puntaje',
-            color='Grupo',
-            barmode='group',
-            title="Comparación por Áreas - Aula Regular",
-            color_discrete_sequence=['#667eea', '#4c5fd5']
-        )
-        fig_regular.update_xaxes(tickangle=-45)
-        fig_regular.update_layout(height=400)
-        st.plotly_chart(fig_regular, use_container_width=True)
-
-        # Métricas comparativas
-        if '11A' in stats_grupos_2025 and '11B' in stats_grupos_2025:
-            diff = stats_grupos_2025['11A']['puntaje_global'] - stats_grupos_2025['11B']['puntaje_global']
-            if diff > 0:
-                st.info(f"📊 11A supera a 11B por {diff} puntos en puntaje global")
-            elif diff < 0:
-                st.info(f"📊 11B supera a 11A por {abs(diff)} puntos en puntaje global")
-            else:
-                st.info(f"📊 11A y 11B tienen el mismo puntaje global")
-
-    with col2:
-        st.markdown("#### 📙 Grupos de Modelo Flexible (P3A vs P3B vs P3C)")
-
-        # Comparar P3A vs P3B vs P3C
-        grupos_flexible = ['P3A', 'P3B', 'P3C']
-        datos_flexible = []
-        for grupo in grupos_flexible:
-            if grupo in stats_grupos_2025:
-                for area in AREAS:
-                    datos_flexible.append({
-                        'Grupo': grupo,
-                        'Área': area,
-                        'Puntaje': stats_grupos_2025[grupo]['areas'][area]['promedio']
-                    })
-
-        df_flexible = pd.DataFrame(datos_flexible)
-        fig_flexible = px.bar(
-            df_flexible,
-            x='Área',
-            y='Puntaje',
-            color='Grupo',
-            barmode='group',
-            title="Comparación por Áreas - Modelo Flexible",
-            color_discrete_sequence=['#764ba2', '#9b59b6', '#8e44ad']
-        )
-        fig_flexible.update_xaxes(tickangle=-45)
-        fig_flexible.update_layout(height=400)
-        st.plotly_chart(fig_flexible, use_container_width=True)
-
-        # Métricas comparativas
-        grupos_flex_ordenados = sorted(
-            [(g, stats_grupos_2025[g]['puntaje_global']) for g in grupos_flexible if g in stats_grupos_2025],
-            key=lambda x: x[1],
-            reverse=True
-        )
-        if grupos_flex_ordenados:
-            mejor_grupo = grupos_flex_ordenados[0][0]
-            mejor_puntaje = grupos_flex_ordenados[0][1]
-            st.info(f"🏆 {mejor_grupo} es el mejor grupo de Modelo Flexible con {mejor_puntaje} puntos")
-
-    st.markdown("---")
-
-    # Comparación de todos los grupos combinados
-    st.markdown('<div class="subtitle">🌐 Comparación Global de Todos los Grupos</div>', unsafe_allow_html=True)
-
-    # Crear datos para gráfico de radar/spider
-    df_todos = datos_2025_raw['df_todos']
-
-    # Gráfico de áreas por grupo
-    datos_areas_grupos = []
-    for grupo in sorted(stats_grupos_2025.keys()):
+        tabla_institucional = []
         for area in AREAS:
-            datos_areas_grupos.append({
-                'Grupo': grupo,
+            puntaje_2024 = datos_2024['Institucional']['areas'][area]['promedio']
+            puntaje_2025 = stats_institucional_2025['areas'][area]['promedio']
+            avance = calcular_avance(puntaje_2024, puntaje_2025)
+            texto_avance, _ = formatear_avance(avance)
+
+            tabla_institucional.append({
                 'Área': area,
-                'Puntaje': stats_grupos_2025[grupo]['areas'][area]['promedio'],
-                'Modelo': stats_grupos_2025[grupo]['modelo']
+                '2024': puntaje_2024,
+                '2025': puntaje_2025,
+                'Avance': avance,
+                'Estado': texto_avance
             })
 
-    df_areas_grupos = pd.DataFrame(datos_areas_grupos)
+        df_institucional = pd.DataFrame(tabla_institucional)
+        st.dataframe(df_institucional, use_container_width=True, hide_index=True)
 
-    # Gráfico de líneas para comparar todos los grupos
-    fig_lineas = px.line(
-        df_areas_grupos,
-        x='Área',
-        y='Puntaje',
-        color='Grupo',
-        markers=True,
-        title="Comparación de Todas las Áreas por Grupo",
-        color_discrete_sequence=px.colors.qualitative.Set2
-    )
-    fig_lineas.update_xaxes(tickangle=-45)
-    fig_lineas.update_layout(height=500)
-    st.plotly_chart(fig_lineas, use_container_width=True)
+        # Gráfico de avances por área a nivel institucional
+        fig_avances_inst = go.Figure(go.Bar(
+            x=df_institucional['Área'],
+            y=df_institucional['Avance'],
+            marker_color=['#28a745' if a > 0 else '#dc3545' if a < 0 else '#ffc107' for a in df_institucional['Avance']],
+            text=[f"{a:+d}" for a in df_institucional['Avance']],
+            textposition='outside',
+            name='Avance'
+        ))
 
-    # Ranking de grupos por puntaje global
-    st.markdown("#### 🏆 Ranking de Grupos por Puntaje Global")
-    df_ranking = df_grupos[['Grupo', 'Modelo', 'Estudiantes', 'Puntaje Global']].sort_values('Puntaje Global', ascending=False)
-    df_ranking.insert(0, 'Posición', range(1, len(df_ranking) + 1))
-    st.dataframe(df_ranking, use_container_width=True, hide_index=True)
+        fig_avances_inst.update_layout(
+            title="Avances por Área - Nivel Institucional (2024 → 2025)",
+            xaxis_title="Áreas de Conocimiento",
+            yaxis_title="Cambio en Puntos",
+            height=400,
+            showlegend=False
+        )
+        fig_avances_inst.add_hline(y=0, line_dash="dash", line_color="gray")
+        fig_avances_inst.update_xaxes(tickangle=-45)
+
+        st.plotly_chart(fig_avances_inst, use_container_width=True)
+
+        # Gráficos comparativos lado a lado
+        st.markdown("---")
+        st.markdown("#### 📊 Gráficos Comparativos Detallados")
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            fig1 = crear_grafico_comparativo_areas(
+                datos_2024['Institucional'],
+                stats_institucional_2025,
+                "Comparativo por Áreas - Institucional"
+            )
+            st.plotly_chart(fig1, use_container_width=True)
+
+        with col2:
+            fig2 = crear_grafico_avances(datos_2024['Institucional'], stats_institucional_2025)
+            st.plotly_chart(fig2, use_container_width=True)
+
+    # ==================== PESTAÑA 2: AVANCES POR MODELOS EDUCATIVOS ====================
+    with tab2:
+        st.markdown('<div class="subtitle">📚 Avances por Modelos Educativos 2024 vs 2025</div>', unsafe_allow_html=True)
+        st.info("📌 Esta sección compara el desempeño de Aula Regular y Modelo Flexible entre 2024 y 2025")
+
+        # Métricas de puntaje global por modelo
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.markdown("#### 📘 Aula Regular")
+            avance_regular = calcular_avance(
+                datos_2024['Aula Regular']['puntaje_global'],
+                stats_regular_2025['puntaje_global']
+            )
+            texto_avance_regular, clase_avance_regular = formatear_avance(avance_regular)
+
+            st.metric("Puntaje Global 2024", datos_2024['Aula Regular']['puntaje_global'])
+            st.metric("Puntaje Global 2025", stats_regular_2025['puntaje_global'])
+            st.markdown(f'<div class="{clase_avance_regular}">{texto_avance_regular}</div>', unsafe_allow_html=True)
+
+        with col2:
+            st.markdown("#### 📙 Modelo Flexible")
+            avance_flexible = calcular_avance(
+                datos_2024['Modelo Flexible']['puntaje_global'],
+                stats_flexible_2025['puntaje_global']
+            )
+            texto_avance_flexible, clase_avance_flexible = formatear_avance(avance_flexible)
+
+            st.metric("Puntaje Global 2024", datos_2024['Modelo Flexible']['puntaje_global'])
+            st.metric("Puntaje Global 2025", stats_flexible_2025['puntaje_global'])
+            st.markdown(f'<div class="{clase_avance_flexible}">{texto_avance_flexible}</div>', unsafe_allow_html=True)
+
+        st.markdown("---")
+
+        # Comparativo detallado por áreas - Aula Regular
+        st.markdown("#### 📊 Avances por Área - Aula Regular")
+
+        tabla_regular = []
+        for area in AREAS:
+            puntaje_2024 = datos_2024['Aula Regular']['areas'][area]['promedio']
+            puntaje_2025 = stats_regular_2025['areas'][area]['promedio']
+            avance = calcular_avance(puntaje_2024, puntaje_2025)
+            texto_avance, _ = formatear_avance(avance)
+
+            tabla_regular.append({
+                'Área': area,
+                '2024': puntaje_2024,
+                '2025': puntaje_2025,
+                'Avance': avance,
+                'Estado': texto_avance
+            })
+
+        df_regular = pd.DataFrame(tabla_regular)
+        st.dataframe(df_regular, use_container_width=True, hide_index=True)
+
+        # Gráfico de avances por área - Aula Regular
+        fig_avances_regular = go.Figure(go.Bar(
+            x=df_regular['Área'],
+            y=df_regular['Avance'],
+            marker_color=['#28a745' if a > 0 else '#dc3545' if a < 0 else '#ffc107' for a in df_regular['Avance']],
+            text=[f"{a:+d}" for a in df_regular['Avance']],
+            textposition='outside',
+            name='Avance'
+        ))
+
+        fig_avances_regular.update_layout(
+            title="Avances por Área - Aula Regular (2024 → 2025)",
+            xaxis_title="Áreas de Conocimiento",
+            yaxis_title="Cambio en Puntos",
+            height=400,
+            showlegend=False
+        )
+        fig_avances_regular.add_hline(y=0, line_dash="dash", line_color="gray")
+        fig_avances_regular.update_xaxes(tickangle=-45)
+
+        st.plotly_chart(fig_avances_regular, use_container_width=True)
+
+        st.markdown("---")
+
+        # Comparativo detallado por áreas - Modelo Flexible
+        st.markdown("#### 📊 Avances por Área - Modelo Flexible")
+
+        tabla_flexible = []
+        for area in AREAS:
+            puntaje_2024 = datos_2024['Modelo Flexible']['areas'][area]['promedio']
+            puntaje_2025 = stats_flexible_2025['areas'][area]['promedio']
+            avance = calcular_avance(puntaje_2024, puntaje_2025)
+            texto_avance, _ = formatear_avance(avance)
+
+            tabla_flexible.append({
+                'Área': area,
+                '2024': puntaje_2024,
+                '2025': puntaje_2025,
+                'Avance': avance,
+                'Estado': texto_avance
+            })
+
+        df_flexible = pd.DataFrame(tabla_flexible)
+        st.dataframe(df_flexible, use_container_width=True, hide_index=True)
+
+        # Gráfico de avances por área - Modelo Flexible
+        fig_avances_flexible = go.Figure(go.Bar(
+            x=df_flexible['Área'],
+            y=df_flexible['Avance'],
+            marker_color=['#28a745' if a > 0 else '#dc3545' if a < 0 else '#ffc107' for a in df_flexible['Avance']],
+            text=[f"{a:+d}" for a in df_flexible['Avance']],
+            textposition='outside',
+            name='Avance'
+        ))
+
+        fig_avances_flexible.update_layout(
+            title="Avances por Área - Modelo Flexible (2024 → 2025)",
+            xaxis_title="Áreas de Conocimiento",
+            yaxis_title="Cambio en Puntos",
+            height=400,
+            showlegend=False
+        )
+        fig_avances_flexible.add_hline(y=0, line_dash="dash", line_color="gray")
+        fig_avances_flexible.update_xaxes(tickangle=-45)
+
+        st.plotly_chart(fig_avances_flexible, use_container_width=True)
+
+        st.markdown("---")
+
+        # Comparación lado a lado de avances
+        st.markdown("#### 🔄 Comparación de Avances entre Modelos")
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.markdown("**📘 Top 3 Áreas - Aula Regular**")
+            df_regular_sorted = df_regular.sort_values('Avance', ascending=False)
+            for idx, row in df_regular_sorted.head(3).iterrows():
+                if row['Avance'] > 0:
+                    st.success(f"✅ {row['Área']}: +{row['Avance']} puntos")
+                elif row['Avance'] < 0:
+                    st.error(f"❌ {row['Área']}: {row['Avance']} puntos")
+                else:
+                    st.info(f"⚪ {row['Área']}: Sin cambio")
+
+        with col2:
+            st.markdown("**📙 Top 3 Áreas - Modelo Flexible**")
+            df_flexible_sorted = df_flexible.sort_values('Avance', ascending=False)
+            for idx, row in df_flexible_sorted.head(3).iterrows():
+                if row['Avance'] > 0:
+                    st.success(f"✅ {row['Área']}: +{row['Avance']} puntos")
+                elif row['Avance'] < 0:
+                    st.error(f"❌ {row['Área']}: {row['Avance']} puntos")
+                else:
+                    st.info(f"⚪ {row['Área']}: Sin cambio")
+
+    # ==================== PESTAÑA 3: AVANCES POR ÁREAS DE CONOCIMIENTO ====================
+    with tab3:
+        st.markdown('<div class="subtitle">📊 Avances por Áreas de Conocimiento</div>', unsafe_allow_html=True)
+        st.info("📌 Esta sección analiza el desempeño por área de conocimiento en diferentes niveles")
+
+        # Sección 1: Avances por Área - Nivel Institucional
+        st.markdown("#### 🏫 Avances por Área - Nivel Institucional")
+        st.markdown("Comparación de todas las áreas a nivel institucional (todos los estudiantes)")
+
+        # Tabla institucional por áreas
+        tabla_areas_inst = []
+        for area in AREAS:
+            puntaje_2024 = datos_2024['Institucional']['areas'][area]['promedio']
+            puntaje_2025 = stats_institucional_2025['areas'][area]['promedio']
+            avance = calcular_avance(puntaje_2024, puntaje_2025)
+            texto_avance, _ = formatear_avance(avance)
+
+            tabla_areas_inst.append({
+                'Área': area,
+                '2024': puntaje_2024,
+                '2025': puntaje_2025,
+                'Avance': avance,
+                'Estado': texto_avance
+            })
+
+        df_areas_inst = pd.DataFrame(tabla_areas_inst)
+        st.dataframe(df_areas_inst, use_container_width=True, hide_index=True)
+
+        # Gráfico de avances institucional
+        fig_areas_inst = go.Figure(go.Bar(
+            x=df_areas_inst['Área'],
+            y=df_areas_inst['Avance'],
+            marker_color=['#28a745' if a > 0 else '#dc3545' if a < 0 else '#ffc107' for a in df_areas_inst['Avance']],
+            text=[f"{a:+d}" for a in df_areas_inst['Avance']],
+            textposition='outside'
+        ))
+
+        fig_areas_inst.update_layout(
+            title="Avances por Área - Nivel Institucional (2024 → 2025)",
+            xaxis_title="Áreas de Conocimiento",
+            yaxis_title="Cambio en Puntos",
+            height=400,
+            showlegend=False
+        )
+        fig_areas_inst.add_hline(y=0, line_dash="dash", line_color="gray")
+        fig_areas_inst.update_xaxes(tickangle=-45)
+
+        st.plotly_chart(fig_areas_inst, use_container_width=True)
+
+        st.markdown("---")
+
+        # Sección 2: Avances por Área - Entre Modelos
+        st.markdown("#### 🔄 Avances por Área - Comparación entre Modelos")
+        st.markdown("Comparación de cómo cada área avanzó en Aula Regular vs Modelo Flexible")
+
+        # Crear datos para comparación entre modelos
+        datos_comparacion_modelos = []
+        for area in AREAS:
+            # Aula Regular
+            avance_regular = calcular_avance(
+                datos_2024['Aula Regular']['areas'][area]['promedio'],
+                stats_regular_2025['areas'][area]['promedio']
+            )
+            datos_comparacion_modelos.append({
+                'Área': area,
+                'Modelo': 'Aula Regular',
+                'Avance': avance_regular
+            })
+
+            # Modelo Flexible
+            avance_flexible = calcular_avance(
+                datos_2024['Modelo Flexible']['areas'][area]['promedio'],
+                stats_flexible_2025['areas'][area]['promedio']
+            )
+            datos_comparacion_modelos.append({
+                'Área': area,
+                'Modelo': 'Modelo Flexible',
+                'Avance': avance_flexible
+            })
+
+        df_comp_modelos = pd.DataFrame(datos_comparacion_modelos)
+
+        # Gráfico de barras agrupadas
+        fig_comp_modelos = px.bar(
+            df_comp_modelos,
+            x='Área',
+            y='Avance',
+            color='Modelo',
+            barmode='group',
+            title="Comparación de Avances por Área entre Modelos Educativos",
+            color_discrete_map={'Aula Regular': '#667eea', 'Modelo Flexible': '#764ba2'},
+            text='Avance'
+        )
+        fig_comp_modelos.update_traces(texttemplate='%{text:+d}', textposition='outside')
+        fig_comp_modelos.update_layout(height=450)
+        fig_comp_modelos.add_hline(y=0, line_dash="dash", line_color="gray")
+        fig_comp_modelos.update_xaxes(tickangle=-45)
+
+        st.plotly_chart(fig_comp_modelos, use_container_width=True)
+
+        # Tabla comparativa
+        tabla_comp_modelos = []
+        for area in AREAS:
+            avance_regular = calcular_avance(
+                datos_2024['Aula Regular']['areas'][area]['promedio'],
+                stats_regular_2025['areas'][area]['promedio']
+            )
+            avance_flexible = calcular_avance(
+                datos_2024['Modelo Flexible']['areas'][area]['promedio'],
+                stats_flexible_2025['areas'][area]['promedio']
+            )
+            diferencia = avance_regular - avance_flexible
+
+            tabla_comp_modelos.append({
+                'Área': area,
+                'Avance Aula Regular': avance_regular,
+                'Avance Modelo Flexible': avance_flexible,
+                'Diferencia': diferencia
+            })
+
+        df_tabla_comp = pd.DataFrame(tabla_comp_modelos)
+        st.dataframe(df_tabla_comp, use_container_width=True, hide_index=True)
+
+        st.markdown("---")
+
+        # Sección 3: Avances por Área - Entre Grupos
+        st.markdown("#### 👥 Resultados por Área - Entre Grupos (Solo 2025)")
+        st.warning("⚠️ Los datos de 2024 no están disponibles por grupos individuales. Esta sección muestra únicamente resultados de 2025 por grupo.")
+
+        # Crear datos por área y grupo
+        datos_grupos_areas = []
+        for grupo in sorted(stats_grupos_2025.keys()):
+            for area in AREAS:
+                datos_grupos_areas.append({
+                    'Grupo': grupo,
+                    'Área': area,
+                    'Puntaje 2025': stats_grupos_2025[grupo]['areas'][area]['promedio'],
+                    'Modelo': stats_grupos_2025[grupo]['modelo']
+                })
+
+        df_grupos_areas = pd.DataFrame(datos_grupos_areas)
+
+        # Gráfico de líneas por área
+        fig_grupos_areas = px.line(
+            df_grupos_areas,
+            x='Área',
+            y='Puntaje 2025',
+            color='Grupo',
+            markers=True,
+            title="Puntajes por Área y Grupo - Año 2025",
+            color_discrete_sequence=px.colors.qualitative.Set2
+        )
+        fig_grupos_areas.update_xaxes(tickangle=-45)
+        fig_grupos_areas.update_layout(height=450)
+
+        st.plotly_chart(fig_grupos_areas, use_container_width=True)
+
+    # ==================== PESTAÑA 4: RESULTADOS POR GRUPOS ====================
+    with tab4:
+        st.markdown('<div class="subtitle">👥 Resultados por Grupos - Año 2025</div>', unsafe_allow_html=True)
+        st.warning("⚠️ Los datos de 2024 no están disponibles por grupos individuales, solo por modelo educativo. Esta sección muestra únicamente resultados del año 2025.")
+
+        # Sección 1: Resultados por Grupo - Año 2025
+        st.markdown("#### 📋 Tabla Comparativa de Todos los Grupos")
+
+        # Tabla comparativa de todos los grupos
+        tabla_grupos = []
+        for grupo in sorted(stats_grupos_2025.keys()):
+            stats = stats_grupos_2025[grupo]
+            tabla_grupos.append({
+                'Grupo': grupo,
+                'Modelo': stats['modelo'],
+                'Estudiantes': stats['estudiantes'],
+                'Puntaje Global': stats['puntaje_global'],
+                'Lectura Crítica': stats['areas']['Lectura Crítica']['promedio'],
+                'Matemáticas': stats['areas']['Matemáticas']['promedio'],
+                'Sociales y Ciudadanas': stats['areas']['Sociales y Ciudadanas']['promedio'],
+                'Ciencias Naturales': stats['areas']['Ciencias Naturales']['promedio'],
+                'Inglés': stats['areas']['Inglés']['promedio']
+            })
+
+        df_grupos = pd.DataFrame(tabla_grupos)
+        st.dataframe(df_grupos, use_container_width=True, hide_index=True)
+
+        # Gráfico comparativo de puntaje global por grupo
+        fig_grupos = px.bar(
+            df_grupos,
+            x='Grupo',
+            y='Puntaje Global',
+            color='Modelo',
+            title="Puntaje Global por Grupo - Año 2025",
+            color_discrete_map={'Aula Regular': '#667eea', 'Modelo Flexible': '#764ba2'},
+            text='Puntaje Global'
+        )
+        fig_grupos.update_traces(textposition='outside')
+        fig_grupos.update_layout(height=400)
+        st.plotly_chart(fig_grupos, use_container_width=True)
+
+        st.markdown("---")
+
+        # Sección 2: Comparación entre Grupos del Mismo Modelo
+        st.markdown("#### 🔄 Comparación entre Grupos del Mismo Modelo")
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.markdown("**📘 Grupos de Aula Regular (11A vs 11B)**")
+
+            # Comparar 11A vs 11B
+            grupos_regular = ['11A', '11B']
+            datos_regular = []
+            for grupo in grupos_regular:
+                if grupo in stats_grupos_2025:
+                    for area in AREAS:
+                        datos_regular.append({
+                            'Grupo': grupo,
+                            'Área': area,
+                            'Puntaje': stats_grupos_2025[grupo]['areas'][area]['promedio']
+                        })
+
+            df_regular_grupos = pd.DataFrame(datos_regular)
+            fig_regular_grupos = px.bar(
+                df_regular_grupos,
+                x='Área',
+                y='Puntaje',
+                color='Grupo',
+                barmode='group',
+                title="Comparación por Áreas - Aula Regular",
+                color_discrete_sequence=['#667eea', '#4c5fd5']
+            )
+            fig_regular_grupos.update_xaxes(tickangle=-45)
+            fig_regular_grupos.update_layout(height=400)
+            st.plotly_chart(fig_regular_grupos, use_container_width=True)
+
+            # Métricas comparativas
+            if '11A' in stats_grupos_2025 and '11B' in stats_grupos_2025:
+                diff = stats_grupos_2025['11A']['puntaje_global'] - stats_grupos_2025['11B']['puntaje_global']
+                if diff > 0:
+                    st.success(f"📊 11A supera a 11B por {diff} puntos en puntaje global")
+                elif diff < 0:
+                    st.success(f"📊 11B supera a 11A por {abs(diff)} puntos en puntaje global")
+                else:
+                    st.info(f"📊 11A y 11B tienen el mismo puntaje global")
+
+        with col2:
+            st.markdown("**📙 Grupos de Modelo Flexible (P3A vs P3B vs P3C)**")
+
+            # Comparar P3A vs P3B vs P3C
+            grupos_flexible = ['P3A', 'P3B', 'P3C']
+            datos_flexible = []
+            for grupo in grupos_flexible:
+                if grupo in stats_grupos_2025:
+                    for area in AREAS:
+                        datos_flexible.append({
+                            'Grupo': grupo,
+                            'Área': area,
+                            'Puntaje': stats_grupos_2025[grupo]['areas'][area]['promedio']
+                        })
+
+            df_flexible_grupos = pd.DataFrame(datos_flexible)
+            fig_flexible_grupos = px.bar(
+                df_flexible_grupos,
+                x='Área',
+                y='Puntaje',
+                color='Grupo',
+                barmode='group',
+                title="Comparación por Áreas - Modelo Flexible",
+                color_discrete_sequence=['#764ba2', '#9b59b6', '#8e44ad']
+            )
+            fig_flexible_grupos.update_xaxes(tickangle=-45)
+            fig_flexible_grupos.update_layout(height=400)
+            st.plotly_chart(fig_flexible_grupos, use_container_width=True)
+
+            # Métricas comparativas
+            grupos_flex_ordenados = sorted(
+                [(g, stats_grupos_2025[g]['puntaje_global']) for g in grupos_flexible if g in stats_grupos_2025],
+                key=lambda x: x[1],
+                reverse=True
+            )
+            if grupos_flex_ordenados:
+                mejor_grupo = grupos_flex_ordenados[0][0]
+                mejor_puntaje = grupos_flex_ordenados[0][1]
+                st.success(f"🏆 {mejor_grupo} es el mejor grupo de Modelo Flexible con {mejor_puntaje} puntos")
+
+        st.markdown("---")
+
+        # Sección 3: Comparación Global de Todos los Grupos
+        st.markdown("#### 🌐 Comparación Global de Todos los Grupos")
+
+        # Gráfico de áreas por grupo
+        datos_areas_grupos = []
+        for grupo in sorted(stats_grupos_2025.keys()):
+            for area in AREAS:
+                datos_areas_grupos.append({
+                    'Grupo': grupo,
+                    'Área': area,
+                    'Puntaje': stats_grupos_2025[grupo]['areas'][area]['promedio'],
+                    'Modelo': stats_grupos_2025[grupo]['modelo']
+                })
+
+        df_areas_grupos = pd.DataFrame(datos_areas_grupos)
+
+        # Gráfico de líneas para comparar todos los grupos
+        fig_lineas = px.line(
+            df_areas_grupos,
+            x='Área',
+            y='Puntaje',
+            color='Grupo',
+            markers=True,
+            title="Comparación de Todas las Áreas por Grupo - Año 2025",
+            color_discrete_sequence=px.colors.qualitative.Set2
+        )
+        fig_lineas.update_xaxes(tickangle=-45)
+        fig_lineas.update_layout(height=500)
+        st.plotly_chart(fig_lineas, use_container_width=True)
+
+        # Ranking de grupos por puntaje global
+        st.markdown("#### 🏆 Ranking de Grupos por Puntaje Global")
+        df_ranking = df_grupos[['Grupo', 'Modelo', 'Estudiantes', 'Puntaje Global']].sort_values('Puntaje Global', ascending=False)
+        df_ranking.insert(0, 'Posición', range(1, len(df_ranking) + 1))
+        st.dataframe(df_ranking, use_container_width=True, hide_index=True)
 
 def mostrar_estadisticas_estudiante(datos_2025_raw):
     """Página de estadísticas por estudiante individual"""
