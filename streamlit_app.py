@@ -534,67 +534,7 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025, s
         st.plotly_chart(fig_global, use_container_width=True)
 
         st.markdown("---")
-
-        # Tabla comparativa por áreas
-        st.markdown("#### 📚 Comparativo por Áreas de Conocimiento")
-
-        tabla_institucional = []
-        for area in AREAS:
-            puntaje_2024 = datos_2024['Institucional']['areas'][area]['promedio']
-            puntaje_2025 = stats_institucional_2025['areas'][area]['promedio']
-            avance = calcular_avance(puntaje_2024, puntaje_2025)
-            texto_avance, _ = formatear_avance(avance)
-
-            tabla_institucional.append({
-                'Área': area,
-                '2024': puntaje_2024,
-                '2025': puntaje_2025,
-                'Avance': avance,
-                'Estado': texto_avance
-            })
-
-        df_institucional = pd.DataFrame(tabla_institucional)
-        st.dataframe(df_institucional, use_container_width=True, hide_index=True)
-
-        # Gráfico de avances por área a nivel institucional
-        fig_avances_inst = go.Figure(go.Bar(
-            x=df_institucional['Área'],
-            y=df_institucional['Avance'],
-            marker_color=['#28a745' if a > 0 else '#dc3545' if a < 0 else '#ffc107' for a in df_institucional['Avance']],
-            text=[f"{a:+d}" for a in df_institucional['Avance']],
-            textposition='outside',
-            name='Avance'
-        ))
-
-        fig_avances_inst.update_layout(
-            title="Avances por Área - Nivel Institucional (2024 → 2025)",
-            xaxis_title="Áreas de Conocimiento",
-            yaxis_title="Cambio en Puntos",
-            height=400,
-            showlegend=False
-        )
-        fig_avances_inst.add_hline(y=0, line_dash="dash", line_color="gray")
-        fig_avances_inst.update_xaxes(tickangle=-45)
-
-        st.plotly_chart(fig_avances_inst, use_container_width=True)
-
-        # Gráficos comparativos lado a lado
-        st.markdown("---")
-        st.markdown("#### 📊 Gráficos Comparativos Detallados")
-
-        col1, col2 = st.columns(2)
-
-        with col1:
-            fig1 = crear_grafico_comparativo_areas(
-                datos_2024['Institucional'],
-                stats_institucional_2025,
-                "Comparativo por Áreas - Institucional"
-            )
-            st.plotly_chart(fig1, use_container_width=True)
-
-        with col2:
-            fig2 = crear_grafico_avances(datos_2024['Institucional'], stats_institucional_2025)
-            st.plotly_chart(fig2, use_container_width=True)
+        st.info("💡 Para ver el análisis detallado por áreas de conocimiento, consulta la pestaña '📊 Avances por Áreas de Conocimiento'")
 
     # ==================== PESTAÑA 2: AVANCES POR MODELOS EDUCATIVOS ====================
     with tab2:
@@ -871,38 +811,7 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025, s
         st.dataframe(df_tabla_comp, use_container_width=True, hide_index=True)
 
         st.markdown("---")
-
-        # Sección 3: Avances por Área - Entre Grupos
-        st.markdown("#### 👥 Resultados por Área - Entre Grupos (Solo 2025)")
-        st.warning("⚠️ Los datos de 2024 no están disponibles por grupos individuales. Esta sección muestra únicamente resultados de 2025 por grupo.")
-
-        # Crear datos por área y grupo
-        datos_grupos_areas = []
-        for grupo in sorted(stats_grupos_2025.keys()):
-            for area in AREAS:
-                datos_grupos_areas.append({
-                    'Grupo': grupo,
-                    'Área': area,
-                    'Puntaje 2025': stats_grupos_2025[grupo]['areas'][area]['promedio'],
-                    'Modelo': stats_grupos_2025[grupo]['modelo']
-                })
-
-        df_grupos_areas = pd.DataFrame(datos_grupos_areas)
-
-        # Gráfico de líneas por área
-        fig_grupos_areas = px.line(
-            df_grupos_areas,
-            x='Área',
-            y='Puntaje 2025',
-            color='Grupo',
-            markers=True,
-            title="Puntajes por Área y Grupo - Año 2025",
-            color_discrete_sequence=px.colors.qualitative.Set2
-        )
-        fig_grupos_areas.update_xaxes(tickangle=-45)
-        fig_grupos_areas.update_layout(height=450)
-
-        st.plotly_chart(fig_grupos_areas, use_container_width=True)
+        st.info("💡 Para ver la comparación detallada de puntajes por área entre grupos, consulta la pestaña '👥 Resultados por Grupos'")
 
     # ==================== PESTAÑA 4: RESULTADOS POR GRUPOS ====================
     with tab4:
