@@ -899,7 +899,9 @@ def main():
     # ========================================================================
 
     with st.sidebar:
-        st.image("https://via.placeholder.com/300x100/667eea/ffffff?text=Pedacito+de+Cielo", use_container_width=True)
+        # Logo de la institución
+        st.image("escudo-114x116-1.png", use_container_width=True)
+        st.markdown('<h3 style="text-align: center; color: #667eea;">Institución Educativa<br>Pedacito de Cielo</h3>', unsafe_allow_html=True)
         st.markdown("---")
 
         pagina = st.radio(
