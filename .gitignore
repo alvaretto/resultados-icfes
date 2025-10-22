@@ -67,6 +67,8 @@ geckodriver.log
 *.tmp
 *.temp
 
+# Streamlit secrets (contiene API keys sensibles)
+.streamlit/secrets.toml
 
 # Augment AI configuration
 .augment/

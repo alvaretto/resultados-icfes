@@ -15,6 +15,9 @@ from datetime import datetime
 import io
 import re
 
+# Importar módulo de chat de IA
+from app.chat_ia_icfes import mostrar_chat, inicializar_chat
+
 # ============================================================================
 # CONFIGURACIÓN DE LA PÁGINA
 # ============================================================================
@@ -877,7 +880,10 @@ def crear_grafico_avances(datos_2024, datos_2025):
 def main():
     # Header principal
     st.markdown('<div class="main-header">📊 Análisis Comparativo ICFES Saber 11°<br>Institución Educativa Pedacito de Cielo<br>2024 vs 2025</div>', unsafe_allow_html=True)
-    
+
+    # Inicializar chat de IA
+    inicializar_chat()
+
     # Cargar datos
     datos_2024 = cargar_datos_2024()
     datos_2025_raw = cargar_datos_2025()
@@ -934,6 +940,16 @@ def main():
         )
 
         st.markdown("---")
+        st.markdown("### 🤖 Asistente de IA")
+
+        # Toggle para activar/desactivar chat
+        mostrar_chat_ia = st.checkbox(
+            "Activar chat inteligente",
+            value=False,
+            help="Pregunta sobre los datos, interpretaciones y recomendaciones pedagógicas"
+        )
+
+        st.markdown("---")
         st.markdown("### 📅 Información")
         st.info(f"""
         **Año de comparación:** 2024 vs 2025
@@ -942,6 +958,25 @@ def main():
 
         **Estudiantes 2025:** {stats_institucional_2025['estudiantes']}
         """)
+
+    # ========================================================================
+    # CHAT DE IA (si está activado)
+    # ========================================================================
+
+    if mostrar_chat_ia:
+        with st.expander("💬 Chat con Asistente de IA", expanded=True):
+            st.markdown("*Haz preguntas sobre los datos, interpretaciones y recomendaciones pedagógicas*")
+
+            # Determinar página actual para contexto
+            pagina_actual = pagina.split(" - ")[0] if " - " in pagina else pagina
+
+            # Obtener DataFrame actual según la página
+            df_actual = datos_2025_raw['df_todos']
+
+            # Mostrar chat con datos de 2024 y 2025
+            mostrar_chat(df=df_actual, pagina_actual=pagina_actual, datos_2024=datos_2024)
+
+        st.markdown("---")
 
     # ========================================================================
     # PÁGINA PRINCIPAL - COMPARATIVO GENERAL
