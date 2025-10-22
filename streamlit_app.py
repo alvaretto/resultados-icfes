@@ -900,7 +900,20 @@ def main():
 
     with st.sidebar:
         # Logo de la institución
-        st.image("escudo-114x116-1.png", use_container_width=True)
+        try:
+            from PIL import Image
+            import os
+            logo_path = os.path.join(os.path.dirname(__file__), "escudo-114x116-1.png")
+            if os.path.exists(logo_path):
+                logo = Image.open(logo_path)
+                st.image(logo, use_container_width=True)
+            else:
+                # Si no encuentra el logo, mostrar título sin logo
+                st.markdown('<h2 style="text-align: center; color: #667eea;">🏫</h2>', unsafe_allow_html=True)
+        except Exception as e:
+            # En caso de error, mostrar emoji como fallback
+            st.markdown('<h2 style="text-align: center; color: #667eea;">🏫</h2>', unsafe_allow_html=True)
+
         st.markdown('<h3 style="text-align: center; color: #667eea;">Institución Educativa<br>Pedacito de Cielo</h3>', unsafe_allow_html=True)
         st.markdown("---")
 
