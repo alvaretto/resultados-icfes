@@ -899,14 +899,17 @@ def main():
     # ========================================================================
 
     with st.sidebar:
-        # Logo de la institución
+        # Logo de la institución (centrado y con tamaño reducido)
         try:
             from PIL import Image
             import os
             logo_path = os.path.join(os.path.dirname(__file__), "escudo-114x116-1.png")
             if os.path.exists(logo_path):
                 logo = Image.open(logo_path)
-                st.image(logo, use_container_width=True)
+                # Centrar el logo con columnas y reducir tamaño al 60%
+                col1, col2, col3 = st.columns([1, 2, 1])
+                with col2:
+                    st.image(logo, width=100)
             else:
                 # Si no encuentra el logo, mostrar título sin logo
                 st.markdown('<h2 style="text-align: center; color: #667eea;">🏫</h2>', unsafe_allow_html=True)
