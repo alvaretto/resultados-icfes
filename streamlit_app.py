@@ -974,9 +974,6 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025, s
         st.markdown('<div class="subtitle">🏫 Avance Institucional Global 2024 vs 2025</div>', unsafe_allow_html=True)
         st.info("📌 Esta sección muestra el comparativo general de toda la institución (todos los estudiantes combinados)")
 
-        # Ficha Técnica (según estándares ICFES)
-        mostrar_ficha_tecnica(datos_2024, stats_institucional_2025, datos_2025_raw)
-
         # Métricas principales
         col1, col2, col3 = st.columns(3)
 
@@ -1027,6 +1024,10 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025, s
         st.plotly_chart(fig_global, use_container_width=True)
 
         st.markdown("---")
+
+        # Ficha Técnica (según estándares ICFES) - Al final de la pestaña
+        mostrar_ficha_tecnica(datos_2024, stats_institucional_2025, datos_2025_raw)
+
         st.info("💡 Para ver el análisis detallado por áreas de conocimiento, consulta la pestaña '📊 Avances por Áreas de Conocimiento'")
 
     # ==================== PESTAÑA 2: AVANCES POR MODELOS EDUCATIVOS ====================
