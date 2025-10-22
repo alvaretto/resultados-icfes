@@ -22,6 +22,7 @@ import streamlit as st
 import pandas as pd
 from typing import Dict, List, Optional
 import os
+import streamlit.components.v1 as components
 
 # ============================================================================
 # CONFIGURACIÓN
@@ -504,13 +505,45 @@ def mostrar_chat(df: pd.DataFrame = None, pagina_actual: str = "General", datos_
     # Contenedor para el historial de mensajes
     st.markdown("#### 💬 Conversación")
 
-    # Mostrar historial de mensajes
-    if len(st.session_state.chat_messages) == 0:
-        st.info("👋 ¡Hola! Soy tu asistente de IA. Puedes preguntarme sobre los resultados ICFES, interpretaciones, comparaciones entre años, y recomendaciones pedagógicas. ¿En qué puedo ayudarte?")
-    else:
-        for message in st.session_state.chat_messages:
-            with st.chat_message(message["role"]):
-                st.markdown(message["content"])
+    # Crear un contenedor para los mensajes
+    messages_container = st.container()
+
+    with messages_container:
+        # Mostrar historial de mensajes
+        if len(st.session_state.chat_messages) == 0:
+            st.info("👋 ¡Hola! Soy tu asistente de IA. Puedes preguntarme sobre los resultados ICFES, interpretaciones, comparaciones entre años, y recomendaciones pedagógicas. ¿En qué puedo ayudarte?")
+        else:
+            # Mostrar todos los mensajes del historial
+            for message in st.session_state.chat_messages:
+                with st.chat_message(message["role"]):
+                    st.markdown(message["content"])
+
+    # Scroll automático al final de la conversación
+    # Este componente HTML inyecta JavaScript para hacer scroll automático
+    if len(st.session_state.chat_messages) > 0:
+        components.html(
+            """
+            <script>
+                // Esperar a que la página cargue completamente
+                window.addEventListener('load', function() {
+                    // Scroll al final de la página
+                    window.parent.scrollTo({
+                        top: document.body.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                });
+
+                // También intentar scroll inmediato
+                setTimeout(function() {
+                    window.parent.scrollTo({
+                        top: document.body.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }, 100);
+            </script>
+            """,
+            height=0,
+        )
 
     # Input del usuario (siempre visible al final)
     prompt = st.chat_input("Escribe tu pregunta aquí...")
@@ -521,26 +554,23 @@ def mostrar_chat(df: pd.DataFrame = None, pagina_actual: str = "General", datos_
 
     # Procesar pregunta
     if prompt:
-        # Agregar mensaje del usuario
+        # Agregar mensaje del usuario al historial
         st.session_state.chat_messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(prompt)
 
         # Construir contexto
         contexto = ""
         if df is not None:
             contexto = construir_contexto_datos(df, pagina_actual, datos_2024)
 
-        # Generar y mostrar respuesta
-        with st.chat_message("assistant"):
-            with st.spinner("Pensando..."):
-                response = generar_respuesta(prompt, contexto)
-                st.markdown(response)
+        # Generar respuesta
+        with st.spinner("🤔 Pensando..."):
+            response = generar_respuesta(prompt, contexto)
 
         # Agregar respuesta al historial
         st.session_state.chat_messages.append({"role": "assistant", "content": response})
 
-        # Rerun para actualizar la interfaz
+        # Rerun para actualizar la interfaz y mostrar los nuevos mensajes
+        # El scroll automático se activará después del rerun
         st.rerun()
 
 # ============================================================================
