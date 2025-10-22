@@ -878,30 +878,11 @@ def crear_grafico_avances(datos_2024, datos_2025):
 # ============================================================================
 
 def main():
-    # Header principal
-    st.markdown('<div class="main-header">📊 Análisis Comparativo ICFES Saber 11°<br>Institución Educativa Pedacito de Cielo<br>2024 vs 2025</div>', unsafe_allow_html=True)
-
-    # Inicializar chat de IA
+    # Inicializar chat de IA (debe hacerse antes de cualquier otra cosa)
     inicializar_chat()
 
-    # Cargar datos
-    datos_2024 = cargar_datos_2024()
-    datos_2025_raw = cargar_datos_2025()
-    
-    if datos_2025_raw is None:
-        st.error("No se pudieron cargar los datos de 2025")
-        return
-    
-    # Calcular estadísticas 2025
-    stats_regular_2025 = calcular_estadisticas_2025(datos_2025_raw['df_regular'], 'Aula Regular')
-    stats_flexible_2025 = calcular_estadisticas_2025(datos_2025_raw['df_flexible'], 'Modelo Flexible')
-    stats_institucional_2025 = calcular_estadisticas_2025(datos_2025_raw['df_todos'], 'Todos')
-
-    # Calcular estadísticas por grupo
-    stats_grupos_2025 = calcular_estadisticas_por_grupo(datos_2025_raw['df_todos'])
-
     # ========================================================================
-    # SIDEBAR - NAVEGACIÓN
+    # SIDEBAR - NAVEGACIÓN Y TOGGLE DEL CHAT
     # ========================================================================
 
     with st.sidebar:
@@ -926,29 +907,106 @@ def main():
         st.markdown('<h3 style="text-align: center; color: #667eea;">Institución Educativa<br>Pedacito de Cielo</h3>', unsafe_allow_html=True)
         st.markdown("---")
 
-        pagina = st.radio(
-            "📑 Navegación",
-            [
-                "🏠 Inicio - Comparativo General",
-                "📊 Estadísticas por Estudiante",
-                "🎓 Estadísticas por Grado",
-                "📚 Estadísticas por Área",
-                "🏫 Estadísticas por Modelo",
-                "🏆 Rankings y Destacados",
-                "📥 Descargar Datos"
-            ]
-        )
-
-        st.markdown("---")
+        # Toggle para activar/desactivar chat (PRIMERO, antes de navegación)
         st.markdown("### 🤖 Asistente de IA")
 
-        # Toggle para activar/desactivar chat
+        # Inicializar estado si no existe
+        if "chat_activado" not in st.session_state:
+            st.session_state.chat_activado = False
+
         mostrar_chat_ia = st.checkbox(
             "Activar chat inteligente",
-            value=False,
+            value=st.session_state.chat_activado,
+            key="toggle_chat",
             help="Pregunta sobre los datos, interpretaciones y recomendaciones pedagógicas"
         )
 
+        # Actualizar estado
+        st.session_state.chat_activado = mostrar_chat_ia
+
+        # Mostrar información sobre el chat
+        if mostrar_chat_ia:
+            st.success("✅ Chat activado")
+            num_mensajes = len(st.session_state.get("chat_messages", []))
+            if num_mensajes > 0:
+                st.info(f"💬 {num_mensajes} mensajes")
+        else:
+            st.info("ℹ️ Activa el chat para preguntar")
+
+        st.markdown("---")
+
+        # Navegación (solo si el chat NO está activado)
+        if not mostrar_chat_ia:
+            pagina = st.radio(
+                "📑 Navegación",
+                [
+                    "🏠 Inicio - Comparativo General",
+                    "📊 Estadísticas por Estudiante",
+                    "🎓 Estadísticas por Grado",
+                    "📚 Estadísticas por Área",
+                    "🏫 Estadísticas por Modelo",
+                    "🏆 Rankings y Destacados",
+                    "📥 Descargar Datos"
+                ]
+            )
+        else:
+            # Si el chat está activado, no mostrar navegación
+            pagina = "Chat de IA"
+            st.info("💡 Desactiva el chat para volver a la navegación normal")
+
+    # ========================================================================
+    # RENDERIZADO CONDICIONAL: CHAT O CONTENIDO NORMAL
+    # ========================================================================
+
+    if mostrar_chat_ia:
+        # ====================================================================
+        # MODO CHAT: Mostrar SOLO la interfaz del chat (página independiente)
+        # ====================================================================
+
+        # Cargar datos (necesarios para el contexto del chat)
+        datos_2024 = cargar_datos_2024()
+        datos_2025_raw = cargar_datos_2025()
+
+        if datos_2025_raw is None:
+            st.error("No se pudieron cargar los datos de 2025")
+            return
+
+        # Obtener DataFrame actual
+        df_actual = datos_2025_raw['df_todos']
+
+        # Mostrar chat con datos de 2024 y 2025 (página completa dedicada al chat)
+        mostrar_chat(df=df_actual, pagina_actual="Chat de IA", datos_2024=datos_2024)
+
+        # Detener ejecución aquí - NO mostrar contenido normal
+        return
+
+    # ========================================================================
+    # MODO NORMAL: MOSTRAR CONTENIDO DE LA APLICACIÓN
+    # ========================================================================
+    # Si llegamos aquí, el chat NO está activado, por lo que mostramos
+    # el contenido normal de la aplicación (header, tablas, gráficos, análisis)
+
+    # Header principal (solo en modo normal)
+    st.markdown('<div class="main-header">📊 Análisis Comparativo ICFES Saber 11°<br>Institución Educativa Pedacito de Cielo<br>2024 vs 2025</div>', unsafe_allow_html=True)
+
+    # Cargar datos
+    datos_2024 = cargar_datos_2024()
+    datos_2025_raw = cargar_datos_2025()
+
+    if datos_2025_raw is None:
+        st.error("No se pudieron cargar los datos de 2025")
+        return
+
+    # Calcular estadísticas 2025
+    stats_regular_2025 = calcular_estadisticas_2025(datos_2025_raw['df_regular'], 'Aula Regular')
+    stats_flexible_2025 = calcular_estadisticas_2025(datos_2025_raw['df_flexible'], 'Modelo Flexible')
+    stats_institucional_2025 = calcular_estadisticas_2025(datos_2025_raw['df_todos'], 'Todos')
+
+    # Calcular estadísticas por grupo
+    stats_grupos_2025 = calcular_estadisticas_por_grupo(datos_2025_raw['df_todos'])
+
+    # Mostrar información en sidebar (solo en modo normal)
+    with st.sidebar:
         st.markdown("---")
         st.markdown("### 📅 Información")
         st.info(f"""
@@ -958,25 +1016,6 @@ def main():
 
         **Estudiantes 2025:** {stats_institucional_2025['estudiantes']}
         """)
-
-    # ========================================================================
-    # CHAT DE IA (si está activado)
-    # ========================================================================
-
-    if mostrar_chat_ia:
-        with st.expander("💬 Chat con Asistente de IA", expanded=True):
-            st.markdown("*Haz preguntas sobre los datos, interpretaciones y recomendaciones pedagógicas*")
-
-            # Determinar página actual para contexto
-            pagina_actual = pagina.split(" - ")[0] if " - " in pagina else pagina
-
-            # Obtener DataFrame actual según la página
-            df_actual = datos_2025_raw['df_todos']
-
-            # Mostrar chat con datos de 2024 y 2025
-            mostrar_chat(df=df_actual, pagina_actual=pagina_actual, datos_2024=datos_2024)
-
-        st.markdown("---")
 
     # ========================================================================
     # PÁGINA PRINCIPAL - COMPARATIVO GENERAL

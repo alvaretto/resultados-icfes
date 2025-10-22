@@ -45,15 +45,23 @@ MODELO_DEFAULT = "llama-3.3-70b"
 def inicializar_chat():
     """
     Inicializa el estado del chat en Streamlit session_state
+
+    IMPORTANTE: El historial de mensajes se mantiene persistente en session_state
+    y NO se reinicia automáticamente. Solo se limpia cuando el usuario hace clic
+    en el botón "Limpiar conversación".
     """
-    # Historial de mensajes
+    # Historial de mensajes (persistente entre navegaciones)
     if "chat_messages" not in st.session_state:
         st.session_state.chat_messages = []
-    
+
+    # Estado de activación del chat
+    if "chat_activado" not in st.session_state:
+        st.session_state.chat_activado = False
+
     # Cliente LLM
     if "llm_client" not in st.session_state:
         st.session_state.llm_client = None
-    
+
     # Configuración
     if "chat_config" not in st.session_state:
         st.session_state.chat_config = {
@@ -433,9 +441,17 @@ def mostrar_preguntas_sugeridas() -> Optional[str]:
     
     return None
 
+def limpiar_conversacion():
+    """
+    Limpia el historial de conversación del chat
+    """
+    st.session_state.chat_messages = []
+    st.success("✅ Conversación limpiada")
+    st.rerun()
+
 def mostrar_chat(df: pd.DataFrame = None, pagina_actual: str = "General", datos_2024: dict = None):
     """
-    Muestra la interfaz completa del chat de IA
+    Muestra la interfaz completa del chat de IA en una página independiente
 
     Args:
         df: DataFrame con los datos de 2025
@@ -444,53 +460,86 @@ def mostrar_chat(df: pd.DataFrame = None, pagina_actual: str = "General", datos_
     """
     # Inicializar
     inicializar_chat()
-    
+
     # Configurar cliente si no existe
     if st.session_state.llm_client is None:
         configurar_cliente_llm()
-    
-    # Header del chat
-    st.markdown("### 🤖 Asistente de IA - Resultados ICFES")
-    st.markdown("*Pregunta sobre los datos, interpretaciones y recomendaciones pedagógicas*")
-    
-    # Preguntas sugeridas
-    pregunta_sugerida = mostrar_preguntas_sugeridas()
-    
+
+    # Header del chat con diseño mejorado
+    st.markdown("""
+    <div style="
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+        border-radius: 15px;
+        text-align: center;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    ">
+        <h1 style="color: white; margin: 0;">🤖 Asistente de IA - Resultados ICFES</h1>
+        <p style="color: white; margin: 0.5rem 0 0 0; opacity: 0.9;">
+            Pregunta sobre los datos, interpretaciones y recomendaciones pedagógicas
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Botones de control en la parte superior
+    col1, col2, col3 = st.columns([2, 1, 1])
+
+    with col2:
+        if st.button("🗑️ Limpiar conversación", use_container_width=True, type="secondary"):
+            limpiar_conversacion()
+
+    with col3:
+        num_mensajes = len(st.session_state.chat_messages)
+        st.metric("Mensajes", num_mensajes)
+
     st.markdown("---")
-    
+
+    # Preguntas sugeridas
+    st.markdown("#### 💡 Preguntas Sugeridas")
+    pregunta_sugerida = mostrar_preguntas_sugeridas()
+
+    st.markdown("---")
+
+    # Contenedor para el historial de mensajes
+    st.markdown("#### 💬 Conversación")
+
     # Mostrar historial de mensajes
-    for message in st.session_state.chat_messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
-    
-    # Input del usuario
+    if len(st.session_state.chat_messages) == 0:
+        st.info("👋 ¡Hola! Soy tu asistente de IA. Puedes preguntarme sobre los resultados ICFES, interpretaciones, comparaciones entre años, y recomendaciones pedagógicas. ¿En qué puedo ayudarte?")
+    else:
+        for message in st.session_state.chat_messages:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+
+    # Input del usuario (siempre visible al final)
     prompt = st.chat_input("Escribe tu pregunta aquí...")
-    
+
     # Si hay pregunta sugerida, usarla
     if pregunta_sugerida:
         prompt = pregunta_sugerida
-    
+
     # Procesar pregunta
     if prompt:
         # Agregar mensaje del usuario
         st.session_state.chat_messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
-        
+
         # Construir contexto
         contexto = ""
         if df is not None:
             contexto = construir_contexto_datos(df, pagina_actual, datos_2024)
-        
+
         # Generar y mostrar respuesta
         with st.chat_message("assistant"):
             with st.spinner("Pensando..."):
                 response = generar_respuesta(prompt, contexto)
                 st.markdown(response)
-        
+
         # Agregar respuesta al historial
         st.session_state.chat_messages.append({"role": "assistant", "content": response})
-        
+
         # Rerun para actualizar la interfaz
         st.rerun()
 
