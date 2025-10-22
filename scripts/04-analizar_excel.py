@@ -49,6 +49,6 @@ def analizar_excel(ruta_archivo):
     return df
 
 if __name__ == '__main__':
-    ruta = '/home/proyectos/Escritorio/Resultados-ICFES-2025/INSCRITOS_EXAMEN SABER 11 (36).xls'
+    ruta = 'INSCRITOS_EXAMEN SABER 11 (36).xls'
     df = analizar_excel(ruta)
 
