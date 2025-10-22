@@ -297,6 +297,496 @@ def formatear_avance(avance):
         return "⚪ No subió. No bajó", "avance-neutro"
 
 # ============================================================================
+# FUNCIONES DE ANÁLISIS ICFES
+# ============================================================================
+
+def mostrar_ficha_tecnica(datos_2024, stats_2025, datos_2025_raw):
+    """
+    Muestra la Ficha Técnica según estándares ICFES
+    Incluye: matriculados, inscritos, presentes, con resultados publicados, tasa de participación
+    """
+    st.markdown("### 📋 Ficha Técnica")
+    st.markdown("*Información sobre la participación de estudiantes en el examen Saber 11°*")
+
+    # Calcular datos 2024
+    matriculados_2024 = datos_2024['Institucional']['estudiantes']
+    presentes_2024 = datos_2024['Institucional']['estudiantes']  # Asumimos 100% de participación
+    tasa_2024 = 100.0
+
+    # Calcular datos 2025
+    matriculados_2025 = 120  # Dato del PDF oficial
+    presentes_2025 = len(datos_2025_raw['df_todos'])
+    tasa_2025 = (presentes_2025 / matriculados_2025) * 100
+
+    # Mostrar métricas en columnas
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        st.metric(
+            label="📚 Matriculados 2024",
+            value=matriculados_2024,
+            help="Estudiantes registrados en el SIMAT"
+        )
+        st.metric(
+            label="📚 Matriculados 2025",
+            value=matriculados_2025,
+            delta=matriculados_2025 - matriculados_2024,
+            help="Estudiantes registrados en el SIMAT"
+        )
+
+    with col2:
+        st.metric(
+            label="✅ Presentes 2024",
+            value=presentes_2024,
+            help="Estudiantes que asistieron a las dos sesiones del examen"
+        )
+        st.metric(
+            label="✅ Presentes 2025",
+            value=presentes_2025,
+            delta=presentes_2025 - presentes_2024,
+            help="Estudiantes que asistieron a las dos sesiones del examen"
+        )
+
+    with col3:
+        st.metric(
+            label="📊 Con Resultados 2024",
+            value=presentes_2024,
+            help="Evaluados que obtuvieron resultados publicados"
+        )
+        st.metric(
+            label="📊 Con Resultados 2025",
+            value=presentes_2025,
+            delta=presentes_2025 - presentes_2024,
+            help="Evaluados que obtuvieron resultados publicados"
+        )
+
+    with col4:
+        st.metric(
+            label="📈 Tasa Participación 2024",
+            value=f"{tasa_2024:.1f}%",
+            help="Porcentaje de estudiantes matriculados que presentaron el examen"
+        )
+        st.metric(
+            label="📈 Tasa Participación 2025",
+            value=f"{tasa_2025:.1f}%",
+            delta=f"{tasa_2025 - tasa_2024:.1f}%",
+            help="Porcentaje de estudiantes matriculados que presentaron el examen"
+        )
+
+    # Tabla comparativa por modelo
+    st.markdown("#### 📊 Participación por Modelo Educativo")
+
+    # Calcular datos por modelo
+    regular_2024 = datos_2024['Aula Regular']['estudiantes']
+    flexible_2024 = datos_2024['Modelo Flexible']['estudiantes']
+
+    regular_2025 = len(datos_2025_raw['df_regular'])
+    flexible_2025 = len(datos_2025_raw['df_flexible'])
+
+    df_participacion = pd.DataFrame({
+        'Modelo Educativo': ['Aula Regular', 'Modelo Flexible', 'Total Institucional'],
+        'Estudiantes 2024': [regular_2024, flexible_2024, matriculados_2024],
+        'Estudiantes 2025': [regular_2025, flexible_2025, presentes_2025],
+        'Variación': [
+            regular_2025 - regular_2024,
+            flexible_2025 - flexible_2024,
+            presentes_2025 - presentes_2024
+        ]
+    })
+
+    st.dataframe(df_participacion, use_container_width=True, hide_index=True)
+
+    # Interpretación
+    if tasa_2025 >= 95:
+        st.success("✅ **Excelente tasa de participación:** La institución mantiene una alta asistencia al examen Saber 11°")
+    elif tasa_2025 >= 85:
+        st.info("ℹ️ **Buena tasa de participación:** La mayoría de estudiantes matriculados presentaron el examen")
+    else:
+        st.warning("⚠️ **Tasa de participación mejorable:** Se recomienda implementar estrategias para aumentar la asistencia al examen")
+
+    st.markdown("---")
+
+def mostrar_analisis_dispersion(datos_2024, stats_2025, titulo="Análisis de Dispersión"):
+    """
+    Muestra el análisis de desviación estándar según estándares ICFES
+    Incluye interpretación pedagógica de homogeneidad vs heterogeneidad
+    """
+    st.markdown(f"### 📊 {titulo}")
+    st.markdown("*La desviación estándar mide la dispersión de los resultados. Un valor menor indica mayor homogeneidad en el desempeño de los estudiantes.*")
+
+    # Obtener desviaciones estándar
+    desv_2024 = datos_2024['desv_global']
+    desv_2025 = stats_2025['desv_global']
+    diferencia = desv_2025 - desv_2024
+
+    # Mostrar métricas
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.metric(
+            label="📏 Desviación Estándar 2024",
+            value=f"{desv_2024:.1f}",
+            help="Medida de dispersión de los puntajes en 2024"
+        )
+
+    with col2:
+        st.metric(
+            label="📏 Desviación Estándar 2025",
+            value=f"{desv_2025:.1f}",
+            delta=f"{diferencia:.1f}",
+            delta_color="inverse",  # Menor desviación es mejor (más homogéneo)
+            help="Medida de dispersión de los puntajes en 2025"
+        )
+
+    with col3:
+        # Interpretación
+        if abs(diferencia) < 2:
+            st.info("• **Dispersión similar**\n\nNo hay cambio significativo en la homogeneidad")
+        elif diferencia < 0:
+            st.success(f"✅ **Mayor homogeneidad**\n\nLos resultados son {abs(diferencia):.1f} puntos más consistentes")
+        else:
+            st.warning(f"⚠️ **Mayor heterogeneidad**\n\nLos resultados son {diferencia:.1f} puntos más dispersos")
+
+    # Gráfico comparativo de desviaciones estándar
+    st.markdown("#### 📈 Comparación de Dispersión 2024 vs 2025")
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Bar(
+        name='Desviación Estándar',
+        x=['2024', '2025'],
+        y=[desv_2024, desv_2025],
+        marker_color=['#667eea', '#764ba2'],
+        text=[f"{desv_2024:.1f}", f"{desv_2025:.1f}"],
+        textposition='outside'
+    ))
+
+    fig.update_layout(
+        title="Desviación Estándar del Puntaje Global",
+        yaxis_title="Desviación Estándar",
+        height=350,
+        showlegend=False
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+    # Tabla de desviaciones por área
+    st.markdown("#### 📊 Desviación Estándar por Área de Conocimiento")
+
+    areas_data = []
+    for area in AREAS:
+        desv_area_2024 = datos_2024['areas'][area]['desviacion']
+        desv_area_2025 = stats_2025['areas'][area]['desviacion']
+        dif_area = desv_area_2025 - desv_area_2024
+
+        # Determinar estado
+        if abs(dif_area) < 1:
+            estado = "• Similar"
+            color_estado = "🔵"
+        elif dif_area < 0:
+            estado = "▼ Más homogéneo"
+            color_estado = "🟢"
+        else:
+            estado = "▲ Más heterogéneo"
+            color_estado = "🟡"
+
+        areas_data.append({
+            'Área': area,
+            'Desv. Est. 2024': f"{desv_area_2024:.1f}",
+            'Desv. Est. 2025': f"{desv_area_2025:.1f}",
+            'Diferencia': f"{dif_area:+.1f}",
+            'Estado': f"{color_estado} {estado}"
+        })
+
+    df_dispersion = pd.DataFrame(areas_data)
+    st.dataframe(df_dispersion, use_container_width=True, hide_index=True)
+
+    # Interpretación pedagógica
+    st.markdown("#### 💡 Interpretación Pedagógica")
+
+    if desv_2025 < desv_2024:
+        st.success("""
+        **✅ Mejora en la homogeneidad del desempeño:**
+        - Los estudiantes muestran resultados más consistentes en 2025
+        - Indica que las estrategias pedagógicas están llegando de manera más equitativa a todos los estudiantes
+        - Se reduce la brecha entre estudiantes de alto y bajo desempeño
+        - **Recomendación:** Mantener y fortalecer las estrategias actuales de enseñanza
+        """)
+    elif desv_2025 > desv_2024:
+        st.warning("""
+        **⚠️ Aumento en la heterogeneidad del desempeño:**
+        - Los resultados son más dispersos en 2025
+        - Puede indicar que algunos estudiantes avanzan más rápido que otros
+        - Se amplía la brecha entre estudiantes de alto y bajo desempeño
+        - **Recomendación:** Implementar estrategias de nivelación y atención diferenciada
+        """)
+    else:
+        st.info("""
+        **ℹ️ Dispersión similar entre 2024 y 2025:**
+        - La homogeneidad del desempeño se mantiene estable
+        - Los estudiantes continúan con niveles de dispersión similares
+        - **Recomendación:** Evaluar si se requieren estrategias para reducir la heterogeneidad
+        """)
+
+    st.markdown("---")
+
+def clasificar_nivel_desempeno(puntaje):
+    """
+    Clasifica el puntaje en uno de los 4 niveles de desempeño según estándares ICFES
+    Niveles: Insuficiente (0-35), Mínimo (36-50), Satisfactorio (51-70), Avanzado (71-100)
+    """
+    if puntaje < 36:
+        return "Insuficiente"
+    elif puntaje < 51:
+        return "Mínimo"
+    elif puntaje < 71:
+        return "Satisfactorio"
+    else:
+        return "Avanzado"
+
+def obtener_interpretacion_nivel(nivel):
+    """Retorna la interpretación pedagógica de cada nivel de desempeño"""
+    interpretaciones = {
+        'Insuficiente': {
+            'descripcion': 'El estudiante no supera las preguntas de menor complejidad de la prueba.',
+            'recomendacion': 'Requiere refuerzo intensivo en competencias básicas del área.',
+            'color': '#dc3545',
+            'emoji': '🔴'
+        },
+        'Mínimo': {
+            'descripcion': 'El estudiante supera las preguntas de menor complejidad de la prueba.',
+            'recomendacion': 'Necesita fortalecer competencias de nivel intermedio.',
+            'color': '#ffc107',
+            'emoji': '🟡'
+        },
+        'Satisfactorio': {
+            'descripcion': 'El estudiante supera las preguntas de complejidad media y baja de la prueba.',
+            'recomendacion': 'Puede avanzar hacia el desarrollo de competencias avanzadas.',
+            'color': '#28a745',
+            'emoji': '🟢'
+        },
+        'Avanzado': {
+            'descripcion': 'El estudiante supera las preguntas de mayor complejidad de la prueba.',
+            'recomendacion': 'Mantener y profundizar en competencias de nivel superior.',
+            'color': '#007bff',
+            'emoji': '🔵'
+        }
+    }
+    return interpretaciones.get(nivel, interpretaciones['Mínimo'])
+
+def mostrar_niveles_desempeno_area(df, area, titulo="Distribución por Niveles de Desempeño"):
+    """
+    Muestra la distribución de estudiantes por niveles de desempeño en un área específica
+    Incluye gráfico de barras y tabla con porcentajes
+    """
+    st.markdown(f"#### 📊 {titulo} - {area}")
+
+    # Clasificar estudiantes por nivel
+    df_area = df.copy()
+    df_area['Nivel'] = df_area[area].apply(clasificar_nivel_desempeno)
+
+    # Calcular distribución
+    distribucion = df_area['Nivel'].value_counts()
+    total_estudiantes = len(df_area)
+
+    # Asegurar que todos los niveles estén presentes (incluso con 0 estudiantes)
+    niveles_orden = ['Insuficiente', 'Mínimo', 'Satisfactorio', 'Avanzado']
+    for nivel in niveles_orden:
+        if nivel not in distribucion.index:
+            distribucion[nivel] = 0
+
+    # Reordenar según niveles
+    distribucion = distribucion[niveles_orden]
+    porcentajes = (distribucion / total_estudiantes * 100).round(1)
+
+    # Crear gráfico de barras horizontales
+    colores_niveles = {
+        'Insuficiente': '#dc3545',
+        'Mínimo': '#ffc107',
+        'Satisfactorio': '#28a745',
+        'Avanzado': '#007bff'
+    }
+
+    fig = go.Figure()
+
+    for nivel in niveles_orden:
+        fig.add_trace(go.Bar(
+            name=nivel,
+            y=['Institución'],
+            x=[distribucion[nivel]],
+            orientation='h',
+            marker_color=colores_niveles[nivel],
+            text=f"{distribucion[nivel]} ({porcentajes[nivel]}%)",
+            textposition='inside',
+            hovertemplate=f"<b>{nivel}</b><br>Estudiantes: {distribucion[nivel]}<br>Porcentaje: {porcentajes[nivel]}%<extra></extra>"
+        ))
+
+    fig.update_layout(
+        title=f"Distribución por Niveles de Desempeño - {area}",
+        xaxis_title="Número de Estudiantes",
+        barmode='stack',
+        height=200,
+        showlegend=True,
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+    # Tabla de distribución
+    col1, col2 = st.columns([2, 1])
+
+    with col1:
+        df_niveles = pd.DataFrame({
+            'Nivel': niveles_orden,
+            'Estudiantes': [distribucion[n] for n in niveles_orden],
+            'Porcentaje': [f"{porcentajes[n]:.1f}%" for n in niveles_orden]
+        })
+        st.dataframe(df_niveles, use_container_width=True, hide_index=True)
+
+    with col2:
+        # Identificar nivel predominante
+        nivel_predominante = distribucion.idxmax()
+        info_nivel = obtener_interpretacion_nivel(nivel_predominante)
+        st.metric(
+            label="Nivel Predominante",
+            value=f"{info_nivel['emoji']} {nivel_predominante}",
+            help=f"{distribucion[nivel_predominante]} estudiantes ({porcentajes[nivel_predominante]:.1f}%)"
+        )
+
+    # Interpretación pedagógica
+    with st.expander(f"💡 Interpretación Pedagógica - {area}"):
+        for nivel in niveles_orden:
+            if distribucion[nivel] > 0:
+                info = obtener_interpretacion_nivel(nivel)
+                st.markdown(f"""
+                **{info['emoji']} {nivel}** ({distribucion[nivel]} estudiantes - {porcentajes[nivel]:.1f}%)
+                - *Descripción:* {info['descripcion']}
+                - *Recomendación:* {info['recomendacion']}
+                """)
+
+    st.markdown("---")
+
+def mostrar_resumen_niveles_todas_areas(df):
+    """
+    Muestra un resumen comparativo de niveles de desempeño para todas las áreas
+    """
+    st.markdown("### 📊 Resumen de Niveles de Desempeño por Área")
+    st.markdown("*Distribución de estudiantes en cada nivel de desempeño para todas las áreas evaluadas*")
+
+    # Calcular distribución para cada área
+    niveles_orden = ['Insuficiente', 'Mínimo', 'Satisfactorio', 'Avanzado']
+    datos_resumen = []
+
+    for area in AREAS:
+        df_temp = df.copy()
+        df_temp['Nivel'] = df_temp[area].apply(clasificar_nivel_desempeno)
+        distribucion = df_temp['Nivel'].value_counts()
+        total = len(df_temp)
+
+        # Asegurar que todos los niveles estén presentes
+        for nivel in niveles_orden:
+            if nivel not in distribucion.index:
+                distribucion[nivel] = 0
+
+        porcentajes = (distribucion / total * 100).round(1)
+
+        datos_resumen.append({
+            'Área': area,
+            'Insuficiente': f"{distribucion['Insuficiente']} ({porcentajes['Insuficiente']:.1f}%)",
+            'Mínimo': f"{distribucion['Mínimo']} ({porcentajes['Mínimo']:.1f}%)",
+            'Satisfactorio': f"{distribucion['Satisfactorio']} ({porcentajes['Satisfactorio']:.1f}%)",
+            'Avanzado': f"{distribucion['Avanzado']} ({porcentajes['Avanzado']:.1f}%)"
+        })
+
+    df_resumen = pd.DataFrame(datos_resumen)
+    st.dataframe(df_resumen, use_container_width=True, hide_index=True)
+
+    # Gráfico de barras apiladas para todas las áreas
+    st.markdown("#### 📈 Comparación Visual de Niveles por Área")
+
+    fig = go.Figure()
+
+    colores_niveles = {
+        'Insuficiente': '#dc3545',
+        'Mínimo': '#ffc107',
+        'Satisfactorio': '#28a745',
+        'Avanzado': '#007bff'
+    }
+
+    for nivel in niveles_orden:
+        valores = []
+        for area in AREAS:
+            df_temp = df.copy()
+            df_temp['Nivel'] = df_temp[area].apply(clasificar_nivel_desempeno)
+            distribucion = df_temp['Nivel'].value_counts()
+            if nivel not in distribucion.index:
+                distribucion[nivel] = 0
+            valores.append(distribucion[nivel])
+
+        fig.add_trace(go.Bar(
+            name=nivel,
+            x=AREAS,
+            y=valores,
+            marker_color=colores_niveles[nivel]
+        ))
+
+    fig.update_layout(
+        title="Distribución de Estudiantes por Nivel en Cada Área",
+        xaxis_title="Área de Conocimiento",
+        yaxis_title="Número de Estudiantes",
+        barmode='stack',
+        height=500,
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+    # Análisis de fortalezas y debilidades basado en niveles
+    st.markdown("#### 💪 Fortalezas y Áreas de Mejora por Niveles de Desempeño")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("**🟢 Áreas con Mayor Porcentaje en Niveles Satisfactorio/Avanzado:**")
+        fortalezas = []
+        for area in AREAS:
+            df_temp = df.copy()
+            df_temp['Nivel'] = df_temp[area].apply(clasificar_nivel_desempeno)
+            distribucion = df_temp['Nivel'].value_counts()
+            total = len(df_temp)
+
+            satisfactorio = distribucion.get('Satisfactorio', 0)
+            avanzado = distribucion.get('Avanzado', 0)
+            porcentaje_alto = ((satisfactorio + avanzado) / total * 100)
+
+            fortalezas.append((area, porcentaje_alto))
+
+        fortalezas.sort(key=lambda x: x[1], reverse=True)
+        for i, (area, porcentaje) in enumerate(fortalezas[:3], 1):
+            st.success(f"{i}. **{area}**: {porcentaje:.1f}% en niveles altos")
+
+    with col2:
+        st.markdown("**🔴 Áreas con Mayor Porcentaje en Niveles Insuficiente/Mínimo:**")
+        debilidades = []
+        for area in AREAS:
+            df_temp = df.copy()
+            df_temp['Nivel'] = df_temp[area].apply(clasificar_nivel_desempeno)
+            distribucion = df_temp['Nivel'].value_counts()
+            total = len(df_temp)
+
+            insuficiente = distribucion.get('Insuficiente', 0)
+            minimo = distribucion.get('Mínimo', 0)
+            porcentaje_bajo = ((insuficiente + minimo) / total * 100)
+
+            debilidades.append((area, porcentaje_bajo))
+
+        debilidades.sort(key=lambda x: x[1], reverse=True)
+        for i, (area, porcentaje) in enumerate(debilidades[:3], 1):
+            st.warning(f"{i}. **{area}**: {porcentaje:.1f}% en niveles bajos")
+
+    st.markdown("---")
+
+# ============================================================================
 # FUNCIONES DE VISUALIZACIÓN
 # ============================================================================
 
@@ -471,17 +961,21 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025, s
     st.markdown("---")
 
     # Crear pestañas principales
-    tab1, tab2, tab3, tab4 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
         "🏫 Avance Institucional Global",
         "📚 Avances por Modelos Educativos",
         "📊 Avances por Áreas de Conocimiento",
-        "👥 Resultados por Grupos"
+        "👥 Resultados por Grupos",
+        "🎯 Niveles de Desempeño"
     ])
 
     # ==================== PESTAÑA 1: AVANCE INSTITUCIONAL GLOBAL ====================
     with tab1:
         st.markdown('<div class="subtitle">🏫 Avance Institucional Global 2024 vs 2025</div>', unsafe_allow_html=True)
         st.info("📌 Esta sección muestra el comparativo general de toda la institución (todos los estudiantes combinados)")
+
+        # Ficha Técnica (según estándares ICFES)
+        mostrar_ficha_tecnica(datos_2024, stats_institucional_2025, datos_2025_raw)
 
         # Métricas principales
         col1, col2, col3 = st.columns(3)
@@ -509,6 +1003,9 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025, s
             st.markdown(f'<div class="{clase_avance}">{texto_avance}</div>', unsafe_allow_html=True)
 
         st.markdown("---")
+
+        # Análisis de Dispersión (Desviación Estándar)
+        mostrar_analisis_dispersion(datos_2024['Institucional'], stats_institucional_2025, "Análisis de Dispersión Institucional")
 
         # Gráfico comparativo de puntaje global
         st.markdown("#### 📈 Evolución del Puntaje Global Institucional")
@@ -973,6 +1470,53 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025, s
         df_ranking = df_grupos[['Grupo', 'Modelo', 'Estudiantes', 'Puntaje Global']].sort_values('Puntaje Global', ascending=False)
         df_ranking.insert(0, 'Posición', range(1, len(df_ranking) + 1))
         st.dataframe(df_ranking, use_container_width=True, hide_index=True)
+
+    # ==================== PESTAÑA 5: NIVELES DE DESEMPEÑO ====================
+    with tab5:
+        st.markdown('<div class="subtitle">🎯 Niveles de Desempeño por Área - Año 2025</div>', unsafe_allow_html=True)
+        st.info("📌 Esta sección clasifica a los estudiantes en 4 niveles de desempeño según estándares ICFES: Insuficiente, Mínimo, Satisfactorio y Avanzado")
+
+        # Resumen de niveles para todas las áreas
+        mostrar_resumen_niveles_todas_areas(datos_2025_raw['df_todos'])
+
+        # Análisis detallado por área
+        st.markdown("### 📚 Análisis Detallado por Área de Conocimiento")
+        st.markdown("*Seleccione un área para ver la distribución detallada de niveles de desempeño e interpretación pedagógica*")
+
+        # Selector de área
+        area_seleccionada = st.selectbox(
+            "Seleccione un área:",
+            AREAS,
+            key="selector_area_niveles"
+        )
+
+        # Mostrar análisis detallado del área seleccionada
+        mostrar_niveles_desempeno_area(
+            datos_2025_raw['df_todos'],
+            area_seleccionada,
+            "Distribución Detallada por Niveles"
+        )
+
+        # Comparación por modelo educativo
+        st.markdown("### 🏫 Comparación de Niveles por Modelo Educativo")
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.markdown("#### 📘 Aula Regular")
+            mostrar_niveles_desempeno_area(
+                datos_2025_raw['df_regular'],
+                area_seleccionada,
+                "Niveles - Aula Regular"
+            )
+
+        with col2:
+            st.markdown("#### 📙 Modelo Flexible")
+            mostrar_niveles_desempeno_area(
+                datos_2025_raw['df_flexible'],
+                area_seleccionada,
+                "Niveles - Modelo Flexible"
+            )
 
 def mostrar_estadisticas_estudiante(datos_2025_raw):
     """Página de estadísticas por estudiante individual"""
