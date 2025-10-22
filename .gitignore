@@ -67,3 +67,6 @@ geckodriver.log
 *.tmp
 *.temp
 
+
+# Augment AI configuration
+.augment/
