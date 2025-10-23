@@ -178,7 +178,7 @@ Después de ejecutar el inspector, deberías poder responder:
 
 ### Problema 1: El script no encuentra elementos
 
-**Solución**: 
+**Solución**:
 - Aumenta los tiempos de espera (`time.sleep()`)
 - Verifica que la página esté completamente cargada
 - Revisa los selectores CSS
@@ -267,3 +267,9 @@ python3 inspeccionar_html_resultados.py
 
 Una vez que tengas los resultados, podremos completar el script de extracción y generar el Excel consolidado.
 
+
+---
+
+**Última actualización:** 2025-10-23  
+**Versión:** 2.0  
+**Estado:** ✅ Funcional

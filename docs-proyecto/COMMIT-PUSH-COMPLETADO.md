@@ -74,19 +74,19 @@ To https://github.com/alvaretto/resultados-icfes.git
 ## 📊 HISTORIAL DE COMMITS RECIENTES
 
 ```
-e87dc86 (HEAD -> main, origin/main) 
+e87dc86 (HEAD -> main, origin/main)
   fix: Corregir cálculo del avance institucional global 2024-2025 (de +4 a +1 punto)
 
-0d36829 
+0d36829
   CORRECCIÓN URGENTE: Aplicar regla de redondeo a avances institucionales
 
-9c5bf87 
+9c5bf87
   Mejorar robustez de carga de datos históricos y manejo de errores
 
-3ed518a 
+3ed518a
   Verificar datos de referencia 2024 - Confirmación de valores correctos
 
-84d1b29 
+84d1b29
   Agregar sección de avances institucionales 2024-2025
 ```
 
@@ -117,3 +117,9 @@ e87dc86 (HEAD -> main, origin/main)
 
 **Usuario**: alvaretto
 
+
+---
+
+**Última actualización:** 2025-10-23  
+**Versión:** 2.0  
+**Estado:** ✅ Funcional

@@ -152,3 +152,9 @@ Crear `00-ejecutar_pipeline_completo.py` que:
 - Realizar commit y push después de cada fase
 - Hacer tests antes de publicar cambios
 
+
+---
+
+**Última actualización:** 2025-10-23  
+**Versión:** 2.0  
+**Estado:** ✅ Funcional

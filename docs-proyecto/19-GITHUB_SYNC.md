@@ -151,7 +151,7 @@ El archivo `.gitignore` está configurado para **NO subir** los siguientes archi
    ```bash
    # Quitar del staging
    git reset HEAD nombre_archivo.pdf
-   
+
    # O deshacer el último commit (sin perder cambios)
    git reset --soft HEAD~1
    ```
@@ -307,7 +307,13 @@ xdg-open https://github.com/alvaretto/resultados-icfes
 
 ---
 
-**Configurado el**: 14 de octubre de 2025  
-**Repositorio**: https://github.com/alvaretto/resultados-icfes  
+**Configurado el**: 14 de octubre de 2025
+**Repositorio**: https://github.com/alvaretto/resultados-icfes
 **Estado**: ✅ Completamente configurado y funcional
 
+
+---
+
+**Última actualización:** 2025-10-23  
+**Versión:** 2.0  
+**Estado:** ✅ Funcional

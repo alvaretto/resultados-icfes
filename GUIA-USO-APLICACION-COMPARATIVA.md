@@ -325,8 +325,6 @@ streamlit run streamlit_app.py
 
 ---
 
-**Fecha de creación:** 2025-10-21  
-**Versión:** 1.0  
-**Aplicación:** Análisis Comparativo ICFES 2024 vs 2025  
-**Institución:** Pedacito de Cielo
-
+**Última actualización:** 2025-10-23  
+**Versión:** 2.0  
+**Estado:** ✅ Funcional

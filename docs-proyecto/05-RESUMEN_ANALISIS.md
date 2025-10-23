@@ -5,7 +5,7 @@
 ### Datos Disponibles:
 - **Total de estudiantes**: 36
 - **Ubicación**: La Tebaida, Quindío
-- **Tipos de documento**: 
+- **Tipos de documento**:
   - TI (Tarjeta de Identidad): 31 estudiantes
   - CC (Cédula de Ciudadanía): 5 estudiantes
 
@@ -166,3 +166,9 @@ Si el proceso manual es muy tedioso, considerar:
 5. ⏳ Ejecutar descarga masiva
 6. ⏳ Verificar y organizar PDFs descargados
 
+
+---
+
+**Última actualización:** 2025-10-23  
+**Versión:** 2.0  
+**Estado:** ✅ Funcional

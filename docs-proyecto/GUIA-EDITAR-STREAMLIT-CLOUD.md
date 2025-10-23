@@ -13,7 +13,7 @@ resultados-icfes · main · app_resultados_icfes.py
 
 ## ⚠️ Problema Identificado
 
-**Archivo actual:** `app_resultados_icfes.py` (versión antigua, solo Aula Regular)  
+**Archivo actual:** `app_resultados_icfes.py` (versión antigua, solo Aula Regular)
 **Archivo necesario:** `app_resultados_icfes_completo.py` (versión completa con Modelo Flexible)
 
 **Por eso no ves el Modelo Flexible** - Streamlit Cloud está ejecutando el archivo incorrecto.
@@ -55,9 +55,9 @@ En la página de Settings verás varios campos:
 1. **App name:** resultados-icfes (dejar como está)
 
 2. **Main file path:** `app_resultados_icfes.py` ← **CAMBIAR ESTO**
-   
+
    **Cambiar a:** `app_resultados_icfes_completo.py`
-   
+
    ```
    ┌─────────────────────────────────────────┐
    │ Main file path                          │
@@ -326,6 +326,7 @@ Una vez que cambies el Main file path y hagas Reboot, deberías ver toda la func
 
 ---
 
-**Creado:** 2025-10-16  
-**Última actualización:** 2025-10-16 15:25
+**Creado:** 2025-10-16
+---
+**Última actualización:** 2025-10-23  
 

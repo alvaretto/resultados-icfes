@@ -1,7 +1,7 @@
 # 🤖 Propuesta: Chat de IA Integrado para Análisis de Resultados ICFES
 
-**Fecha:** 22 de octubre de 2025  
-**Proyecto:** Resultados ICFES - Pedacito de Cielo  
+**Fecha:** 22 de octubre de 2025
+**Proyecto:** Resultados ICFES - Pedacito de Cielo
 **Objetivo:** Implementar un asistente de IA conversacional para ayudar a usuarios a interpretar y analizar datos del ICFES
 
 ---
@@ -28,10 +28,10 @@ Integrar un chat de IA en la aplicación Streamlit de Resultados ICFES que permi
 - Comparar resultados entre años, modelos educativos y grupos
 
 ### Requisitos Técnicos Clave
-✅ **Modelo open source** (código abierto)  
-✅ **Ventana de contexto grande** (mínimo 32K, idealmente 128K+ tokens)  
-✅ **Soporte de español de alta calidad**  
-✅ **API gratuita o económica**  
+✅ **Modelo open source** (código abierto)
+✅ **Ventana de contexto grande** (mínimo 32K, idealmente 128K+ tokens)
+✅ **Soporte de español de alta calidad**
+✅ **API gratuita o económica**
 ✅ **Integración con Streamlit**
 
 ---
@@ -213,9 +213,9 @@ Integrar un chat de IA en la aplicación Streamlit de Resultados ICFES que permi
 
 ### Opción 1: **API Gratuita (Groq)** ⭐ RECOMENDADO PARA INICIO
 
-**Proveedor:** Groq Cloud  
-**Modelo:** DeepSeek R1 o Llama 3.3 70B  
-**Costo:** Gratis  
+**Proveedor:** Groq Cloud
+**Modelo:** DeepSeek R1 o Llama 3.3 70B
+**Costo:** Gratis
 **Límites:** 14,400 requests/día, 30 req/min
 
 **Ventajas:**
@@ -246,9 +246,9 @@ response = client.chat.completions.create(
 
 ### Opción 2: **Ollama Local** 🏠 RECOMENDADO PARA PRIVACIDAD
 
-**Proveedor:** Ollama (local)  
-**Modelo:** Qwen 2.5 14B o Llama 3.3 70B  
-**Costo:** Gratis (hardware propio)  
+**Proveedor:** Ollama (local)
+**Modelo:** Qwen 2.5 14B o Llama 3.3 70B
+**Costo:** Gratis (hardware propio)
 **Requisitos:** 16GB+ RAM, GPU opcional
 
 **Ventajas:**
@@ -287,9 +287,9 @@ response = ollama.chat(
 
 ### Opción 3: **Together.ai** 💰 ECONÓMICO Y ESCALABLE
 
-**Proveedor:** Together.ai  
-**Modelo:** DeepSeek V3, Llama 3.3, Qwen 2.5  
-**Costo:** $1M tokens gratis/mes, luego $0.20-0.60 por 1M tokens  
+**Proveedor:** Together.ai
+**Modelo:** DeepSeek V3, Llama 3.3, Qwen 2.5
+**Costo:** $1M tokens gratis/mes, luego $0.20-0.60 por 1M tokens
 **Límites:** Muy generosos
 
 **Ventajas:**
@@ -317,7 +317,7 @@ response = ollama.chat(
 | **Integración Streamlit** | Excelente | Excelente |
 | **Recomendación** | ✅ Para proyecto complejo | ✅ Para RAG simple |
 
-### Recomendación: **LangChain** 
+### Recomendación: **LangChain**
 
 **Razones:**
 - Más flexible para futuras expansiones
@@ -731,7 +731,8 @@ Para dudas sobre la implementación:
 ---
 
 **Documento creado:** 22 de octubre de 2025
-**Última actualización:** 22 de octubre de 2025
-**Versión:** 1.0
+---
+**Última actualización:** 2025-10-23  
+**Versión:** 2.0  
 
 

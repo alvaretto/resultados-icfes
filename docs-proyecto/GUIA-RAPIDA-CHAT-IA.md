@@ -1,7 +1,7 @@
 # 🚀 Guía Rápida: Implementación del Chat de IA
 
-**Tiempo estimado:** 15-30 minutos  
-**Nivel:** Intermedio  
+**Tiempo estimado:** 15-30 minutos
+**Nivel:** Intermedio
 **Requisitos:** Python 3.8+, cuenta en Groq (gratis)
 
 ---
@@ -106,25 +106,25 @@ from app.chat_ia_icfes import mostrar_chat, inicializar_chat
 # En la función main(), después de cargar los datos
 def main():
     # ... código existente ...
-    
+
     # Cargar datos
     datos_2024 = cargar_datos_2024()
     datos_2025_raw = cargar_datos_2025()
-    
+
     # ... código existente ...
-    
+
     # AGREGAR: Inicializar chat
     inicializar_chat()
-    
+
     # En el sidebar, agregar opción de chat
     with st.sidebar:
         # ... código existente del sidebar ...
-        
+
         st.markdown("---")
-        
+
         # AGREGAR: Toggle para mostrar/ocultar chat
         mostrar_chat_ia = st.checkbox("🤖 Activar Asistente de IA", value=False)
-    
+
     # AGREGAR: Mostrar chat si está activado
     if mostrar_chat_ia:
         with st.expander("🤖 Chat con Asistente de IA", expanded=True):
@@ -153,7 +153,7 @@ tab1, tab2, tab3, tab4, tab5, tab_chat = st.tabs([
 with tab_chat:
     st.markdown("### 🤖 Asistente de IA para Análisis ICFES")
     st.info("💡 Pregunta sobre los datos, interpretaciones y recomendaciones pedagógicas")
-    
+
     df_actual = datos_2025_raw['df_todos']
     mostrar_chat(df=df_actual, pagina_actual="Chat IA")
 ```
@@ -354,6 +354,7 @@ Revisa la documentación completa en `PROPUESTA-CHAT-IA-ICFES.md` o consulta los
 
 ---
 
-**Última actualización:** 22 de octubre de 2025  
-**Versión:** 1.0
+---
+**Última actualización:** 2025-10-23  
+**Versión:** 2.0  
 

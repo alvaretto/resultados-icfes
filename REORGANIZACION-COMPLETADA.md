@@ -66,7 +66,7 @@ Resultados-ICFES-2025/
 ## ✅ Verificaciones Realizadas
 
 ### ✅ Archivos de Datos
-- PCIELO-RESULTADOS-ICFES-MODELO-AULA-REGULAR-2025.xlsx: **40 filas** ✅
+##
 - PCIELO-RESULTADOS-ICFES-MODELO-FLEXIBLE-2025.xlsx: **65 filas** ✅
 - INSCRITOS_EXAMEN SABER 11 (36).xls: **Accesible** ✅
 
@@ -224,4 +224,10 @@ Ahora puedes proceder con:
 1. Probar la aplicación Streamlit
 2. Hacer commit y push a GitHub
 3. Verificar que todo funciona en Streamlit Cloud
+
+---
+
+**Última actualización:** 2025-10-23  
+**Versión:** 2.0  
+**Estado:** ✅ Funcional
 

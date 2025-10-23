@@ -212,7 +212,7 @@ firefox --version
 
 ### Los PDFs no se descargan
 
-**Solución**: 
+**Solución**:
 1. Verifica que la carpeta `pdfs_descargados/` tenga permisos de escritura
 2. Revisa los logs en la carpeta `logs/` para más detalles
 3. Ejecuta primero en modo de prueba para identificar el problema
@@ -387,3 +387,8 @@ Este script es para uso educativo y administrativo. Asegúrate de cumplir con lo
 
 **Última actualización**: 14 de octubre de 2025
 **Versión**: 2.0 (Completamente funcional y probado)
+---
+
+**Última actualización:** 2025-10-23  
+**Versión:** 2.0  
+**Estado:** ✅ Funcional

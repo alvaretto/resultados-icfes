@@ -282,10 +282,10 @@ streamlit run app_resultados_icfes_completo.py
 
 ## 📞 Información Adicional
 
-**Repositorio:** https://github.com/alvaretto/resultados-icfes  
-**Archivo principal:** app_resultados_icfes_completo.py  
-**Última modificación:** 2025-10-16 14:42  
-**Tamaño:** 49 KB (1,600 líneas)  
+**Repositorio:** https://github.com/alvaretto/resultados-icfes
+**Archivo principal:** app_resultados_icfes_completo.py
+**Última modificación:** 2025-10-16 14:42
+**Tamaño:** 49 KB (1,600 líneas)
 **Estado Git:** 1 commit pendiente de push
 
 ---
@@ -303,6 +303,7 @@ streamlit run app_resultados_icfes_completo.py
 
 ---
 
-**Creado:** 2025-10-16  
-**Última actualización:** 2025-10-16 15:09
+**Creado:** 2025-10-16
+---
+**Última actualización:** 2025-10-23  
 
