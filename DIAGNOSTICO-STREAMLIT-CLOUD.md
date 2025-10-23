@@ -111,6 +111,12 @@ Asegúrate de que en Streamlit Cloud:
 
 Todos los archivos necesarios están en el repositorio y la aplicación funciona correctamente en local. Si hay problemas en Streamlit Cloud, revisa los logs para identificar el error específico.
 
+---
+
+**Última actualización:** 2025-10-23  
+**Versión:** 2.0  
+**Estado:** ✅ Funcional
+
 ## 📝 Comandos Útiles para Verificación Local
 
 ```bash

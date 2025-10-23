@@ -2,7 +2,7 @@
 
 ## Institución Educativa Pedacito de Cielo
 
-**Fecha de implementación:** 2025-10-16  
+**Fecha de implementación:** 2025-10-16
 **Versión:** 1.0 Completa
 
 ---
@@ -346,7 +346,13 @@ La aplicación de análisis de resultados ICFES Saber 11 ha sido completamente i
 
 ---
 
-**Desarrollado para:** Institución Educativa Pedacito de Cielo  
-**Fecha:** 2025-10-16  
+**Desarrollado para:** Institución Educativa Pedacito de Cielo
+**Fecha:** 2025-10-16
 **Versión:** 1.0 Completa
 
+
+---
+
+**Última actualización:** 2025-10-23  
+**Versión:** 2.0  
+**Estado:** ✅ Funcional

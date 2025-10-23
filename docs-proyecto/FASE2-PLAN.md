@@ -94,7 +94,7 @@ Los PDFs generados en la Fase 1 con `print_page()` de Selenium son renderizacion
 #### 2. `explorar_pdf_con_ocr.py` ✅
 - **Estado**: Completado
 - **Propósito**: Extraer texto de PDFs usando Tesseract OCR
-- **Resultado**: 
+- **Resultado**:
   - ✅ Puntaje Global detectado (171/500)
   - ❌ Puntajes individuales NO detectados
 
@@ -242,7 +242,13 @@ ALGARIN         | ... | 1043592724          | 45              | 52          | 48
 
 ---
 
-**Fecha de inicio**: 14 de octubre de 2025  
-**Estado actual**: En desarrollo  
+**Fecha de inicio**: 14 de octubre de 2025
+**Estado actual**: En desarrollo
 **Progreso**: 30% (Investigación y scripts base creados)
 
+
+---
+
+**Última actualización:** 2025-10-23  
+**Versión:** 2.0  
+**Estado:** ✅ Funcional

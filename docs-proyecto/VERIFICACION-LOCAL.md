@@ -11,7 +11,7 @@ La aplicación está corriendo en: **http://localhost:8501**
      - Debe mostrar tabla con datos 2024 y 2025 completos
      - Debe mostrar gráficos por área
      - Debe mostrar análisis de avances por área
-   
+
    - [ ] Selecciona **"Modelo Flexible"**
      - Debe mostrar **mensaje informativo** azul indicando que solo puntaje global está disponible
      - Tabla debe mostrar solo **"Puntaje Global"** (sin áreas)
@@ -92,3 +92,9 @@ git commit -m "Actualizar Modelo Flexible con puntaje global 2024 (203 puntos)"
 git push origin main
 ```
 
+
+---
+
+**Última actualización:** 2025-10-23  
+**Versión:** 2.0  
+**Estado:** ✅ Funcional

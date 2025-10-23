@@ -15,7 +15,7 @@ El script `descargar_resultados_icfes.py` ahora funciona correctamente y descarg
 ### 1. **Problema: Selección del Tipo de Documento**
 **Descripción**: El script no mapeaba correctamente los valores del Excel ("TI", "CC") a las opciones del formulario web ("TARJETA DE IDENTIDAD", "CÉDULA DE CIUDADANÍA").
 
-**Solución**: 
+**Solución**:
 - Creado diccionario de mapeo `mapeo_tipos_doc`
 - Cambiado de búsqueda parcial a comparación exacta
 - Agregado manejo de errores con mensajes detallados
@@ -311,3 +311,9 @@ python3 verificar_pdfs_completos.py
 **Versión del script**: 2.0 (Completamente funcional y probado en producción)
 **Última actualización**: 14 de octubre de 2025
 
+
+---
+
+**Última actualización:** 2025-10-23  
+**Versión:** 2.0  
+**Estado:** ✅ Funcional

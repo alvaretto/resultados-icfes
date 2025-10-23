@@ -136,7 +136,7 @@ CORRECCIÓN URGENTE: Aplicar regla de redondeo a avances institucionales
 
 ## 🎯 PRÓXIMOS PASOS
 
-1. **Verificar en GitHub**: 
+1. **Verificar en GitHub**:
    https://github.com/alvaretto/resultados-icfes/commits/main
 
 2. **Streamlit Cloud** (si está configurado):
@@ -167,3 +167,9 @@ CORRECCIÓN URGENTE: Aplicar regla de redondeo a avances institucionales
 
 **URL del Commit**: https://github.com/alvaretto/resultados-icfes/commit/54041d499b0f16dfd3c898efa797d96391c58c84
 
+
+---
+
+**Última actualización:** 2025-10-23  
+**Versión:** 2.0  
+**Estado:** ✅ Funcional

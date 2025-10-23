@@ -316,7 +316,7 @@ Este proyecto es de uso interno para la Institución Educativa Pedacito de Cielo
 
 ---
 
-**Última actualización:** 2025-10-21  
-**Versión:** 1.0  
-**Estado:** ✅ Funcional y probada
+**Última actualización:** 2025-10-23  
+**Versión:** 2.0  
+**Estado:** ✅ Funcional
 

@@ -123,19 +123,19 @@ git push origin main
 ## ⚠️ Solución de Problemas Comunes
 
 ### Error: "Repository not found"
-**Causa:** El repo es privado y Streamlit no tiene acceso  
+**Causa:** El repo es privado y Streamlit no tiene acceso
 **Solución:** Necesitas GitHub Pro para repos privados en Streamlit Cloud
 
 ### Error: "ModuleNotFoundError"
-**Causa:** Falta una dependencia en requirements-webapp.txt  
+**Causa:** Falta una dependencia en requirements-webapp.txt
 **Solución:** Agrega la dependencia y haz push
 
 ### Error: "File not found: RESULTADOS-ICFES-AULA-REGULAR-2025.xlsx"
-**Causa:** El archivo no está en el repositorio  
+**Causa:** El archivo no está en el repositorio
 **Solución:** Ya está agregado con `git add -f`
 
 ### App muy lenta
-**Causa:** Primera carga o muchos datos  
+**Causa:** Primera carga o muchos datos
 **Solución:** Normal, usa `@st.cache_data` (ya implementado)
 
 ---
@@ -169,7 +169,13 @@ git push origin main
 
 Tu aplicación de análisis ICFES estará disponible en línea, accesible desde cualquier dispositivo con internet.
 
-**Tiempo total:** ~5 minutos  
-**Costo:** $0 (100% gratuito)  
+**Tiempo total:** ~5 minutos
+**Costo:** $0 (100% gratuito)
 **Mantenimiento:** Automático
 
+
+---
+
+**Última actualización:** 2025-10-23  
+**Versión:** 2.0  
+**Estado:** ✅ Funcional

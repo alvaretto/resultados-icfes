@@ -21,30 +21,30 @@ from app.chat_ia_icfes import mostrar_chat, inicializar_chat
 
 def main():
     # ... código existente ...
-    
+
     # Inicializar chat
     inicializar_chat()
-    
+
     # Cargar datos
     datos_2024 = cargar_datos_2024()
     datos_2025_raw = cargar_datos_2025()
-    
+
     # ... código existente del sidebar ...
-    
+
     with st.sidebar:
         # ... navegación existente ...
-        
+
         st.markdown("---")
         st.markdown("### 🤖 Asistente de IA")
-        
+
         # Toggle para activar/desactivar chat
         if st.checkbox("Activar chat", value=False, key="toggle_chat"):
             # Determinar página actual
             pagina_actual = pagina if 'pagina' in locals() else "General"
-            
+
             # Obtener DataFrame actual según la página
             df_actual = datos_2025_raw['df_todos']
-            
+
             # Mostrar chat en el sidebar
             with st.container():
                 mostrar_chat(df=df_actual, pagina_actual=pagina_actual)
@@ -66,12 +66,12 @@ def main():
 
 from app.chat_ia_icfes import mostrar_chat, inicializar_chat
 
-def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025, 
+def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025,
                           stats_institucional_2025, stats_grupos_2025, datos_2025_raw):
     """Página principal con comparativo general 2024 vs 2025"""
-    
+
     # ... código existente ...
-    
+
     # Crear pestañas principales (AGREGAR tab_chat)
     tab1, tab2, tab3, tab4, tab5, tab_chat = st.tabs([
         "🏫 Avance Institucional Global",
@@ -81,13 +81,13 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025,
         "🎯 Niveles de Desempeño",
         "🤖 Chat IA"  # Nueva pestaña
     ])
-    
+
     # ... código de pestañas existentes ...
-    
+
     # NUEVA PESTAÑA: Chat IA
     with tab_chat:
         st.markdown("### 🤖 Asistente de IA para Análisis ICFES")
-        
+
         st.info("""
         💡 **¿Qué puedo preguntarle al asistente?**
         - Interpretación de resultados y puntajes
@@ -96,10 +96,10 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025,
         - Explicación de conceptos estadísticos
         - Análisis de fortalezas y áreas de mejora
         """)
-        
+
         # Inicializar chat
         inicializar_chat()
-        
+
         # Mostrar chat con datos actuales
         df_actual = datos_2025_raw['df_todos']
         mostrar_chat(df=df_actual, pagina_actual="Comparativo General")
@@ -123,29 +123,29 @@ from app.chat_ia_icfes import mostrar_chat, inicializar_chat
 
 def main():
     # ... código existente ...
-    
+
     # Inicializar chat
     inicializar_chat()
-    
+
     # Cargar datos
     datos_2024 = cargar_datos_2024()
     datos_2025_raw = cargar_datos_2025()
-    
+
     # ... código de navegación ...
-    
+
     # AGREGAR: Expander con chat en la parte superior de cada página
     with st.expander("🤖 ¿Necesitas ayuda? Pregunta al Asistente de IA", expanded=False):
         st.markdown("*Haz preguntas sobre los datos, interpretaciones y recomendaciones*")
-        
+
         # Obtener página actual
         pagina_actual = seccion_seleccionada if 'seccion_seleccionada' in locals() else "General"
-        
+
         # Mostrar chat
         df_actual = datos_2025_raw['df_todos']
         mostrar_chat(df=df_actual, pagina_actual=pagina_actual)
-    
+
     st.markdown("---")
-    
+
     # ... resto del código de la página ...
 ```
 
@@ -167,32 +167,32 @@ from app.chat_ia_icfes import mostrar_chat, inicializar_chat
 
 def mostrar_resultados_institucionales(df):
     """Sección de resultados institucionales"""
-    
+
     st.header("🏫 Resultados Institucionales")
-    
+
     # ... código existente de la sección ...
-    
+
     # AGREGAR: Chat contextual al final de la sección
     st.markdown("---")
     st.markdown("### 💬 Preguntas sobre Resultados Institucionales")
-    
+
     # Inicializar chat
     inicializar_chat()
-    
+
     # Mostrar chat con contexto específico
     mostrar_chat(df=df, pagina_actual="Resultados Institucionales")
 
 def mostrar_analisis_area(df):
     """Sección de análisis por área"""
-    
+
     st.header("📚 Análisis por Área")
-    
+
     # ... código existente de la sección ...
-    
+
     # AGREGAR: Chat contextual
     st.markdown("---")
     st.markdown("### 💬 Preguntas sobre Áreas de Conocimiento")
-    
+
     inicializar_chat()
     mostrar_chat(df=df, pagina_actual="Análisis por Área")
 ```
@@ -215,7 +215,7 @@ from app.chat_ia_icfes import mostrar_chat, inicializar_chat
 
 def main():
     # ... código existente ...
-    
+
     # CSS para chat flotante
     st.markdown("""
     <style>
@@ -231,7 +231,7 @@ def main():
         z-index: 1000;
         overflow: hidden;
     }
-    
+
     .chat-toggle {
         position: fixed;
         bottom: 20px;
@@ -249,17 +249,17 @@ def main():
     }
     </style>
     """, unsafe_allow_html=True)
-    
+
     # Toggle para mostrar/ocultar chat flotante
     if "show_floating_chat" not in st.session_state:
         st.session_state.show_floating_chat = False
-    
+
     # Botón flotante
     col1, col2, col3 = st.columns([8, 1, 1])
     with col3:
         if st.button("🤖", key="toggle_floating_chat"):
             st.session_state.show_floating_chat = not st.session_state.show_floating_chat
-    
+
     # Mostrar chat flotante si está activado
     if st.session_state.show_floating_chat:
         with st.container():
@@ -284,7 +284,7 @@ def mostrar_preguntas_sugeridas(pagina_actual: str = "General") -> Optional[str]
     Muestra preguntas sugeridas según la página actual
     """
     st.markdown("#### 💡 Preguntas sugeridas:")
-    
+
     if pagina_actual == "Resultados Institucionales":
         col1, col2, col3 = st.columns(3)
         with col1:
@@ -296,7 +296,7 @@ def mostrar_preguntas_sugeridas(pagina_actual: str = "General") -> Optional[str]
         with col3:
             if st.button("🎯 Fortalezas", use_container_width=True):
                 return "¿Cuáles son las principales fortalezas institucionales?"
-    
+
     elif pagina_actual == "Análisis por Área":
         col1, col2, col3 = st.columns(3)
         with col1:
@@ -308,7 +308,7 @@ def mostrar_preguntas_sugeridas(pagina_actual: str = "General") -> Optional[str]
         with col3:
             if st.button("💡 Estrategias", use_container_width=True):
                 return "¿Qué estrategias recomiendas para mejorar en las áreas débiles?"
-    
+
     # Preguntas generales por defecto
     else:
         col1, col2, col3 = st.columns(3)
@@ -321,7 +321,7 @@ def mostrar_preguntas_sugeridas(pagina_actual: str = "General") -> Optional[str]
         with col3:
             if st.button("📈 Interpretar", use_container_width=True):
                 return "¿Cómo interpreto los niveles de desempeño?"
-    
+
     return None
 ```
 
@@ -335,7 +335,7 @@ def construir_contexto_especifico(df: pd.DataFrame, pagina_actual: str) -> str:
     Construye contexto específico según la página actual
     """
     contexto_base = construir_contexto_datos(df, pagina_actual)
-    
+
     if pagina_actual == "Resultados Institucionales":
         contexto_adicional = """
 ## ENFOQUE: Resultados Institucionales
@@ -348,7 +348,7 @@ Enfócate en:
 - Fortalezas y debilidades institucionales
 """
         return contexto_base + contexto_adicional
-    
+
     elif pagina_actual == "Análisis por Área":
         contexto_adicional = """
 ## ENFOQUE: Análisis por Área
@@ -361,7 +361,7 @@ Enfócate en:
 - Recomendaciones pedagógicas específicas por área
 """
         return contexto_base + contexto_adicional
-    
+
     # Contexto general por defecto
     return contexto_base
 ```
@@ -382,11 +382,11 @@ def seleccionar_modelo_optimo(prompt: str) -> str:
     # Para consultas simples, usar modelo rápido
     if len(prompt) < 50 or any(word in prompt.lower() for word in ['qué es', 'define', 'explica']):
         return "llama-3.3-70b"  # Más rápido
-    
+
     # Para análisis complejos, usar modelo avanzado
     elif any(word in prompt.lower() for word in ['compara', 'analiza', 'recomienda', 'estrategia']):
         return "deepseek-r1"  # Mejor razonamiento
-    
+
     # Por defecto
     return "deepseek-r1"
 ```
@@ -415,7 +415,7 @@ def generar_respuesta(prompt: str, contexto: str = "") -> str:
     # Crear hashes para caché
     prompt_hash = hashlib.md5(prompt.encode()).hexdigest()
     contexto_hash = hashlib.md5(contexto.encode()).hexdigest()
-    
+
     # Intentar obtener de caché
     try:
         return generar_respuesta_cached(prompt_hash, contexto_hash)
@@ -458,12 +458,12 @@ def log_consulta(prompt: str, respuesta: str, pagina: str):
 # Usar en generar_respuesta()
 def generar_respuesta(prompt: str, contexto: str = "") -> str:
     # ... código existente ...
-    
+
     respuesta = # ... generar respuesta ...
-    
+
     # Registrar consulta
     log_consulta(prompt, respuesta, st.session_state.get('pagina_actual', 'Unknown'))
-    
+
     return respuesta
 ```
 
@@ -495,6 +495,7 @@ Antes de integrar el chat en producción:
 
 ---
 
-**Última actualización:** 22 de octubre de 2025  
-**Versión:** 1.0
+---
+**Última actualización:** 2025-10-23  
+**Versión:** 2.0  
 

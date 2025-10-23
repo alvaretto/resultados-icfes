@@ -1,10 +1,10 @@
 # Datos Extraídos del PDF Oficial ICFES 2024-3
 
-**Documento fuente:** `Resultados Saber 11°_163401000298_2024-3.pdf`  
-**Institución:** INSTITUCIÓN EDUCATIVA PEDACITO DE CIELO ALVARO URIBE VELEZ  
-**Código DANE:** 163401000298  
-**Municipio:** LA TEBAIDA  
-**Departamento:** QUINDÍO  
+**Documento fuente:** `Resultados Saber 11°_163401000298_2024-3.pdf`
+**Institución:** INSTITUCIÓN EDUCATIVA PEDACITO DE CIELO ALVARO URIBE VELEZ
+**Código DANE:** 163401000298
+**Municipio:** LA TEBAIDA
+**Departamento:** QUINDÍO
 **Fecha de extracción:** 2025-10-21
 
 ---
@@ -175,3 +175,9 @@
 
 **Nota:** Este documento contiene los datos oficiales extraídos del PDF del ICFES. Cualquier discrepancia con archivos existentes debe resolverse a favor de los datos de este documento.
 
+
+---
+
+**Última actualización:** 2025-10-23  
+**Versión:** 2.0  
+**Estado:** ✅ Funcional

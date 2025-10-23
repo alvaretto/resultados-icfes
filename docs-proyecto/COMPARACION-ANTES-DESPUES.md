@@ -109,3 +109,9 @@ El nuevo valor de **+1 punto** es el correcto y más preciso.
 
 **Estado**: LISTO PARA DESPLIEGUE
 
+
+---
+
+**Última actualización:** 2025-10-23  
+**Versión:** 2.0  
+**Estado:** ✅ Funcional

@@ -380,7 +380,7 @@ streamlit run streamlit_app.py --server.port 8501
 
 ---
 
-**Fecha de creación:** 2025-10-21  
-**Versión:** 1.0  
-**Estado:** ✅ Proyecto completado
+**Última actualización:** 2025-10-23  
+**Versión:** 2.0  
+**Estado:** ✅ Funcional
 

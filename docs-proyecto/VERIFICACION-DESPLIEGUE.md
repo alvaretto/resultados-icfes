@@ -104,3 +104,9 @@ Después del despliegue, la sección de Avances debe mostrar:
 - ⏳ Esperando redeploy de Streamlit Cloud
 
 
+
+---
+
+**Última actualización:** 2025-10-23  
+**Versión:** 2.0  
+**Estado:** ✅ Funcional

@@ -1,6 +1,6 @@
 # 📖 Instrucciones para el Usuario
 
-**Fecha:** 2025-10-21  
+Última actualización: 2025-10-23  
 **Proyecto:** Análisis Resultados ICFES 2024-3 - Pedacito de Cielo
 
 ---
@@ -314,7 +314,9 @@ Estos factores contextuales explican las diferencias en desempeño.
 
 ---
 
-**Documento creado:** 2025-10-21  
-**Estado:** ✅ Listo para usar  
-**Próxima acción:** Leer `RESUMEN-ANALISIS-PDF-2024-3.md`
+---
+
+**Última actualización:** 2025-10-23  
+**Versión:** 2.0  
+**Estado:** ✅ Funcional
 

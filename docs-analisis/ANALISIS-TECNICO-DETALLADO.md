@@ -141,7 +141,7 @@ Columnas: Primer Apellido, Segundo Apellido, Primer Nombre, Segundo Nombre,
 ```python
 ARCHIVO_AULA_REGULAR = 'PCIELO-RESULTADOS-ICFES-MODELO-AULA-REGULAR-2025.xlsx'
 ARCHIVO_MODELO_FLEXIBLE = 'PCIELO-RESULTADOS-ICFES-MODELO-FLEXIBLE-2025.xlsx'
-AREAS = ['Lectura Crítica', 'Matemáticas', 'Sociales y Ciudadanas', 
+AREAS = ['Lectura Crítica', 'Matemáticas', 'Sociales y Ciudadanas',
          'Ciencias Naturales', 'Inglés']
 ```
 
@@ -236,3 +236,9 @@ PCIELO-RESULTADOS-ICFES-MODELO-FLEXIBLE-2025.xlsx
 - scipy
 - openpyxl
 
+
+---
+
+**Última actualización:** 2025-10-23  
+**Versión:** 2.0  
+**Estado:** ✅ Funcional

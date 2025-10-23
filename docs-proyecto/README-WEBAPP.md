@@ -408,7 +408,13 @@ Para reportar problemas o sugerencias, contacta al equipo de desarrollo.
 
 ---
 
-**Fecha de creación**: 14 de octubre de 2025  
-**Versión**: 1.0.0  
+**Fecha de creación**: 14 de octubre de 2025
+**Versión**: 1.0.0
 **Autor**: Sistema de Análisis ICFES
 
+
+---
+
+**Última actualización:** 2025-10-23  
+**Versión:** 2.0  
+**Estado:** ✅ Funcional

@@ -198,3 +198,9 @@ venv/                ← Entorno virtual Python
 3. **Aplicación Publicada:** Cambios en `app_resultados_icfes.py` afectan la URL publicada
 4. **Entorno Virtual:** Usar `venv` para aislar dependencias
 
+
+---
+
+**Última actualización:** 2025-10-23  
+**Versión:** 2.0  
+**Estado:** ✅ Funcional

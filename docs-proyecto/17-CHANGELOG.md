@@ -253,8 +253,14 @@ Para más información, consulta:
 
 ---
 
-**Versión**: 2.0  
-**Fecha**: 14 de octubre de 2025  
-**Estado**: Completamente funcional y probado en producción  
+**Versión**: 2.0
+**Fecha**: 14 de octubre de 2025
+**Estado**: Completamente funcional y probado en producción
 **Mantenedor**: Sistema automatizado de descarga ICFES
 
+
+---
+
+**Última actualización:** 2025-10-23  
+**Versión:** 2.0  
+**Estado:** ✅ Funcional

@@ -303,6 +303,7 @@ Para soporte técnico o preguntas sobre la aplicación, contacta al equipo de de
 
 ---
 
-**Última actualización:** 2025-10-16
+---
+**Última actualización:** 2025-10-23  
 **Versión de la aplicación:** 1.0 Completa
 

@@ -94,10 +94,10 @@ Si hay un botón de **"Advanced settings"**, puedes:
 
 Una vez que veas **"Your app is live!"**, verifica:
 
-✅ Se carga la página principal  
-✅ Dice "36 estudiantes"  
-✅ Puedes navegar entre los 5 tabs  
-✅ Los gráficos se muestran correctamente  
+✅ Se carga la página principal
+✅ Dice "36 estudiantes"
+✅ Puedes navegar entre los 5 tabs
+✅ Los gráficos se muestran correctamente
 
 ---
 
@@ -123,7 +123,7 @@ O algo similar si Streamlit genera un nombre automático.
 **Solución:** Verifica que hayas autorizado a Streamlit a acceder a tu cuenta de GitHub
 
 ### La app se queda "Installing dependencies" por más de 5 minutos
-**Solución:** 
+**Solución:**
 1. Refresca la página
 2. O click en "Manage app" → "Reboot app"
 
@@ -195,3 +195,9 @@ Opciones:
 
 **¡Adelante! Todo está listo del lado del código. Solo falta hacer click en Deploy.** 🚀
 
+
+---
+
+**Última actualización:** 2025-10-23  
+**Versión:** 2.0  
+**Estado:** ✅ Funcional

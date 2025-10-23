@@ -45,30 +45,30 @@ mapeo_tipos_doc = {
 ```python
 def llenar_formulario(self, estudiante):
     # ... código anterior ...
-    
+
     tipo_doc = str(estudiante['Tipo documento']).strip().upper()
-    
+
     # Mapeo de tipos de documento
     mapeo_tipos_doc = { ... }
-    
+
     # Obtener el texto completo para buscar en el formulario
     tipo_doc_formulario = mapeo_tipos_doc.get(tipo_doc, tipo_doc)
-    
+
     # Hacer clic en el ng-select
     ng_select = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'ng-select')))
     ng_select.click()
-    
+
     # Buscar la opción correspondiente
     opciones = self.driver.find_elements(By.CSS_SELECTOR, '.ng-option')
     opcion_encontrada = False
-    
+
     for opcion in opciones:
         texto_opcion = opcion.text.strip().upper()
         if tipo_doc_formulario.upper() == texto_opcion:
             opcion.click()
             opcion_encontrada = True
             break
-    
+
     if not opcion_encontrada:
         raise Exception(f'Tipo de documento "{tipo_doc}" no encontrado')
 ```
@@ -248,3 +248,9 @@ Para reportar problemas o sugerir mejoras:
 **Última actualización**: 2025-10-14
 **Autor**: Sistema de Automatización ICFES
 
+
+---
+
+**Última actualización:** 2025-10-23  
+**Versión:** 2.0  
+**Estado:** ✅ Funcional
