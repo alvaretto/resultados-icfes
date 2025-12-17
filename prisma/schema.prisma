@@ -17,22 +17,28 @@ model Student {
   updatedAt DateTime @updatedAt
 
   // Información del estudiante
-  documentNumber String
-  fullName       String
-  grade          Int
-  model          String // "REGULAR" o "FLEXIBLE"
-  year           Int
-  period         Int
+  primerApellido    String
+  segundoApellido   String
+  primerNombre      String
+  segundoNombre     String
+  tipoDocumento     String // TI, CC, PPT
+  numeroDocumento   String
+  grupo             String // 11A, 11B, P3A, P3B, P3C
+  modelo            String // "Regular" o "Flexible"
+  anio              Int    // 2024, 2025
 
-  // Puntajes por área
-  scoreReading          Float
-  scoreMathematics      Float
-  scoreSocialSciences   Float
-  scoreNaturalSciences  Float
-  scoreEnglish          Float
-  scoreGlobal           Float
+  // Puntajes por área (0-100)
+  lecturaCritica       Int
+  matematicas          Int
+  socialesCiudadanas   Int
+  cienciasNaturales    Int
+  ingles               Int
+  puntajeGlobal        Int // 0-500
 
   // Índices para optimizar consultas
-  @@unique([documentNumber, year, period])
+  @@unique([numeroDocumento, anio])
+  @@index([modelo])
+  @@index([anio])
+  @@index([grupo])
 }
 

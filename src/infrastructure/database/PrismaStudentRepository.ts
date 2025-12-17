@@ -39,8 +39,8 @@ export class PrismaStudentRepository implements IStudentRepository {
    */
   public async findByDocument(documentNumber: string): Promise<Student | null> {
     const prismaStudent = await this.prisma.student.findFirst({
-      where: { documentNumber },
-      orderBy: { year: 'desc' }, // Más reciente primero
+      where: { numeroDocumento: documentNumber },
+      orderBy: { anio: 'desc' }, // Más reciente primero
     });
 
     return prismaStudent ? this.toDomain(prismaStudent) : null;
@@ -54,7 +54,7 @@ export class PrismaStudentRepository implements IStudentRepository {
 
     const prismaStudents = await this.prisma.student.findMany({
       where,
-      orderBy: { scoreGlobal: 'desc' },
+      orderBy: { puntajeGlobal: 'desc' },
     });
 
     return prismaStudents.map((ps) => this.toDomain(ps));
@@ -75,7 +75,7 @@ export class PrismaStudentRepository implements IStudentRepository {
         where,
         skip,
         take: pagination.pageSize,
-        orderBy: { scoreGlobal: 'desc' },
+        orderBy: { puntajeGlobal: 'desc' },
       }),
       this.prisma.student.count({ where }),
     ]);
@@ -94,8 +94,8 @@ export class PrismaStudentRepository implements IStudentRepository {
    */
   public async findByYearAndPeriod(year: number, period: number): Promise<Student[]> {
     const prismaStudents = await this.prisma.student.findMany({
-      where: { year, period },
-      orderBy: { scoreGlobal: 'desc' },
+      where: { anio: year },
+      orderBy: { puntajeGlobal: 'desc' },
     });
 
     return prismaStudents.map((ps) => this.toDomain(ps));
@@ -106,8 +106,8 @@ export class PrismaStudentRepository implements IStudentRepository {
    */
   public async findByGrade(grade: number, year: number, period: number): Promise<Student[]> {
     const prismaStudents = await this.prisma.student.findMany({
-      where: { grade, year, period },
-      orderBy: { scoreGlobal: 'desc' },
+      where: { grupo: grade.toString(), anio: year },
+      orderBy: { puntajeGlobal: 'desc' },
     });
 
     return prismaStudents.map((ps) => this.toDomain(ps));
@@ -121,13 +121,13 @@ export class PrismaStudentRepository implements IStudentRepository {
     year: number,
     period: number
   ): Promise<Student[]> {
+    const modeloStr = model === AcademicModel.REGULAR ? 'Regular' : 'Flexible';
     const prismaStudents = await this.prisma.student.findMany({
       where: {
-        model,
-        year,
-        period,
+        modelo: modeloStr,
+        anio: year,
       },
-      orderBy: { scoreGlobal: 'desc' },
+      orderBy: { puntajeGlobal: 'desc' },
     });
 
     return prismaStudents.map((ps) => this.toDomain(ps));
@@ -139,11 +139,10 @@ export class PrismaStudentRepository implements IStudentRepository {
   public async findHighPerformers(year: number, period: number): Promise<Student[]> {
     const prismaStudents = await this.prisma.student.findMany({
       where: {
-        year,
-        period,
-        scoreGlobal: { gte: 267 }, // Umbral nivel Avanzado
+        anio: year,
+        puntajeGlobal: { gte: 267 }, // Umbral nivel Avanzado
       },
-      orderBy: { scoreGlobal: 'desc' },
+      orderBy: { puntajeGlobal: 'desc' },
     });
 
     return prismaStudents.map((ps) => this.toDomain(ps));
@@ -211,21 +210,39 @@ export class PrismaStudentRepository implements IStudentRepository {
    * Convertir de Prisma a Dominio
    */
   private toDomain(prismaStudent: PrismaStudent): Student {
+    // Construir nombre completo
+    const fullName = [
+      prismaStudent.primerNombre,
+      prismaStudent.segundoNombre,
+      prismaStudent.primerApellido,
+      prismaStudent.segundoApellido,
+    ]
+      .filter(Boolean)
+      .join(' ');
+
+    // Convertir modelo a enum
+    const model =
+      prismaStudent.modelo === 'Regular' ? AcademicModel.REGULAR : AcademicModel.FLEXIBLE;
+
+    // Extraer grado del grupo (11A -> 11, P3A -> 3)
+    const gradeMatch = prismaStudent.grupo.match(/\d+/);
+    const grade = gradeMatch ? parseInt(gradeMatch[0]) : 11;
+
     const props: StudentProps = {
       id: prismaStudent.id,
-      documentNumber: prismaStudent.documentNumber,
-      fullName: prismaStudent.fullName,
-      grade: prismaStudent.grade,
-      model: prismaStudent.model as AcademicModel,
-      year: prismaStudent.year,
-      period: prismaStudent.period,
+      documentNumber: prismaStudent.numeroDocumento,
+      fullName,
+      grade,
+      model,
+      year: prismaStudent.anio,
+      period: 1, // Por defecto período 1
       scores: {
-        reading: Score.create(prismaStudent.scoreReading),
-        mathematics: Score.create(prismaStudent.scoreMathematics),
-        socialSciences: Score.create(prismaStudent.scoreSocialSciences),
-        naturalSciences: Score.create(prismaStudent.scoreNaturalSciences),
-        english: Score.create(prismaStudent.scoreEnglish),
-        global: Score.create(prismaStudent.scoreGlobal),
+        reading: Score.create(prismaStudent.lecturaCritica),
+        mathematics: Score.create(prismaStudent.matematicas),
+        socialSciences: Score.create(prismaStudent.socialesCiudadanas),
+        naturalSciences: Score.create(prismaStudent.cienciasNaturales),
+        english: Score.create(prismaStudent.ingles),
+        global: Score.create(prismaStudent.puntajeGlobal),
       },
     };
 
@@ -237,20 +254,31 @@ export class PrismaStudentRepository implements IStudentRepository {
    */
   private toPrisma(student: Student): Omit<PrismaStudent, 'id' | 'createdAt' | 'updatedAt'> {
     const scores = student.getScores();
+    const fullName = student.getFullName();
+    const nameParts = fullName.split(' ');
+
+    // Intentar extraer nombres y apellidos
+    const primerNombre = nameParts[0] || '';
+    const segundoNombre = nameParts.length > 3 ? nameParts[1] : '';
+    const primerApellido = nameParts.length > 3 ? nameParts[2] : nameParts[1] || '';
+    const segundoApellido = nameParts.length > 3 ? nameParts[3] : nameParts[2] || '';
 
     return {
-      documentNumber: student.getDocumentNumber(),
-      fullName: student.getFullName(),
-      grade: student.getGrade(),
-      model: student.getModel(),
-      year: student.getYear(),
-      period: student.getPeriod(),
-      scoreReading: scores.reading.getValue(),
-      scoreMathematics: scores.mathematics.getValue(),
-      scoreSocialSciences: scores.socialSciences.getValue(),
-      scoreNaturalSciences: scores.naturalSciences.getValue(),
-      scoreEnglish: scores.english.getValue(),
-      scoreGlobal: scores.global.getValue(),
+      primerApellido,
+      segundoApellido,
+      primerNombre,
+      segundoNombre,
+      tipoDocumento: 'TI', // Por defecto
+      numeroDocumento: student.getDocumentNumber(),
+      grupo: `${student.getGrade()}A`, // Por defecto
+      modelo: student.getModel() === AcademicModel.REGULAR ? 'Regular' : 'Flexible',
+      anio: student.getYear(),
+      lecturaCritica: Math.round(scores.reading.getValue()),
+      matematicas: Math.round(scores.mathematics.getValue()),
+      socialesCiudadanas: Math.round(scores.socialSciences.getValue()),
+      cienciasNaturales: Math.round(scores.naturalSciences.getValue()),
+      ingles: Math.round(scores.english.getValue()),
+      puntajeGlobal: Math.round(scores.global.getValue()),
     };
   }
 
@@ -260,13 +288,18 @@ export class PrismaStudentRepository implements IStudentRepository {
   private buildWhereClause(filters?: StudentFilters): any {
     if (!filters) return {};
 
+    const modeloStr = filters.model
+      ? filters.model === AcademicModel.REGULAR
+        ? 'Regular'
+        : 'Flexible'
+      : undefined;
+
     return {
-      ...(filters.year && { year: filters.year }),
-      ...(filters.period && { period: filters.period }),
-      ...(filters.grade && { grade: filters.grade }),
-      ...(filters.model && { model: filters.model }),
-      ...(filters.minGlobalScore && { scoreGlobal: { gte: filters.minGlobalScore } }),
-      ...(filters.maxGlobalScore && { scoreGlobal: { lte: filters.maxGlobalScore } }),
+      ...(filters.year && { anio: filters.year }),
+      ...(filters.grade && { grupo: { contains: filters.grade.toString() } }),
+      ...(modeloStr && { modelo: modeloStr }),
+      ...(filters.minGlobalScore && { puntajeGlobal: { gte: filters.minGlobalScore } }),
+      ...(filters.maxGlobalScore && { puntajeGlobal: { lte: filters.maxGlobalScore } }),
     };
   }
 }
