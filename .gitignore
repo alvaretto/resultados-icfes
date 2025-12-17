@@ -1,74 +1,65 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# Virtual Environment
-venv/
-env/
-ENV/
-.venv
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
 
-# PDFs descargados (contienen información sensible de estudiantes)
-pdfs_descargados/*.pdf
+# testing
+/coverage
 
-# Mantener la carpeta pero no los PDFs
-!pdfs_descargados/.gitkeep
+# next.js
+/.next/
+/out/
 
-# Logs (pueden contener información sensible)
-logs/*.txt
+# production
+/build
 
-# Mantener la carpeta pero no los logs
-!logs/.gitkeep
+# misc
+.DS_Store
+*.pem
 
-# Nota: Los archivos Excel (.xls, .xlsx) NO están excluidos según instrucciones del usuario
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Archivos de lock de LibreOffice/OpenOffice
-.~lock.*
+# local env files
+.env*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# HTML temporal
-*.html
-pagina_*.html
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# prisma
+/prisma/*.db
+/prisma/*.db-journal
+dev.db
+dev.db-journal
 
 # IDE
-.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 .idea/
 *.swp
 *.swo
 *~
 
-# Sistema operativo
+# OS
 .DS_Store
 Thumbs.db
-*.bak
 
-# Firefox/Selenium
-geckodriver.log
-*.log
+# Dev server PID
+.dev-server.pid
 
-# Archivos temporales
-*.tmp
-*.temp
-
-# Streamlit secrets (contiene API keys sensibles)
-.streamlit/secrets.toml
-
-# Augment AI configuration
-.augment/

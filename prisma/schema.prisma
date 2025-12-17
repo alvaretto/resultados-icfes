@@ -1,0 +1,37 @@
+// Prisma Schema - Desarrollo Local con SQLite
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Modelo: Estudiante con sus resultados ICFES
+model Student {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Información del estudiante
+  documentNumber String
+  fullName       String
+  grade          Int
+  model          String // "REGULAR" o "FLEXIBLE"
+  year           Int
+  period         Int
+
+  // Puntajes por área
+  scoreReading          Float
+  scoreMathematics      Float
+  scoreSocialSciences   Float
+  scoreNaturalSciences  Float
+  scoreEnglish          Float
+  scoreGlobal           Float
+
+  // Índices para optimizar consultas
+  @@unique([documentNumber, year, period])
+}
+
