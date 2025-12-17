@@ -40,7 +40,7 @@ const badgeVariants = cva(
 );
 
 export interface PerformanceBadgeProps
-  extends VariantProps<typeof badgeVariants> {
+  extends Omit<VariantProps<typeof badgeVariants>, 'level'> {
   level: string;
   className?: string;
   showIcon?: boolean;
