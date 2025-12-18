@@ -18,13 +18,23 @@ import re
 # Importar módulo de chat de IA
 from app.chat_ia_icfes import mostrar_chat, inicializar_chat
 
-# Importar módulo de análisis de inconsistencias
-from app.analisis_inconsistencias_pdf import (
-    extraer_datos_pdf_tebaida,
-    calcular_promedio_desde_excel,
-    comparar_datos,
-    generar_reporte_inconsistencias
-)
+# Datos de instituciones educativas de La Tebaida (fuente: análisis municipal 2024-2025)
+DATOS_INSTITUCIONES_TEBAIDA = {
+    'ANTONIO NARIÑO': {'2024': 253, '2025': 283},
+    'LUIS ARANGO CARDONA': {'2024': 285, '2025': 277},
+    'GABRIELA MISTRAL': {'2024': 241, '2025': 268},
+    'LA POPA': {'2024': 254, '2025': 264},
+    'SANTA TERESITA': {'2024': 265, '2025': 262},
+    'INSTITUTO TEBAIDA': {'2024': 252, '2025': 252},
+    'PEDACITO DE CIELO (Aula Regular)': {'2024': 240, '2025': 234},
+    'PEDACITO DE CIELO (Modelo Flexible)': {'2024': 203, '2025': 214},
+}
+
+PROMEDIOS_REFERENCIA = {
+    'PROMEDIO TEBAIDA': {'2024': 249, '2025': 257},
+    'PROMEDIO QUINDÍO': {'2024': 263, '2025': 264},
+    'PROMEDIO COLOMBIA': {'2024': 260, '2025': 261},
+}
 
 # ============================================================================
 # CONFIGURACIÓN DE LA PÁGINA
@@ -954,7 +964,7 @@ def main():
                     "📚 Estadísticas por Área",
                     "🏫 Estadísticas por Modelo",
                     "🏆 Rankings y Destacados",
-                    "🔍 Verificación de Datos",
+                    "🏫 Comparativo Municipal",
                     "📥 Descargar Datos"
                 ]
             )
@@ -1048,7 +1058,7 @@ def main():
     elif pagina == "🏆 Rankings y Destacados":
         mostrar_rankings(datos_2025_raw)
 
-    elif pagina == "🔍 Verificación de Datos":
+    elif pagina == "🏫 Comparativo Municipal":
         mostrar_verificacion_datos(datos_2024, stats_regular_2025, stats_flexible_2025)
 
     elif pagina == "📥 Descargar Datos":
@@ -2141,171 +2151,279 @@ def mostrar_descarga_datos(datos_2025_raw):
     )
 
 def mostrar_verificacion_datos(datos_2024, stats_regular_2025, stats_flexible_2025):
-    """Página para verificar inconsistencias entre PDFs"""
+    """Página para comparar instituciones educativas de La Tebaida"""
 
-    st.markdown('<div class="subtitle">🔍 Verificación de Datos - Análisis de Inconsistencias</div>', unsafe_allow_html=True)
+    st.markdown('<div class="subtitle">🏫 Comparativo Instituciones Educativas - La Tebaida</div>', unsafe_allow_html=True)
 
     st.info("""
-    📌 **Objetivo:** Comparar los datos oficiales del ICFES con el análisis del municipio de La Tebaida
-    para identificar posibles inconsistencias.
+    📌 **Fuente:** Análisis de Resultados SABER 11 del Municipio de La Tebaida 2024-2025
 
-    **Fuentes de datos:**
-    - ✅ **PDFs Oficiales ICFES:** Datos certificados de 2024-3 y 2025-3 (fuente de verdad)
-    - 📄 **PDF La Tebaida:** Análisis comparativo del municipio
+    Esta sección permite comparar el desempeño de **Pedacito de Cielo** con las demás
+    instituciones educativas del municipio.
     """)
 
-    st.markdown("---")
+    # Crear tabs para organizar la información
+    tab1, tab2, tab3, tab4 = st.tabs([
+        "📊 Ranking General",
+        "📈 Evolución 2024-2025",
+        "🎯 Posición de Pedacito de Cielo",
+        "📉 Análisis Detallado"
+    ])
 
-    # Extraer datos del PDF de La Tebaida
-    st.markdown("### 📄 Paso 1: Extracción de Datos del PDF de La Tebaida")
+    # ==================== TAB 1: RANKING GENERAL ====================
+    with tab1:
+        st.markdown("### 🏆 Ranking de Instituciones Educativas - La Tebaida")
 
-    pdf_tebaida_path = "ANALISIS DETALLADO SABER 11 LA TEBAIDA.pdf"
+        col_año = st.columns(2)
 
-    with st.spinner("Extrayendo datos del PDF de La Tebaida..."):
-        try:
-            datos_tebaida = extraer_datos_pdf_tebaida(pdf_tebaida_path)
+        with col_año[0]:
+            st.markdown("#### 📅 Ranking 2024")
+            df_2024 = pd.DataFrame([
+                {'Institución': k, 'Puntaje Global': v['2024']}
+                for k, v in DATOS_INSTITUCIONES_TEBAIDA.items()
+            ]).sort_values('Puntaje Global', ascending=False).reset_index(drop=True)
+            df_2024['Posición'] = range(1, len(df_2024) + 1)
+            df_2024 = df_2024[['Posición', 'Institución', 'Puntaje Global']]
+            st.dataframe(df_2024, use_container_width=True, hide_index=True)
 
-            if datos_tebaida and (datos_tebaida['2024'] or datos_tebaida['2025']):
-                st.success("✅ Datos extraídos exitosamente del PDF de La Tebaida")
+        with col_año[1]:
+            st.markdown("#### 📅 Ranking 2025")
+            df_2025 = pd.DataFrame([
+                {'Institución': k, 'Puntaje Global': v['2025']}
+                for k, v in DATOS_INSTITUCIONES_TEBAIDA.items()
+            ]).sort_values('Puntaje Global', ascending=False).reset_index(drop=True)
+            df_2025['Posición'] = range(1, len(df_2025) + 1)
+            df_2025 = df_2025[['Posición', 'Institución', 'Puntaje Global']]
+            st.dataframe(df_2025, use_container_width=True, hide_index=True)
 
-                # Mostrar datos extraídos
-                col1, col2 = st.columns(2)
+        # Gráfico comparativo
+        st.markdown("### 📊 Comparativo Visual 2024 vs 2025")
 
-                with col1:
-                    st.markdown("#### 📊 Datos 2024 (según PDF La Tebaida)")
-                    if datos_tebaida['2024']:
-                        df_2024_tebaida = pd.DataFrame([
-                            {'Modelo': k, 'Puntaje Global': v}
-                            for k, v in datos_tebaida['2024'].items()
-                        ])
-                        st.dataframe(df_2024_tebaida, use_container_width=True, hide_index=True)
-                    else:
-                        st.warning("No se encontraron datos de 2024")
-
-                with col2:
-                    st.markdown("#### 📊 Datos 2025 (según PDF La Tebaida)")
-                    if datos_tebaida['2025']:
-                        df_2025_tebaida = pd.DataFrame([
-                            {'Modelo': k, 'Puntaje Global': v}
-                            for k, v in datos_tebaida['2025'].items()
-                        ])
-                        st.dataframe(df_2025_tebaida, use_container_width=True, hide_index=True)
-                    else:
-                        st.warning("No se encontraron datos de 2025")
-            else:
-                st.error("❌ No se pudieron extraer datos del PDF de La Tebaida")
-                return
-
-        except Exception as e:
-            st.error(f"❌ Error al procesar el PDF de La Tebaida: {e}")
-            return
-
-    st.markdown("---")
-
-    # Calcular datos oficiales
-    st.markdown("### ✅ Paso 2: Datos Oficiales del ICFES")
-
-    # Preparar datos oficiales
-    datos_oficiales = {
-        '2024': {
-            'PEDACITO DE CIELO REGULAR': datos_2024.get('Aula Regular', {}).get('puntaje_global'),
-            'PEDACITO DE CIELO PENSAR': datos_2024.get('Modelo Flexible', {}).get('puntaje_global')
-        },
-        '2025': {
-            'PEDACITO DE CIELO REGULAR': stats_regular_2025.get('puntaje_global'),
-            'PEDACITO DE CIELO PENSAR': stats_flexible_2025.get('puntaje_global')
-        }
-    }
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.markdown("#### 📊 Datos Oficiales 2024")
-        df_2024_oficial = pd.DataFrame([
-            {'Modelo': k, 'Puntaje Global': v}
-            for k, v in datos_oficiales['2024'].items()
-            if v is not None
-        ])
-        st.dataframe(df_2024_oficial, use_container_width=True, hide_index=True)
-
-    with col2:
-        st.markdown("#### 📊 Datos Oficiales 2025")
-        df_2025_oficial = pd.DataFrame([
-            {'Modelo': k, 'Puntaje Global': v}
-            for k, v in datos_oficiales['2025'].items()
-            if v is not None
-        ])
-        st.dataframe(df_2025_oficial, use_container_width=True, hide_index=True)
-
-    st.markdown("---")
-
-    # Comparar y mostrar inconsistencias
-    st.markdown("### 🔍 Paso 3: Análisis de Inconsistencias")
-
-    inconsistencias = comparar_datos(datos_tebaida, datos_oficiales)
-
-    if inconsistencias:
-        st.warning(f"⚠️ Se encontraron {len(inconsistencias)} inconsistencia(s)")
-
-        df_inconsistencias = generar_reporte_inconsistencias(inconsistencias)
-
-        # Formatear el DataFrame para mejor visualización
-        df_inconsistencias['Año'] = df_inconsistencias['año']
-        df_inconsistencias['Modelo'] = df_inconsistencias['modelo']
-        df_inconsistencias['PDF La Tebaida'] = df_inconsistencias['puntaje_tebaida']
-        df_inconsistencias['Datos Oficiales ICFES'] = df_inconsistencias['puntaje_oficial']
-        df_inconsistencias['Diferencia'] = df_inconsistencias['diferencia'].apply(lambda x: f"{x:+.0f}")
-        df_inconsistencias['Tipo'] = df_inconsistencias['tipo']
-
-        df_display = df_inconsistencias[['Año', 'Modelo', 'PDF La Tebaida', 'Datos Oficiales ICFES', 'Diferencia', 'Tipo']]
-
-        st.dataframe(df_display, use_container_width=True, hide_index=True)
-
-        # Visualización de inconsistencias
-        st.markdown("#### 📊 Visualización de Diferencias")
+        instituciones = list(DATOS_INSTITUCIONES_TEBAIDA.keys())
+        puntajes_2024 = [DATOS_INSTITUCIONES_TEBAIDA[i]['2024'] for i in instituciones]
+        puntajes_2025 = [DATOS_INSTITUCIONES_TEBAIDA[i]['2025'] for i in instituciones]
 
         fig = go.Figure()
+        fig.add_trace(go.Bar(name='2024', x=instituciones, y=puntajes_2024, marker_color='#636EFA'))
+        fig.add_trace(go.Bar(name='2025', x=instituciones, y=puntajes_2025, marker_color='#00CC96'))
 
-        for _, row in df_inconsistencias.iterrows():
-            fig.add_trace(go.Bar(
-                name=f"{row['modelo']} ({row['año']})",
-                x=['PDF La Tebaida', 'Datos Oficiales ICFES'],
-                y=[row['puntaje_tebaida'], row['puntaje_oficial']],
-                text=[row['puntaje_tebaida'], row['puntaje_oficial']],
-                textposition='auto',
-            ))
+        # Líneas de referencia
+        fig.add_hline(y=PROMEDIOS_REFERENCIA['PROMEDIO TEBAIDA']['2025'], line_dash="dash",
+                     line_color="orange", annotation_text="Promedio Tebaida 2025")
+        fig.add_hline(y=PROMEDIOS_REFERENCIA['PROMEDIO COLOMBIA']['2025'], line_dash="dash",
+                     line_color="red", annotation_text="Promedio Colombia 2025")
 
         fig.update_layout(
-            title="Comparación: PDF La Tebaida vs Datos Oficiales ICFES",
-            xaxis_title="Fuente",
+            title="Puntaje Global por Institución Educativa",
+            xaxis_title="Institución",
             yaxis_title="Puntaje Global",
             barmode='group',
-            height=500
+            height=500,
+            xaxis_tickangle=-45
+        )
+        st.plotly_chart(fig, use_container_width=True, key="ranking_general")
+
+    # ==================== TAB 2: EVOLUCIÓN ====================
+    with tab2:
+        st.markdown("### 📈 Evolución 2024 → 2025")
+
+        # Calcular avances
+        datos_avance = []
+        for inst, valores in DATOS_INSTITUCIONES_TEBAIDA.items():
+            avance = valores['2025'] - valores['2024']
+            datos_avance.append({
+                'Institución': inst,
+                '2024': valores['2024'],
+                '2025': valores['2025'],
+                'Avance': avance,
+                'Estado': '🟢 Mejoró' if avance > 0 else ('🔴 Bajó' if avance < 0 else '🟡 Igual')
+            })
+
+        df_avance = pd.DataFrame(datos_avance).sort_values('Avance', ascending=False)
+        st.dataframe(df_avance, use_container_width=True, hide_index=True)
+
+        # Gráfico de avances
+        fig_avance = go.Figure()
+        colores = ['green' if a > 0 else ('red' if a < 0 else 'gray') for a in df_avance['Avance']]
+
+        fig_avance.add_trace(go.Bar(
+            x=df_avance['Institución'],
+            y=df_avance['Avance'],
+            marker_color=colores,
+            text=df_avance['Avance'].apply(lambda x: f"+{x}" if x > 0 else str(x)),
+            textposition='outside'
+        ))
+
+        fig_avance.update_layout(
+            title="Avance en Puntaje Global 2024 → 2025",
+            xaxis_title="Institución",
+            yaxis_title="Puntos de Avance",
+            height=450,
+            xaxis_tickangle=-45
+        )
+        fig_avance.add_hline(y=0, line_color="black", line_width=2)
+
+        st.plotly_chart(fig_avance, use_container_width=True, key="evolucion_avance")
+
+    # ==================== TAB 3: POSICIÓN PEDACITO DE CIELO ====================
+    with tab3:
+        st.markdown("### 🎯 Posición de I.E. Pedacito de Cielo en el Municipio")
+
+        # Resaltar Pedacito de Cielo
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.markdown("#### 🏫 Aula Regular")
+            puntaje_regular_2024 = DATOS_INSTITUCIONES_TEBAIDA['PEDACITO DE CIELO (Aula Regular)']['2024']
+            puntaje_regular_2025 = DATOS_INSTITUCIONES_TEBAIDA['PEDACITO DE CIELO (Aula Regular)']['2025']
+
+            # Calcular posición
+            pos_2024 = sum(1 for v in DATOS_INSTITUCIONES_TEBAIDA.values() if v['2024'] > puntaje_regular_2024) + 1
+            pos_2025 = sum(1 for v in DATOS_INSTITUCIONES_TEBAIDA.values() if v['2025'] > puntaje_regular_2025) + 1
+
+            st.metric("Puntaje 2024", puntaje_regular_2024, f"Posición {pos_2024}/8")
+            st.metric("Puntaje 2025", puntaje_regular_2025,
+                     f"{puntaje_regular_2025 - puntaje_regular_2024:+d} puntos",
+                     delta_color="inverse" if puntaje_regular_2025 < puntaje_regular_2024 else "normal")
+            st.info(f"📍 Posición actual: **{pos_2025}° de 8** instituciones")
+
+        with col2:
+            st.markdown("#### 🎓 Modelo Flexible (Pensar)")
+            puntaje_flex_2024 = DATOS_INSTITUCIONES_TEBAIDA['PEDACITO DE CIELO (Modelo Flexible)']['2024']
+            puntaje_flex_2025 = DATOS_INSTITUCIONES_TEBAIDA['PEDACITO DE CIELO (Modelo Flexible)']['2025']
+
+            pos_flex_2024 = sum(1 for v in DATOS_INSTITUCIONES_TEBAIDA.values() if v['2024'] > puntaje_flex_2024) + 1
+            pos_flex_2025 = sum(1 for v in DATOS_INSTITUCIONES_TEBAIDA.values() if v['2025'] > puntaje_flex_2025) + 1
+
+            st.metric("Puntaje 2024", puntaje_flex_2024, f"Posición {pos_flex_2024}/8")
+            st.metric("Puntaje 2025", puntaje_flex_2025,
+                     f"{puntaje_flex_2025 - puntaje_flex_2024:+d} puntos")
+            st.info(f"📍 Posición actual: **{pos_flex_2025}° de 8** instituciones")
+
+        st.markdown("---")
+
+        # Comparación con promedios
+        st.markdown("### 📊 Comparación con Promedios de Referencia")
+
+        col_ref = st.columns(3)
+
+        with col_ref[0]:
+            prom_tebaida = PROMEDIOS_REFERENCIA['PROMEDIO TEBAIDA']['2025']
+            diff_regular = puntaje_regular_2025 - prom_tebaida
+            diff_flex = puntaje_flex_2025 - prom_tebaida
+            st.metric("Promedio La Tebaida 2025", prom_tebaida)
+            st.caption(f"Regular: {diff_regular:+d} pts | Flexible: {diff_flex:+d} pts")
+
+        with col_ref[1]:
+            prom_quindio = PROMEDIOS_REFERENCIA['PROMEDIO QUINDÍO']['2025']
+            diff_regular_q = puntaje_regular_2025 - prom_quindio
+            diff_flex_q = puntaje_flex_2025 - prom_quindio
+            st.metric("Promedio Quindío 2025", prom_quindio)
+            st.caption(f"Regular: {diff_regular_q:+d} pts | Flexible: {diff_flex_q:+d} pts")
+
+        with col_ref[2]:
+            prom_col = PROMEDIOS_REFERENCIA['PROMEDIO COLOMBIA']['2025']
+            diff_regular_c = puntaje_regular_2025 - prom_col
+            diff_flex_c = puntaje_flex_2025 - prom_col
+            st.metric("Promedio Colombia 2025", prom_col)
+            st.caption(f"Regular: {diff_regular_c:+d} pts | Flexible: {diff_flex_c:+d} pts")
+
+    # ==================== TAB 4: ANÁLISIS DETALLADO ====================
+    with tab4:
+        st.markdown("### 📉 Análisis Detallado")
+
+        # Tabla completa con todos los datos
+        st.markdown("#### 📋 Datos Completos de Todas las Instituciones")
+
+        datos_completos = []
+        for inst, valores in DATOS_INSTITUCIONES_TEBAIDA.items():
+            avance = valores['2025'] - valores['2024']
+            datos_completos.append({
+                'Institución': inst,
+                'Puntaje 2024': valores['2024'],
+                'Puntaje 2025': valores['2025'],
+                'Avance': f"{avance:+d}",
+                'vs Tebaida 2025': f"{valores['2025'] - PROMEDIOS_REFERENCIA['PROMEDIO TEBAIDA']['2025']:+d}",
+                'vs Colombia 2025': f"{valores['2025'] - PROMEDIOS_REFERENCIA['PROMEDIO COLOMBIA']['2025']:+d}"
+            })
+
+        # Agregar promedios de referencia
+        for prom, valores in PROMEDIOS_REFERENCIA.items():
+            avance = valores['2025'] - valores['2024']
+            datos_completos.append({
+                'Institución': f"📌 {prom}",
+                'Puntaje 2024': valores['2024'],
+                'Puntaje 2025': valores['2025'],
+                'Avance': f"{avance:+d}",
+                'vs Tebaida 2025': '-',
+                'vs Colombia 2025': '-'
+            })
+
+        df_completo = pd.DataFrame(datos_completos)
+        st.dataframe(df_completo, use_container_width=True, hide_index=True)
+
+        # Gráfico radar comparativo
+        st.markdown("#### 🎯 Posición Relativa de Pedacito de Cielo")
+
+        # Solo instituciones (sin promedios)
+        instituciones_solo = [k for k in DATOS_INSTITUCIONES_TEBAIDA.keys()
+                            if 'PEDACITO' not in k]
+        puntajes_otras_2025 = [DATOS_INSTITUCIONES_TEBAIDA[i]['2025'] for i in instituciones_solo]
+
+        puntaje_pc_regular = DATOS_INSTITUCIONES_TEBAIDA['PEDACITO DE CIELO (Aula Regular)']['2025']
+        puntaje_pc_flex = DATOS_INSTITUCIONES_TEBAIDA['PEDACITO DE CIELO (Modelo Flexible)']['2025']
+
+        fig_pos = go.Figure()
+
+        # Otras instituciones
+        fig_pos.add_trace(go.Bar(
+            x=instituciones_solo,
+            y=puntajes_otras_2025,
+            name='Otras Instituciones',
+            marker_color='lightblue'
+        ))
+
+        # Pedacito de Cielo
+        fig_pos.add_trace(go.Bar(
+            x=['PEDACITO DE CIELO (Aula Regular)', 'PEDACITO DE CIELO (Modelo Flexible)'],
+            y=[puntaje_pc_regular, puntaje_pc_flex],
+            name='Pedacito de Cielo',
+            marker_color=['#FF6B6B', '#4ECDC4']
+        ))
+
+        fig_pos.add_hline(y=PROMEDIOS_REFERENCIA['PROMEDIO TEBAIDA']['2025'],
+                        line_dash="dash", line_color="orange",
+                        annotation_text="Promedio Tebaida")
+
+        fig_pos.update_layout(
+            title="Comparativo 2025: Pedacito de Cielo vs Otras Instituciones",
+            xaxis_title="Institución",
+            yaxis_title="Puntaje Global",
+            height=500,
+            xaxis_tickangle=-45
         )
 
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig_pos, use_container_width=True, key="posicion_relativa")
 
-    else:
-        st.success("✅ No se encontraron inconsistencias. Los datos coinciden perfectamente.")
+        # Conclusiones
+        st.markdown("---")
+        st.markdown("### 📝 Conclusiones del Análisis Municipal")
 
-    st.markdown("---")
+        if puntaje_regular_2025 < puntaje_regular_2024:
+            st.warning(f"""
+            ⚠️ **Aula Regular:** Disminución de {puntaje_regular_2024 - puntaje_regular_2025} puntos respecto a 2024.
+            Se requiere análisis de causas y plan de mejoramiento.
+            """)
+        else:
+            st.success(f"""
+            ✅ **Aula Regular:** Mejora de {puntaje_regular_2025 - puntaje_regular_2024} puntos respecto a 2024.
+            """)
 
-    # Conclusiones
-    st.markdown("### 📝 Conclusiones")
-
-    if inconsistencias:
-        st.markdown("""
-        **Recomendaciones:**
-        1. ✅ **Usar siempre los datos oficiales del ICFES** como fuente de verdad
-        2. 📧 Contactar al municipio de La Tebaida para aclarar las discrepancias
-        3. 🔍 Verificar la metodología de cálculo utilizada en el análisis municipal
-        4. 📊 Actualizar el análisis municipal con los datos oficiales correctos
-        """)
-    else:
-        st.markdown("""
-        **Validación exitosa:**
-        ✅ Los datos del análisis municipal coinciden con los datos oficiales del ICFES.
-        """)
+        if puntaje_flex_2025 > puntaje_flex_2024:
+            st.success(f"""
+            ✅ **Modelo Flexible:** Mejora significativa de {puntaje_flex_2025 - puntaje_flex_2024} puntos (+{((puntaje_flex_2025 - puntaje_flex_2024) / puntaje_flex_2024 * 100):.1f}%).
+            El programa está mostrando resultados positivos.
+            """)
 
 if __name__ == "__main__":
     main()
