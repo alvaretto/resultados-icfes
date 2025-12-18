@@ -18,6 +18,14 @@ import re
 # Importar módulo de chat de IA
 from app.chat_ia_icfes import mostrar_chat, inicializar_chat
 
+# Importar módulo de análisis de inconsistencias
+from app.analisis_inconsistencias_pdf import (
+    extraer_datos_pdf_tebaida,
+    calcular_promedio_desde_excel,
+    comparar_datos,
+    generar_reporte_inconsistencias
+)
+
 # ============================================================================
 # CONFIGURACIÓN DE LA PÁGINA
 # ============================================================================
@@ -946,6 +954,7 @@ def main():
                     "📚 Estadísticas por Área",
                     "🏫 Estadísticas por Modelo",
                     "🏆 Rankings y Destacados",
+                    "🔍 Verificación de Datos",
                     "📥 Descargar Datos"
                 ]
             )
@@ -1038,6 +1047,9 @@ def main():
 
     elif pagina == "🏆 Rankings y Destacados":
         mostrar_rankings(datos_2025_raw)
+
+    elif pagina == "🔍 Verificación de Datos":
+        mostrar_verificacion_datos(datos_2024, stats_regular_2025, stats_flexible_2025)
 
     elif pagina == "📥 Descargar Datos":
         mostrar_descarga_datos(datos_2025_raw)
@@ -2127,6 +2139,173 @@ def mostrar_descarga_datos(datos_2025_raw):
         file_name=f"{nombre_archivo}_estadisticas.csv",
         mime="text/csv"
     )
+
+def mostrar_verificacion_datos(datos_2024, stats_regular_2025, stats_flexible_2025):
+    """Página para verificar inconsistencias entre PDFs"""
+
+    st.markdown('<div class="subtitle">🔍 Verificación de Datos - Análisis de Inconsistencias</div>', unsafe_allow_html=True)
+
+    st.info("""
+    📌 **Objetivo:** Comparar los datos oficiales del ICFES con el análisis del municipio de La Tebaida
+    para identificar posibles inconsistencias.
+
+    **Fuentes de datos:**
+    - ✅ **PDFs Oficiales ICFES:** Datos certificados de 2024-3 y 2025-3 (fuente de verdad)
+    - 📄 **PDF La Tebaida:** Análisis comparativo del municipio
+    """)
+
+    st.markdown("---")
+
+    # Extraer datos del PDF de La Tebaida
+    st.markdown("### 📄 Paso 1: Extracción de Datos del PDF de La Tebaida")
+
+    pdf_tebaida_path = "ANALISIS DETALLADO SABER 11 LA TEBAIDA.pdf"
+
+    with st.spinner("Extrayendo datos del PDF de La Tebaida..."):
+        try:
+            datos_tebaida = extraer_datos_pdf_tebaida(pdf_tebaida_path)
+
+            if datos_tebaida and (datos_tebaida['2024'] or datos_tebaida['2025']):
+                st.success("✅ Datos extraídos exitosamente del PDF de La Tebaida")
+
+                # Mostrar datos extraídos
+                col1, col2 = st.columns(2)
+
+                with col1:
+                    st.markdown("#### 📊 Datos 2024 (según PDF La Tebaida)")
+                    if datos_tebaida['2024']:
+                        df_2024_tebaida = pd.DataFrame([
+                            {'Modelo': k, 'Puntaje Global': v}
+                            for k, v in datos_tebaida['2024'].items()
+                        ])
+                        st.dataframe(df_2024_tebaida, use_container_width=True, hide_index=True)
+                    else:
+                        st.warning("No se encontraron datos de 2024")
+
+                with col2:
+                    st.markdown("#### 📊 Datos 2025 (según PDF La Tebaida)")
+                    if datos_tebaida['2025']:
+                        df_2025_tebaida = pd.DataFrame([
+                            {'Modelo': k, 'Puntaje Global': v}
+                            for k, v in datos_tebaida['2025'].items()
+                        ])
+                        st.dataframe(df_2025_tebaida, use_container_width=True, hide_index=True)
+                    else:
+                        st.warning("No se encontraron datos de 2025")
+            else:
+                st.error("❌ No se pudieron extraer datos del PDF de La Tebaida")
+                return
+
+        except Exception as e:
+            st.error(f"❌ Error al procesar el PDF de La Tebaida: {e}")
+            return
+
+    st.markdown("---")
+
+    # Calcular datos oficiales
+    st.markdown("### ✅ Paso 2: Datos Oficiales del ICFES")
+
+    # Preparar datos oficiales
+    datos_oficiales = {
+        '2024': {
+            'PEDACITO DE CIELO REGULAR': datos_2024.get('Aula Regular', {}).get('puntaje_global'),
+            'PEDACITO DE CIELO PENSAR': datos_2024.get('Modelo Flexible', {}).get('puntaje_global')
+        },
+        '2025': {
+            'PEDACITO DE CIELO REGULAR': stats_regular_2025.get('puntaje_global'),
+            'PEDACITO DE CIELO PENSAR': stats_flexible_2025.get('puntaje_global')
+        }
+    }
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("#### 📊 Datos Oficiales 2024")
+        df_2024_oficial = pd.DataFrame([
+            {'Modelo': k, 'Puntaje Global': v}
+            for k, v in datos_oficiales['2024'].items()
+            if v is not None
+        ])
+        st.dataframe(df_2024_oficial, use_container_width=True, hide_index=True)
+
+    with col2:
+        st.markdown("#### 📊 Datos Oficiales 2025")
+        df_2025_oficial = pd.DataFrame([
+            {'Modelo': k, 'Puntaje Global': v}
+            for k, v in datos_oficiales['2025'].items()
+            if v is not None
+        ])
+        st.dataframe(df_2025_oficial, use_container_width=True, hide_index=True)
+
+    st.markdown("---")
+
+    # Comparar y mostrar inconsistencias
+    st.markdown("### 🔍 Paso 3: Análisis de Inconsistencias")
+
+    inconsistencias = comparar_datos(datos_tebaida, datos_oficiales)
+
+    if inconsistencias:
+        st.warning(f"⚠️ Se encontraron {len(inconsistencias)} inconsistencia(s)")
+
+        df_inconsistencias = generar_reporte_inconsistencias(inconsistencias)
+
+        # Formatear el DataFrame para mejor visualización
+        df_inconsistencias['Año'] = df_inconsistencias['año']
+        df_inconsistencias['Modelo'] = df_inconsistencias['modelo']
+        df_inconsistencias['PDF La Tebaida'] = df_inconsistencias['puntaje_tebaida']
+        df_inconsistencias['Datos Oficiales ICFES'] = df_inconsistencias['puntaje_oficial']
+        df_inconsistencias['Diferencia'] = df_inconsistencias['diferencia'].apply(lambda x: f"{x:+.0f}")
+        df_inconsistencias['Tipo'] = df_inconsistencias['tipo']
+
+        df_display = df_inconsistencias[['Año', 'Modelo', 'PDF La Tebaida', 'Datos Oficiales ICFES', 'Diferencia', 'Tipo']]
+
+        st.dataframe(df_display, use_container_width=True, hide_index=True)
+
+        # Visualización de inconsistencias
+        st.markdown("#### 📊 Visualización de Diferencias")
+
+        fig = go.Figure()
+
+        for _, row in df_inconsistencias.iterrows():
+            fig.add_trace(go.Bar(
+                name=f"{row['modelo']} ({row['año']})",
+                x=['PDF La Tebaida', 'Datos Oficiales ICFES'],
+                y=[row['puntaje_tebaida'], row['puntaje_oficial']],
+                text=[row['puntaje_tebaida'], row['puntaje_oficial']],
+                textposition='auto',
+            ))
+
+        fig.update_layout(
+            title="Comparación: PDF La Tebaida vs Datos Oficiales ICFES",
+            xaxis_title="Fuente",
+            yaxis_title="Puntaje Global",
+            barmode='group',
+            height=500
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+
+    else:
+        st.success("✅ No se encontraron inconsistencias. Los datos coinciden perfectamente.")
+
+    st.markdown("---")
+
+    # Conclusiones
+    st.markdown("### 📝 Conclusiones")
+
+    if inconsistencias:
+        st.markdown("""
+        **Recomendaciones:**
+        1. ✅ **Usar siempre los datos oficiales del ICFES** como fuente de verdad
+        2. 📧 Contactar al municipio de La Tebaida para aclarar las discrepancias
+        3. 🔍 Verificar la metodología de cálculo utilizada en el análisis municipal
+        4. 📊 Actualizar el análisis municipal con los datos oficiales correctos
+        """)
+    else:
+        st.markdown("""
+        **Validación exitosa:**
+        ✅ Los datos del análisis municipal coinciden con los datos oficiales del ICFES.
+        """)
 
 if __name__ == "__main__":
     main()
