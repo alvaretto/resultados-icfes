@@ -26,8 +26,45 @@ DATOS_INSTITUCIONES_TEBAIDA = {
     'LA POPA': {'2024': 254, '2025': 264},
     'SANTA TERESITA': {'2024': 265, '2025': 262},
     'INSTITUTO TEBAIDA': {'2024': 252, '2025': 252},
-    'PEDACITO DE CIELO (Aula Regular)': {'2024': 240, '2025': 234},
-    'PEDACITO DE CIELO (Modelo Flexible)': {'2024': 203, '2025': 214},
+    'PEDACITO DE CIELO (Aula Regular - Jornada 1)': {'2024': 240, '2025': 234},
+    'PEDACITO DE CIELO (Modelo Flexible - Jornada 0)': {'2024': 203, '2025': 214},
+}
+
+# Datos Oficiales 2025 (Fuente: PDF resultados agregados - 95 estudiantes)
+DATOS_OFICIALES_2025 = {
+    'Todos': {
+        'puntaje_global': 221,
+        'desv_global': 44,
+        'areas': {
+            'Lectura Crítica': {'promedio': 48, 'desviacion': 10},
+            'Matemáticas': {'promedio': 44, 'desviacion': 11},
+            'Sociales y Ciudadanas': {'promedio': 41, 'desviacion': 11},
+            'Ciencias Naturales': {'promedio': 43, 'desviacion': 9},
+            'Inglés': {'promedio': 45, 'desviacion': 10}
+        }
+    },
+    'Aula Regular (Jornada 1)': {
+        'puntaje_global': 234,
+        'desv_global': 44,
+        'areas': {
+            'Lectura Crítica': {'promedio': 51, 'desviacion': 10},
+            'Matemáticas': {'promedio': 47, 'desviacion': 10},
+            'Sociales y Ciudadanas': {'promedio': 44, 'desviacion': 12},
+            'Ciencias Naturales': {'promedio': 44, 'desviacion': 8},
+            'Inglés': {'promedio': 46, 'desviacion': 9}
+        }
+    },
+    'Modelo Flexible (Jornada 0)': {
+        'puntaje_global': 214,
+        'desv_global': 43,
+        'areas': {
+            'Lectura Crítica': {'promedio': 47, 'desviacion': 10},
+            'Matemáticas': {'promedio': 42, 'desviacion': 11},
+            'Sociales y Ciudadanas': {'promedio': 39, 'desviacion': 10},
+            'Ciencias Naturales': {'promedio': 42, 'desviacion': 9},
+            'Inglés': {'promedio': 44, 'desviacion': 10}
+        }
+    }
 }
 
 PROMEDIOS_REFERENCIA = {
@@ -157,7 +194,7 @@ def cargar_datos_2024():
     
     # Datos Aula Regular 2024
     datos_regular_2024 = {
-        'modelo': 'Aula Regular',
+        'modelo': 'Aula Regular (Jornada 1)',
         'estudiantes': 50,
         'puntaje_global': 240,
         'desv_global': 41,
@@ -172,7 +209,7 @@ def cargar_datos_2024():
     
     # Datos Modelo Flexible 2024
     datos_flexible_2024 = {
-        'modelo': 'Modelo Flexible',
+        'modelo': 'Modelo Flexible (Jornada 0)',
         'estudiantes': 66,
         'puntaje_global': 203,
         'desv_global': 36,
@@ -201,8 +238,8 @@ def cargar_datos_2024():
     }
     
     return {
-        'Aula Regular': datos_regular_2024,
-        'Modelo Flexible': datos_flexible_2024,
+        'Aula Regular (Jornada 1)': datos_regular_2024,
+        'Modelo Flexible (Jornada 0)': datos_flexible_2024,
         'Institucional': datos_institucional_2024
     }
 
@@ -220,8 +257,8 @@ def cargar_datos_2025():
         df_flexible = df_flexible[df_flexible['Grupo'].notna()].copy()
         
         # Agregar columna de modelo
-        df_regular['Modelo'] = 'Aula Regular'
-        df_flexible['Modelo'] = 'Modelo Flexible'
+        df_regular['Modelo'] = 'Aula Regular (Jornada 1)'
+        df_flexible['Modelo'] = 'Modelo Flexible (Jornada 0)'
         
         # Consolidar
         df_todos = pd.concat([df_regular, df_flexible], ignore_index=True)
@@ -237,7 +274,31 @@ def cargar_datos_2025():
 
 @st.cache_data
 def calcular_estadisticas_2025(df, modelo='Todos'):
-    """Calcula estadísticas para datos de 2025"""
+    """Calcula estadísticas para 2025 o retorna valores oficiales si existen"""
+    
+    # Verificar si existen datos oficiales para este modelo
+    if modelo in DATOS_OFICIALES_2025:
+        datos_oficiales = DATOS_OFICIALES_2025[modelo]
+        
+        # Estructura base recuperando conteos del Excel (único dato no disponible en PDF con exactitud)
+        estudiantes = len(df) if df is not None else 0
+        
+        stats = {
+            'modelo': modelo,
+            'estudiantes': estudiantes,
+            'puntaje_global': datos_oficiales['puntaje_global'],
+            'desv_global': datos_oficiales['desv_global'],
+            'areas': {}
+        }
+        
+        # Llenar áreas con valores oficiales
+        for area in AREAS:
+            stats['areas'][area] = {
+                'promedio': datos_oficiales['areas'][area]['promedio'],
+                'desviacion': datos_oficiales['areas'][area]['desviacion']
+            }
+            
+        return stats
 
     if df is None or len(df) == 0:
         return None
@@ -278,9 +339,9 @@ def calcular_estadisticas_por_grupo(df):
 
         # Determinar el modelo del grupo
         if grupo in ['11A', '11B']:
-            modelo = 'Aula Regular'
+            modelo = 'Aula Regular (Jornada 1)'
         else:
-            modelo = 'Modelo Flexible'
+            modelo = 'Modelo Flexible (Jornada 0)'
 
         grupos_stats[grupo] = {
             'grupo': grupo,
@@ -398,14 +459,14 @@ def mostrar_ficha_tecnica(datos_2024, stats_2025, datos_2025_raw):
     st.markdown("#### 📊 Participación por Modelo Educativo")
 
     # Calcular datos por modelo
-    regular_2024 = datos_2024['Aula Regular']['estudiantes']
-    flexible_2024 = datos_2024['Modelo Flexible']['estudiantes']
+    regular_2024 = datos_2024['Aula Regular (Jornada 1)']['estudiantes']
+    flexible_2024 = datos_2024['Modelo Flexible (Jornada 0)']['estudiantes']
 
     regular_2025 = len(datos_2025_raw['df_regular'])
     flexible_2025 = len(datos_2025_raw['df_flexible'])
 
     df_participacion = pd.DataFrame({
-        'Modelo Educativo': ['Aula Regular', 'Modelo Flexible', 'Total Institucional'],
+        'Modelo Educativo': ['Aula Regular (Jornada 1)', 'Modelo Flexible (Jornada 0)', 'Total Institucional'],
         'Estudiantes 2024': [regular_2024, flexible_2024, matriculados_2024],
         'Estudiantes 2025': [regular_2025, flexible_2025, presentes_2025],
         'Variación': [
@@ -1017,8 +1078,8 @@ def main():
         return
 
     # Calcular estadísticas 2025
-    stats_regular_2025 = calcular_estadisticas_2025(datos_2025_raw['df_regular'], 'Aula Regular')
-    stats_flexible_2025 = calcular_estadisticas_2025(datos_2025_raw['df_flexible'], 'Modelo Flexible')
+    stats_regular_2025 = calcular_estadisticas_2025(datos_2025_raw['df_regular'], 'Aula Regular (Jornada 1)')
+    stats_flexible_2025 = calcular_estadisticas_2025(datos_2025_raw['df_flexible'], 'Modelo Flexible (Jornada 0)')
     stats_institucional_2025 = calcular_estadisticas_2025(datos_2025_raw['df_todos'], 'Todos')
 
     # Calcular estadísticas por grupo
@@ -1147,32 +1208,32 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025, s
     # ==================== PESTAÑA 2: AVANCES POR MODELOS EDUCATIVOS ====================
     with tab2:
         st.markdown('<div class="subtitle">📚 Avances por Modelos Educativos 2024 vs 2025</div>', unsafe_allow_html=True)
-        st.info("📌 Esta sección compara el desempeño de Aula Regular y Modelo Flexible entre 2024 y 2025")
+        st.info("📌 Esta sección compara el desempeño de Aula Regular (Jornada 1) y Modelo Flexible (Jornada 0) entre 2024 y 2025")
 
         # Métricas de puntaje global por modelo
         col1, col2 = st.columns(2)
 
         with col1:
-            st.markdown("#### 📘 Aula Regular")
+            st.markdown("#### 📘 Aula Regular (Jornada 1)")
             avance_regular = calcular_avance(
-                datos_2024['Aula Regular']['puntaje_global'],
+                datos_2024['Aula Regular (Jornada 1)']['puntaje_global'],
                 stats_regular_2025['puntaje_global']
             )
             texto_avance_regular, clase_avance_regular = formatear_avance(avance_regular)
 
-            st.metric("Puntaje Global 2024", datos_2024['Aula Regular']['puntaje_global'])
+            st.metric("Puntaje Global 2024", datos_2024['Aula Regular (Jornada 1)']['puntaje_global'])
             st.metric("Puntaje Global 2025", stats_regular_2025['puntaje_global'])
             st.markdown(f'<div class="{clase_avance_regular}">{texto_avance_regular}</div>', unsafe_allow_html=True)
 
         with col2:
-            st.markdown("#### 📙 Modelo Flexible")
+            st.markdown("#### 📙 Modelo Flexible (Jornada 0)")
             avance_flexible = calcular_avance(
-                datos_2024['Modelo Flexible']['puntaje_global'],
+                datos_2024['Modelo Flexible (Jornada 0)']['puntaje_global'],
                 stats_flexible_2025['puntaje_global']
             )
             texto_avance_flexible, clase_avance_flexible = formatear_avance(avance_flexible)
 
-            st.metric("Puntaje Global 2024", datos_2024['Modelo Flexible']['puntaje_global'])
+            st.metric("Puntaje Global 2024", datos_2024['Modelo Flexible (Jornada 0)']['puntaje_global'])
             st.metric("Puntaje Global 2025", stats_flexible_2025['puntaje_global'])
             st.markdown(f'<div class="{clase_avance_flexible}">{texto_avance_flexible}</div>', unsafe_allow_html=True)
 
@@ -1183,7 +1244,7 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025, s
 
         tabla_regular = []
         for area in AREAS:
-            puntaje_2024 = datos_2024['Aula Regular']['areas'][area]['promedio']
+            puntaje_2024 = datos_2024['Aula Regular (Jornada 1)']['areas'][area]['promedio']
             puntaje_2025 = stats_regular_2025['areas'][area]['promedio']
             avance = calcular_avance(puntaje_2024, puntaje_2025)
             texto_avance, _ = formatear_avance(avance)
@@ -1228,7 +1289,7 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025, s
 
         tabla_flexible = []
         for area in AREAS:
-            puntaje_2024 = datos_2024['Modelo Flexible']['areas'][area]['promedio']
+            puntaje_2024 = datos_2024['Modelo Flexible (Jornada 0)']['areas'][area]['promedio']
             puntaje_2025 = stats_flexible_2025['areas'][area]['promedio']
             avance = calcular_avance(puntaje_2024, puntaje_2025)
             texto_avance, _ = formatear_avance(avance)
@@ -1274,7 +1335,7 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025, s
         col1, col2 = st.columns(2)
 
         with col1:
-            st.markdown("**📘 Top 3 Áreas - Aula Regular**")
+            st.markdown("**📘 Top 3 Áreas - Aula Regular (Jornada 1)**")
             df_regular_sorted = df_regular.sort_values('Avance', ascending=False)
             for idx, row in df_regular_sorted.head(3).iterrows():
                 if row['Avance'] > 0:
@@ -1285,7 +1346,7 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025, s
                     st.info(f"⚪ {row['Área']}: Sin cambio")
 
         with col2:
-            st.markdown("**📙 Top 3 Áreas - Modelo Flexible**")
+            st.markdown("**📙 Top 3 Áreas - Modelo Flexible (Jornada 0)**")
             df_flexible_sorted = df_flexible.sort_values('Avance', ascending=False)
             for idx, row in df_flexible_sorted.head(3).iterrows():
                 if row['Avance'] > 0:
@@ -1348,14 +1409,14 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025, s
 
         # Sección 2: Avances por Área - Entre Modelos
         st.markdown("#### 🔄 Avances por Área - Comparación entre Modelos")
-        st.markdown("Comparación de cómo cada área avanzó en Aula Regular vs Modelo Flexible")
+        st.markdown("Comparación de cómo cada área avanzó en Aula Regular (Jornada 1) vs Modelo Flexible (Jornada 0)")
 
         # Crear datos para comparación entre modelos
         datos_comparacion_modelos = []
         for area in AREAS:
             # Aula Regular
             avance_regular = calcular_avance(
-                datos_2024['Aula Regular']['areas'][area]['promedio'],
+                datos_2024['Aula Regular (Jornada 1)']['areas'][area]['promedio'],
                 stats_regular_2025['areas'][area]['promedio']
             )
             datos_comparacion_modelos.append({
@@ -1366,7 +1427,7 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025, s
 
             # Modelo Flexible
             avance_flexible = calcular_avance(
-                datos_2024['Modelo Flexible']['areas'][area]['promedio'],
+                datos_2024['Modelo Flexible (Jornada 0)']['areas'][area]['promedio'],
                 stats_flexible_2025['areas'][area]['promedio']
             )
             datos_comparacion_modelos.append({
@@ -1385,7 +1446,7 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025, s
             color='Modelo',
             barmode='group',
             title="Comparación de Avances por Área entre Modelos Educativos",
-            color_discrete_map={'Aula Regular': '#667eea', 'Modelo Flexible': '#764ba2'},
+            color_discrete_map={'Aula Regular (Jornada 1)': '#667eea', 'Modelo Flexible (Jornada 0)': '#764ba2'},
             text='Avance'
         )
         fig_comp_modelos.update_traces(texttemplate='%{text:+d}', textposition='outside')
@@ -1399,19 +1460,19 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025, s
         tabla_comp_modelos = []
         for area in AREAS:
             avance_regular = calcular_avance(
-                datos_2024['Aula Regular']['areas'][area]['promedio'],
+                datos_2024['Aula Regular (Jornada 1)']['areas'][area]['promedio'],
                 stats_regular_2025['areas'][area]['promedio']
             )
             avance_flexible = calcular_avance(
-                datos_2024['Modelo Flexible']['areas'][area]['promedio'],
+                datos_2024['Modelo Flexible (Jornada 0)']['areas'][area]['promedio'],
                 stats_flexible_2025['areas'][area]['promedio']
             )
             diferencia = avance_regular - avance_flexible
 
             tabla_comp_modelos.append({
                 'Área': area,
-                'Avance Aula Regular': avance_regular,
-                'Avance Modelo Flexible': avance_flexible,
+                'Avance Aula Regular (Jornada 1)': avance_regular,
+                'Avance Modelo Flexible (Jornada 0)': avance_flexible,
                 'Diferencia': diferencia
             })
 
@@ -1455,7 +1516,7 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025, s
             y='Puntaje Global',
             color='Modelo',
             title="Puntaje Global por Grupo - Año 2025",
-            color_discrete_map={'Aula Regular': '#667eea', 'Modelo Flexible': '#764ba2'},
+            color_discrete_map={'Aula Regular (Jornada 1)': '#667eea', 'Modelo Flexible (Jornada 0)': '#764ba2'},
             text='Puntaje Global'
         )
         fig_grupos.update_traces(textposition='outside')
@@ -1470,7 +1531,7 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025, s
         col1, col2 = st.columns(2)
 
         with col1:
-            st.markdown("**📘 Grupos de Aula Regular (11A vs 11B)**")
+            st.markdown("**📘 Grupos de Aula Regular (Jornada 1) (11A vs 11B)**")
 
             # Comparar 11A vs 11B
             grupos_regular = ['11A', '11B']
@@ -1509,7 +1570,7 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025, s
                     st.info(f"📊 11A y 11B tienen el mismo puntaje global")
 
         with col2:
-            st.markdown("**📙 Grupos de Modelo Flexible (P3A vs P3B vs P3C)**")
+            st.markdown("**📙 Grupos de Modelo Flexible (Jornada 0) (P3A vs P3B vs P3C)**")
 
             # Comparar P3A vs P3B vs P3C
             grupos_flexible = ['P3A', 'P3B', 'P3C']
@@ -1618,7 +1679,7 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025, s
         col1, col2 = st.columns(2)
 
         with col1:
-            st.markdown("#### 📘 Aula Regular")
+            st.markdown("#### 📘 Aula Regular (Jornada 1)")
             mostrar_niveles_desempeno_area(
                 datos_2025_raw['df_regular'],
                 area_seleccionada,
@@ -1626,7 +1687,7 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025, s
             )
 
         with col2:
-            st.markdown("#### 📙 Modelo Flexible")
+            st.markdown("#### 📙 Modelo Flexible (Jornada 0)")
             mostrar_niveles_desempeno_area(
                 datos_2025_raw['df_flexible'],
                 area_seleccionada,
@@ -1637,6 +1698,7 @@ def mostrar_estadisticas_estudiante(datos_2025_raw):
     """Página de estadísticas por estudiante individual"""
 
     st.markdown('<div class="subtitle">👨‍🎓 Estadísticas por Estudiante</div>', unsafe_allow_html=True)
+    st.warning("⚠️ Nota: Los datos a nivel de estudiante provienen de fuentes auxiliares (Excel) y no están disponibles en el reporte oficial agregado del ICFES (Fuente de Verdad PDF).")
 
     df_todos = datos_2025_raw['df_todos']
 
@@ -1801,7 +1863,7 @@ def mostrar_estadisticas_area(datos_2024, datos_2025_raw, stats_institucional_20
         color='Modelo',
         title=f"Distribución de Puntajes - {area_seleccionada}",
         labels={area_seleccionada: 'Puntaje'},
-        color_discrete_map={'Aula Regular': '#667eea', 'Modelo Flexible': '#764ba2'}
+        color_discrete_map={'Aula Regular (Jornada 1)': '#667eea', 'Modelo Flexible (Jornada 0)': '#764ba2'}
     )
     st.plotly_chart(fig, use_container_width=True)
 
@@ -1840,16 +1902,16 @@ def mostrar_estadisticas_modelo(datos_2024, stats_regular_2025, stats_flexible_2
     # Selector de modelo
     modelo_seleccionado = st.radio(
         "Seleccione un modelo:",
-        ["Aula Regular", "Modelo Flexible"],
+        ["Aula Regular (Jornada 1)", "Modelo Flexible (Jornada 0)"],
         horizontal=True
     )
 
-    if modelo_seleccionado == "Aula Regular":
-        datos_2024_modelo = datos_2024['Aula Regular']
+    if modelo_seleccionado == "Aula Regular (Jornada 1)":
+        datos_2024_modelo = datos_2024['Aula Regular (Jornada 1)']
         datos_2025_modelo = stats_regular_2025
         color = '#667eea'
     else:
-        datos_2024_modelo = datos_2024['Modelo Flexible']
+        datos_2024_modelo = datos_2024['Modelo Flexible (Jornada 0)']
         datos_2025_modelo = stats_flexible_2025
         color = '#764ba2'
 
@@ -1948,7 +2010,7 @@ def mostrar_rankings(datos_2025_raw):
         y='Puntaje Global',
         color='Modelo',
         title="Top 10 Estudiantes - Puntaje Global",
-        color_discrete_map={'Aula Regular': '#667eea', 'Modelo Flexible': '#764ba2'}
+        color_discrete_map={'Aula Regular (Jornada 1)': '#667eea', 'Modelo Flexible (Jornada 0)': '#764ba2'}
     )
     fig.update_xaxes(tickangle=-45)
     st.plotly_chart(fig, use_container_width=True)
@@ -2056,14 +2118,14 @@ def mostrar_descarga_datos(datos_2025_raw):
     # Seleccionar conjunto de datos
     conjunto_datos = st.radio(
         "Seleccione el conjunto de datos a descargar:",
-        ["Todos los estudiantes", "Aula Regular", "Modelo Flexible"],
+        ["Todos los estudiantes", "Aula Regular (Jornada 1)", "Modelo Flexible (Jornada 0)"],
         horizontal=True
     )
 
     if conjunto_datos == "Todos los estudiantes":
         df_descarga = df_todos.copy()
         nombre_archivo = "resultados_icfes_2025_todos"
-    elif conjunto_datos == "Aula Regular":
+    elif conjunto_datos == "Aula Regular (Jornada 1)":
         df_descarga = df_regular.copy()
         nombre_archivo = "resultados_icfes_2025_aula_regular"
     else:
@@ -2274,8 +2336,8 @@ def mostrar_verificacion_datos(datos_2024, stats_regular_2025, stats_flexible_20
 
         with col1:
             st.markdown("#### 🏫 Aula Regular")
-            puntaje_regular_2024 = DATOS_INSTITUCIONES_TEBAIDA['PEDACITO DE CIELO (Aula Regular)']['2024']
-            puntaje_regular_2025 = DATOS_INSTITUCIONES_TEBAIDA['PEDACITO DE CIELO (Aula Regular)']['2025']
+            puntaje_regular_2024 = DATOS_INSTITUCIONES_TEBAIDA['PEDACITO DE CIELO (Aula Regular - Jornada 1)']['2024']
+            puntaje_regular_2025 = DATOS_INSTITUCIONES_TEBAIDA['PEDACITO DE CIELO (Aula Regular - Jornada 1)']['2025']
 
             # Calcular posición
             pos_2024 = sum(1 for v in DATOS_INSTITUCIONES_TEBAIDA.values() if v['2024'] > puntaje_regular_2024) + 1
@@ -2289,8 +2351,8 @@ def mostrar_verificacion_datos(datos_2024, stats_regular_2025, stats_flexible_20
 
         with col2:
             st.markdown("#### 🎓 Modelo Flexible (Pensar)")
-            puntaje_flex_2024 = DATOS_INSTITUCIONES_TEBAIDA['PEDACITO DE CIELO (Modelo Flexible)']['2024']
-            puntaje_flex_2025 = DATOS_INSTITUCIONES_TEBAIDA['PEDACITO DE CIELO (Modelo Flexible)']['2025']
+            puntaje_flex_2024 = DATOS_INSTITUCIONES_TEBAIDA['PEDACITO DE CIELO (Modelo Flexible - Jornada 0)']['2024']
+            puntaje_flex_2025 = DATOS_INSTITUCIONES_TEBAIDA['PEDACITO DE CIELO (Modelo Flexible - Jornada 0)']['2025']
 
             pos_flex_2024 = sum(1 for v in DATOS_INSTITUCIONES_TEBAIDA.values() if v['2024'] > puntaje_flex_2024) + 1
             pos_flex_2025 = sum(1 for v in DATOS_INSTITUCIONES_TEBAIDA.values() if v['2025'] > puntaje_flex_2025) + 1
@@ -2370,8 +2432,8 @@ def mostrar_verificacion_datos(datos_2024, stats_regular_2025, stats_flexible_20
                             if 'PEDACITO' not in k]
         puntajes_otras_2025 = [DATOS_INSTITUCIONES_TEBAIDA[i]['2025'] for i in instituciones_solo]
 
-        puntaje_pc_regular = DATOS_INSTITUCIONES_TEBAIDA['PEDACITO DE CIELO (Aula Regular)']['2025']
-        puntaje_pc_flex = DATOS_INSTITUCIONES_TEBAIDA['PEDACITO DE CIELO (Modelo Flexible)']['2025']
+        puntaje_pc_regular = DATOS_INSTITUCIONES_TEBAIDA['PEDACITO DE CIELO (Aula Regular - Jornada 1)']['2025']
+        puntaje_pc_flex = DATOS_INSTITUCIONES_TEBAIDA['PEDACITO DE CIELO (Modelo Flexible - Jornada 0)']['2025']
 
         fig_pos = go.Figure()
 
@@ -2385,7 +2447,7 @@ def mostrar_verificacion_datos(datos_2024, stats_regular_2025, stats_flexible_20
 
         # Pedacito de Cielo
         fig_pos.add_trace(go.Bar(
-            x=['PEDACITO DE CIELO (Aula Regular)', 'PEDACITO DE CIELO (Modelo Flexible)'],
+            x=['PEDACITO DE CIELO (Aula Regular - Jornada 1)', 'PEDACITO DE CIELO (Modelo Flexible - Jornada 0)'],
             y=[puntaje_pc_regular, puntaje_pc_flex],
             name='Pedacito de Cielo',
             marker_color=['#FF6B6B', '#4ECDC4']
