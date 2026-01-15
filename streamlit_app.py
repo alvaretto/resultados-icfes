@@ -28,6 +28,7 @@ DATOS_INSTITUCIONES_TEBAIDA = {
     'INSTITUTO TEBAIDA': {'2024': 252, '2025': 252},
     'PEDACITO DE CIELO (Aula Regular - Jornada 1)': {'2024': 240, '2025': 234},
     'PEDACITO DE CIELO (Modelo Flexible - Jornada 0)': {'2024': 203, '2025': 214},
+    'PEDACITO DE CIELO (Institucional)': {'2024': 219, '2025': 221},
 }
 
 # Datos Oficiales 2025 (Fuente: PDF resultados agregados - 95 estudiantes)
