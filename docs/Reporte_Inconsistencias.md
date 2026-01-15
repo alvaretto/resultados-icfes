@@ -17,3 +17,12 @@ El documento "ANALISIS DETALLADO" es numéricamente preciso respecto a los prome
 **Acciones de Corrección Inmediata:**
 1.  Aplicar el cambio de nombres en todo el código y documentación del proyecto.
 2.  Garantizar que los promedios globales mostrados en la App sean **221** (Global), **234** (Jornada 1) y **214** (Jornada 0).
+
+### 4. Discrepancia en Análisis Textual (Evolución)
+- **Fuente (PDF Análisis Municipal):**
+  - **Tabla de Resultados:** Muestra Pedacito Regular 2024 (240) -> 2025 (234). Diferencia matemática: **-6**.
+  - **Texto de Análisis:** Menciona "disminución ... de (7 puntos)".
+  - **Tabla de Resultados:** Muestra Pedacito Flexible 2024 (203) -> 2025 (214). Diferencia matemática: **+11**.
+  - **Texto de Análisis:** Menciona "sube 9 puntos".
+- **Observación:** Existe una contradicción interna en el PDF de Análisis entre sus propias tablas y su texto narrativo.
+- **Acción:** Se mantiene el uso de los **Datos Numéricos de las Tablas** (234/214), ya que coinciden con los Reportes Oficiales (Fuente de Verdad Primaria 2024 y 2025).
