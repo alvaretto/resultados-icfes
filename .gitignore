@@ -72,3 +72,4 @@ geckodriver.log
 
 # Augment AI configuration
 .augment/
+node_modules
