@@ -2332,36 +2332,76 @@ def mostrar_verificacion_datos(datos_2024, stats_regular_2025, stats_flexible_20
     with tab3:
         st.markdown("### 🎯 Posición de I.E. Pedacito de Cielo en el Municipio")
 
-        # Resaltar Pedacito de Cielo
+        st.info("""
+        📌 **Nota:** Para el ranking municipal se considera a **Pedacito de Cielo** como una sola institución
+        (fusionando Aula Regular y Modelo Flexible), resultando en **7 instituciones** en total.
+        """)
+
+        # Crear diccionario con solo 7 instituciones (Pedacito de Cielo institucional)
+        INSTITUCIONES_RANKING = {
+            'ANTONIO NARIÑO': DATOS_INSTITUCIONES_TEBAIDA['ANTONIO NARIÑO'],
+            'LUIS ARANGO CARDONA': DATOS_INSTITUCIONES_TEBAIDA['LUIS ARANGO CARDONA'],
+            'GABRIELA MISTRAL': DATOS_INSTITUCIONES_TEBAIDA['GABRIELA MISTRAL'],
+            'LA POPA': DATOS_INSTITUCIONES_TEBAIDA['LA POPA'],
+            'SANTA TERESITA': DATOS_INSTITUCIONES_TEBAIDA['SANTA TERESITA'],
+            'INSTITUTO TEBAIDA': DATOS_INSTITUCIONES_TEBAIDA['INSTITUTO TEBAIDA'],
+            'PEDACITO DE CIELO': DATOS_INSTITUCIONES_TEBAIDA['PEDACITO DE CIELO (Institucional)'],
+        }
+
+        # Posición institucional de Pedacito de Cielo
+        st.markdown("#### 🏫 Posición Institucional (Consolidada)")
+
+        puntaje_inst_2024 = INSTITUCIONES_RANKING['PEDACITO DE CIELO']['2024']
+        puntaje_inst_2025 = INSTITUCIONES_RANKING['PEDACITO DE CIELO']['2025']
+
+        # Calcular posición sobre 7 instituciones
+        pos_inst_2024 = sum(1 for v in INSTITUCIONES_RANKING.values() if v['2024'] > puntaje_inst_2024) + 1
+        pos_inst_2025 = sum(1 for v in INSTITUCIONES_RANKING.values() if v['2025'] > puntaje_inst_2025) + 1
+
+        col_inst = st.columns(3)
+
+        with col_inst[0]:
+            st.metric("Puntaje 2024", puntaje_inst_2024, f"Posición {pos_inst_2024}/7")
+
+        with col_inst[1]:
+            st.metric("Puntaje 2025", puntaje_inst_2025,
+                     f"{puntaje_inst_2025 - puntaje_inst_2024:+d} puntos",
+                     delta_color="normal" if puntaje_inst_2025 >= puntaje_inst_2024 else "inverse")
+
+        with col_inst[2]:
+            cambio_pos = pos_inst_2024 - pos_inst_2025
+            if cambio_pos > 0:
+                st.metric("Posición 2025", f"{pos_inst_2025}° de 7", f"+{cambio_pos} posiciones")
+            elif cambio_pos < 0:
+                st.metric("Posición 2025", f"{pos_inst_2025}° de 7", f"{cambio_pos} posiciones", delta_color="inverse")
+            else:
+                st.metric("Posición 2025", f"{pos_inst_2025}° de 7", "Sin cambio")
+
+        st.success(f"📍 **Posición actual de Pedacito de Cielo: {pos_inst_2025}° de 7 instituciones**")
+
+        st.markdown("---")
+
+        # Desglose por modelo educativo (informativo)
+        st.markdown("#### 📊 Desglose por Modelo Educativo (Referencia)")
+
         col1, col2 = st.columns(2)
 
         with col1:
-            st.markdown("#### 🏫 Aula Regular")
+            st.markdown("##### 🏫 Aula Regular")
             puntaje_regular_2024 = DATOS_INSTITUCIONES_TEBAIDA['PEDACITO DE CIELO (Aula Regular - Jornada 1)']['2024']
             puntaje_regular_2025 = DATOS_INSTITUCIONES_TEBAIDA['PEDACITO DE CIELO (Aula Regular - Jornada 1)']['2025']
-
-            # Calcular posición
-            pos_2024 = sum(1 for v in DATOS_INSTITUCIONES_TEBAIDA.values() if v['2024'] > puntaje_regular_2024) + 1
-            pos_2025 = sum(1 for v in DATOS_INSTITUCIONES_TEBAIDA.values() if v['2025'] > puntaje_regular_2025) + 1
-
-            st.metric("Puntaje 2024", puntaje_regular_2024, f"Posición {pos_2024}/8")
+            st.metric("Puntaje 2024", puntaje_regular_2024)
             st.metric("Puntaje 2025", puntaje_regular_2025,
                      f"{puntaje_regular_2025 - puntaje_regular_2024:+d} puntos",
                      delta_color="inverse" if puntaje_regular_2025 < puntaje_regular_2024 else "normal")
-            st.info(f"📍 Posición actual: **{pos_2025}° de 8** instituciones")
 
         with col2:
-            st.markdown("#### 🎓 Modelo Flexible (Pensar)")
+            st.markdown("##### 🎓 Modelo Flexible (Pensar)")
             puntaje_flex_2024 = DATOS_INSTITUCIONES_TEBAIDA['PEDACITO DE CIELO (Modelo Flexible - Jornada 0)']['2024']
             puntaje_flex_2025 = DATOS_INSTITUCIONES_TEBAIDA['PEDACITO DE CIELO (Modelo Flexible - Jornada 0)']['2025']
-
-            pos_flex_2024 = sum(1 for v in DATOS_INSTITUCIONES_TEBAIDA.values() if v['2024'] > puntaje_flex_2024) + 1
-            pos_flex_2025 = sum(1 for v in DATOS_INSTITUCIONES_TEBAIDA.values() if v['2025'] > puntaje_flex_2025) + 1
-
-            st.metric("Puntaje 2024", puntaje_flex_2024, f"Posición {pos_flex_2024}/8")
+            st.metric("Puntaje 2024", puntaje_flex_2024)
             st.metric("Puntaje 2025", puntaje_flex_2025,
                      f"{puntaje_flex_2025 - puntaje_flex_2024:+d} puntos")
-            st.info(f"📍 Posición actual: **{pos_flex_2025}° de 8** instituciones")
 
         st.markdown("---")
 
@@ -2372,24 +2412,21 @@ def mostrar_verificacion_datos(datos_2024, stats_regular_2025, stats_flexible_20
 
         with col_ref[0]:
             prom_tebaida = PROMEDIOS_REFERENCIA['PROMEDIO TEBAIDA']['2025']
-            diff_regular = puntaje_regular_2025 - prom_tebaida
-            diff_flex = puntaje_flex_2025 - prom_tebaida
+            diff_inst = puntaje_inst_2025 - prom_tebaida
             st.metric("Promedio La Tebaida 2025", prom_tebaida)
-            st.caption(f"Regular: {diff_regular:+d} pts | Flexible: {diff_flex:+d} pts")
+            st.caption(f"Pedacito de Cielo: {diff_inst:+d} pts")
 
         with col_ref[1]:
             prom_quindio = PROMEDIOS_REFERENCIA['PROMEDIO QUINDÍO']['2025']
-            diff_regular_q = puntaje_regular_2025 - prom_quindio
-            diff_flex_q = puntaje_flex_2025 - prom_quindio
+            diff_inst_q = puntaje_inst_2025 - prom_quindio
             st.metric("Promedio Quindío 2025", prom_quindio)
-            st.caption(f"Regular: {diff_regular_q:+d} pts | Flexible: {diff_flex_q:+d} pts")
+            st.caption(f"Pedacito de Cielo: {diff_inst_q:+d} pts")
 
         with col_ref[2]:
             prom_col = PROMEDIOS_REFERENCIA['PROMEDIO COLOMBIA']['2025']
-            diff_regular_c = puntaje_regular_2025 - prom_col
-            diff_flex_c = puntaje_flex_2025 - prom_col
+            diff_inst_c = puntaje_inst_2025 - prom_col
             st.metric("Promedio Colombia 2025", prom_col)
-            st.caption(f"Regular: {diff_regular_c:+d} pts | Flexible: {diff_flex_c:+d} pts")
+            st.caption(f"Pedacito de Cielo: {diff_inst_c:+d} pts")
 
     # ==================== TAB 4: ANÁLISIS DETALLADO ====================
     with tab4:
@@ -2472,20 +2509,24 @@ def mostrar_verificacion_datos(datos_2024, stats_regular_2025, stats_flexible_20
         st.markdown("---")
         st.markdown("### 📝 Conclusiones del Análisis Municipal")
 
-        if puntaje_regular_2025 < puntaje_regular_2024:
+        # Datos institucionales para conclusiones
+        puntaje_inst_2024_concl = DATOS_INSTITUCIONES_TEBAIDA['PEDACITO DE CIELO (Institucional)']['2024']
+        puntaje_inst_2025_concl = DATOS_INSTITUCIONES_TEBAIDA['PEDACITO DE CIELO (Institucional)']['2025']
+        avance_inst = puntaje_inst_2025_concl - puntaje_inst_2024_concl
+
+        if avance_inst > 0:
+            st.success(f"""
+            ✅ **Pedacito de Cielo (Institucional):** Mejora de {avance_inst} puntos respecto a 2024.
+            Posición **7° de 7** instituciones en el municipio.
+            """)
+        elif avance_inst < 0:
             st.warning(f"""
-            ⚠️ **Aula Regular:** Disminución de {puntaje_regular_2024 - puntaje_regular_2025} puntos respecto a 2024.
+            ⚠️ **Pedacito de Cielo (Institucional):** Disminución de {abs(avance_inst)} puntos respecto a 2024.
             Se requiere análisis de causas y plan de mejoramiento.
             """)
         else:
-            st.success(f"""
-            ✅ **Aula Regular:** Mejora de {puntaje_regular_2025 - puntaje_regular_2024} puntos respecto a 2024.
-            """)
-
-        if puntaje_flex_2025 > puntaje_flex_2024:
-            st.success(f"""
-            ✅ **Modelo Flexible:** Mejora significativa de {puntaje_flex_2025 - puntaje_flex_2024} puntos (+{((puntaje_flex_2025 - puntaje_flex_2024) / puntaje_flex_2024 * 100):.1f}%).
-            El programa está mostrando resultados positivos.
+            st.info(f"""
+            ℹ️ **Pedacito de Cielo (Institucional):** Puntaje estable respecto a 2024.
             """)
 
 if __name__ == "__main__":
