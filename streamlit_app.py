@@ -2462,33 +2462,35 @@ def mostrar_verificacion_datos(datos_2024, stats_regular_2025, stats_flexible_20
         df_completo = pd.DataFrame(datos_completos)
         st.dataframe(df_completo, use_container_width=True, hide_index=True)
 
-        # Gráfico radar comparativo
-        st.markdown("#### 🎯 Posición Relativa de Pedacito de Cielo")
+        # Gráfico comparativo con 7 instituciones
+        st.markdown("#### 🎯 Posición Relativa de Pedacito de Cielo (7 Instituciones)")
 
-        # Solo instituciones (sin promedios)
-        instituciones_solo = [k for k in DATOS_INSTITUCIONES_TEBAIDA.keys()
-                            if 'PEDACITO' not in k]
-        puntajes_otras_2025 = [DATOS_INSTITUCIONES_TEBAIDA[i]['2025'] for i in instituciones_solo]
+        # Crear datos para gráfico con 7 instituciones
+        instituciones_7 = [
+            'ANTONIO NARIÑO', 'LUIS ARANGO CARDONA', 'GABRIELA MISTRAL',
+            'LA POPA', 'SANTA TERESITA', 'INSTITUTO TEBAIDA', 'PEDACITO DE CIELO'
+        ]
+        puntajes_7 = [
+            DATOS_INSTITUCIONES_TEBAIDA['ANTONIO NARIÑO']['2025'],
+            DATOS_INSTITUCIONES_TEBAIDA['LUIS ARANGO CARDONA']['2025'],
+            DATOS_INSTITUCIONES_TEBAIDA['GABRIELA MISTRAL']['2025'],
+            DATOS_INSTITUCIONES_TEBAIDA['LA POPA']['2025'],
+            DATOS_INSTITUCIONES_TEBAIDA['SANTA TERESITA']['2025'],
+            DATOS_INSTITUCIONES_TEBAIDA['INSTITUTO TEBAIDA']['2025'],
+            DATOS_INSTITUCIONES_TEBAIDA['PEDACITO DE CIELO (Institucional)']['2025'],
+        ]
 
-        puntaje_pc_regular = DATOS_INSTITUCIONES_TEBAIDA['PEDACITO DE CIELO (Aula Regular - Jornada 1)']['2025']
-        puntaje_pc_flex = DATOS_INSTITUCIONES_TEBAIDA['PEDACITO DE CIELO (Modelo Flexible - Jornada 0)']['2025']
+        # Colores: lightblue para otras, coral para Pedacito de Cielo
+        colores_7 = ['lightblue'] * 6 + ['#FF6B6B']
 
         fig_pos = go.Figure()
 
-        # Otras instituciones
         fig_pos.add_trace(go.Bar(
-            x=instituciones_solo,
-            y=puntajes_otras_2025,
-            name='Otras Instituciones',
-            marker_color='lightblue'
-        ))
-
-        # Pedacito de Cielo
-        fig_pos.add_trace(go.Bar(
-            x=['PEDACITO DE CIELO (Aula Regular - Jornada 1)', 'PEDACITO DE CIELO (Modelo Flexible - Jornada 0)'],
-            y=[puntaje_pc_regular, puntaje_pc_flex],
-            name='Pedacito de Cielo',
-            marker_color=['#FF6B6B', '#4ECDC4']
+            x=instituciones_7,
+            y=puntajes_7,
+            marker_color=colores_7,
+            text=puntajes_7,
+            textposition='outside'
         ))
 
         fig_pos.add_hline(y=PROMEDIOS_REFERENCIA['PROMEDIO TEBAIDA']['2025'],
@@ -2496,11 +2498,12 @@ def mostrar_verificacion_datos(datos_2024, stats_regular_2025, stats_flexible_20
                         annotation_text="Promedio Tebaida")
 
         fig_pos.update_layout(
-            title="Comparativo 2025: Pedacito de Cielo vs Otras Instituciones",
+            title="Comparativo 2025: 7 Instituciones de La Tebaida",
             xaxis_title="Institución",
             yaxis_title="Puntaje Global",
             height=500,
-            xaxis_tickangle=-45
+            xaxis_tickangle=-45,
+            showlegend=False
         )
 
         st.plotly_chart(fig_pos, use_container_width=True, key="posicion_relativa")
