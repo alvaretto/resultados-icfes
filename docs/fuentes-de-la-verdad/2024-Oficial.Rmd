@@ -1,10 +1,53 @@
 ---
+title: "REPORTE DE RESULTADOS DEL EXAMEN SABER 11° - 2024-3"
 output:
   pdf_document:
     latex_engine: xelatex
+    keep_tex: false
   html_document:
     df_print: paged
 ---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+library(kableExtra)
+
+# Función para colorear celda según porcentaje de respuestas incorrectas
+colorear_celda <- function(texto) {
+  # Extraer el porcentaje numérico
+  pct <- as.numeric(gsub("[^0-9]", "", texto))
+
+  if (is.na(pct)) return(texto)
+
+  # Determinar color según rangos
+  if (pct < 20) {
+    color <- "#28a745"  # Verde
+  } else if (pct >= 20 & pct < 40) {
+    color <- "#ffc107"  # Amarillo
+  } else if (pct >= 40 & pct <= 70) {
+    color <- "#fd7e14"  # Naranja
+  } else {
+    color <- "#dc3545"  # Rojo
+  }
+
+  cell_spec(paste0(pct, "%"), background = color, color = "white", bold = TRUE)
+}
+
+# Función para crear tabla de respuestas incorrectas
+crear_tabla_incorrectas <- function(datos) {
+  # datos es un data.frame con columnas: Aprendizaje, EE, Colombia, ETC
+  for (col in c("EE", "Colombia", "ETC")) {
+    datos[[col]] <- sapply(datos[[col]], colorear_celda)
+  }
+
+  kable(datos, escape = FALSE, format = "html", align = c("l", "c", "c", "c")) %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                  full_width = TRUE,
+                  font_size = 12) %>%
+    column_spec(1, width = "60%") %>%
+    column_spec(2:4, width = "13%")
+}
+```
 
 # REPORTE DE RESULTADOS DEL EXAMEN SABER 11° POR APLICACIÓN 2024-3
 
@@ -23,11 +66,7 @@ Este reporte incluye comparaciones a través de las cuales podrá saber cómo so
 
 \*\*Los grupos de comparación son agregaciones de establecimientos educativos que comparten características socioeconómicas entre sí. No son equivalentes a los niveles socioeconómicos definidos para la prueba Saber 3°, 5° y 9° ni al estrato socioeconómico del establecimiento educativo.
 
-En caso de que quiera conocer sobre la estructura de las pruebas que componen el 
-Examen Saber 11°, lo invitamos a consultar la guía de orientación en 
-`www.icfes.gov.co/web/guest/acerca-examen-saber-11` y seguir esta ruta: 
-
-Información general - Contenido del examen - Estructura del examen.
+En caso de que quiera conocer sobre la estructura de las pruebas que componen el Examen Saber 11°, lo invitamos a consultar la guía de orientación en `www.icfes.gov.co/web/guest/acerca-examen-saber-11` y seguir esta ruta: Información general - Contenido del examen - Estructura del examen.
 
 ### ▶ Información del establecimiento educativo
 
@@ -57,8 +96,8 @@ Información general - Contenido del examen - Estructura del examen.
 | Código Dane | Nivel de agregación | Convención |
 | :--- | :--- | :--- |
 | 163401000298 | INSTITUCION EDUCATIVA PEDACITO DE CIELO ALVARO URIBE VELEZ | Establecimiento educativo (EE) |
-| 163401000298 | PEDACITO DE CIELO - SEDE PRINCIPAL - TARDE | Sede 0 / Jornada 0 / Modelo Flexible / Modelo Flexible |
-| 163401000298 | PEDACITO DE CIELO - SEDE PRINCIPAL - UNICA | Sede 0 / Jornada 1 / Aula Regular / Aula Regular |
+| 163401000298 | PEDACITO DE CIELO - SEDE PRINCIPAL - TARDE | Sede 0 / Jornada 0 / Modelo Flexible |
+| 163401000298 | PEDACITO DE CIELO - SEDE PRINCIPAL - UNICA | Sede 0 / Jornada 1 / Aula Regular |
 
 ---
 
@@ -87,7 +126,7 @@ Información general - Contenido del examen - Estructura del examen.
 *   **Matriculados:** Estudiantes registrados en el Sistema Integrado de Matrícula (SIMAT) de acuerdo a la fecha de corte definida en la parte de arriba de este reporte.
 *   **Inscritos:** Estudiantes citados para la presentación del examen.
 *   **Presentes:** Inscritos que asistieron a las dos sesiones del examen.
-*   **Con resultados publicados:** Evaluados que a la fecha de corte tienen publicados sus resultados y que presentaron el Examen Saber 11° por primera vez. Las diferencias entre la cantidad de estudiantes presentes y con resultados publicados se deben a que en el conteo se omiten: cuadernillos incalificables (dañados, faltantes o incompletos), estudiantes con acciones administrativas en curso, estudiantes que no hayan respondido ninguna pregunta del examen y estudiantes repitentes en la presentación del Examen Saber 11°.
+*   **Con resultados publicados:** Evaluados que a la fecha de corte tienen publicados sus resultados y que presentaron el Examen Saber 11° por primera vez.
 
 ---
 
@@ -115,20 +154,14 @@ Información general - Contenido del examen - Estructura del examen.
 
 **¿Qué significan los datos registrados en la Tabla 2.1?**
 
-*   **Promedio del puntaje global:** Representa el desempeño medio de los estudiantes en el Examen Saber 11°. El promedio del puntaje global se reporta en una escala de 0 a 500 puntos, sin decimales. Para comparar resultados a través del tiempo, la media de la escala definida en la primera aplicación del examen (2014-2) se fijó en 250 puntos.
-*   **Desviación estándar:** Es una medida de dispersión de los datos. Cuanto más alto sea este valor, más alejados del promedio del puntaje global se encontrarán los resultados de los estudiantes, lo cual indica mayor dispersión o heterogeneidad entre los puntajes globales obtenidos por ellos.
+*   **Promedio del puntaje global:** Representa el desempeño medio de los estudiantes en el Examen Saber 11°. El promedio del puntaje global se reporta en una escala de 0 a 500 puntos, sin decimales.
+*   **Desviación estándar:** Es una medida de dispersión de los datos.
 
 **¿Cómo interpretar los símbolos presentados en la tabla 2.1?**
-
-Los símbolos que se muestran al lado de los datos resumen la información contenida en la lectura de resultados e indican si el promedio del puntaje global o la desviación estándar obtenida por el establecimiento educativo es considerablemente mayor, menor o similar a la reportada por las sedes/jornadas y los distintos niveles de agregación. El procedimiento aplicado para establecer las comparaciones correspondientes al promedio y a la desviación estándar fue desarrollado a partir de la metodología del tamaño del efecto.
-
-A continuación se presenta el significado de cada símbolo:
 
 *   • Indica que los resultados obtenidos por el establecimiento educativo son similares a los obtenidos por la sede/jornada o el nivel de agregación en el que aparece el símbolo.
 *   ▲ Indica que los resultados obtenidos por el establecimiento educativo son considerablemente mayores a los obtenidos por la sede/jornada o el nivel de agregación en el que aparece el símbolo.
 *   ▼ Indica que los resultados obtenidos por el establecimiento educativo son considerablemente menores a los obtenidos por la sede/jornada o el nivel de agregación en el que aparece el símbolo.
-
-*El color del símbolo indica si la comparación favorece (verde) o no (rojo) al establecimiento educativo. Tenga en cuenta que los símbolos y sus colores son relativos al resultado analizado y no a los resultados en conjunto.* (Ver ejemplo en PDF original).
 
 ---
 
@@ -184,46 +217,6 @@ A continuación se presenta el significado de cada símbolo:
 | GC 3 ETC | 58 ▼ | 9 • |
 | GC 4 ETC | 64 ▼ | 8 • |
 
-**¿Qué significan los datos registrados en la Tabla 3.1?**
-
-*   **Promedio:** Representa el desempeño promedio de los estudiantes en determinada prueba. Este resultado se reporta en una escala de 0 a 100 puntos, sin decimales. Para comparar resultados a través del tiempo, la media de la escala definida en la primera aplicación del examen (2014-2) se fijó en 50 puntos y su desviación estándar en 10 puntos.
-*   **Desviación estándar:** Es una medida de dispersión de los datos. Cuanto más alto sea este valor, más alejados del promedio del puntaje global se encontrarán los resultados de los estudiantes, lo cual indica mayor dispersión o heterogeneidad entre los puntajes globales obtenidos por ellos.
-
-**¿Cómo interpretar los símbolos presentados en la tabla 2.1? 3.1?**
-*(La interpretación de símbolos es análoga a la sección general)*.
-
----
-
-### Lectura de resultados (Lectura Crítica)
-
-**El promedio obtenido en Lectura crítica por el establecimiento educativo es considerablemente:**\
-
-*   Similar al de la Sede 0 / Jornada 0 / Modelo Flexible.
-*   Similar al de la Sede 0 / Jornada 1 / Aula Regular.
-*   Similar al de los establecimientos educativos de Colombia.
-*   Similar al de los establecimientos educativos de la ETC.
-*   Similar al de los establecimientos educativos Oficiales urbanos ETC.
-*   Similar al de los establecimientos educativos Oficiales rurales ETC.
-*   Menor al de los establecimientos educativos Privados ETC.
-*   Similar al de los establecimientos educativos del grupo de comparación (GC 1 ETC).
-*   Similar al de los establecimientos educativos del grupo de comparación (GC 2 ETC).
-*   Menor al de los establecimientos educativos del grupo de comparación (GC 3 ETC).
-*   Menor al de los establecimientos educativos del grupo de comparación (GC 4 ETC).
-
-**La desviación estándar del promedio obtenido en Lectura crítica por el establecimiento educativo es considerablemente:**
-
-*   Similar al de la Sede 0 / Jornada 0 / Modelo Flexible.
-*   Similar al de la Sede 0 / Jornada 1 / Aula Regular.
-*   Similar al de los establecimientos educativos de Colombia.
-*   Similar al de los establecimientos educativos de la ETC.
-*   Similar al de los establecimientos educativos Oficiales urbanos ETC.
-*   Similar al de los establecimientos educativos Oficiales rurales ETC.
-*   Similar al de los establecimientos educativos Privados ETC.
-*   Similar al de los establecimientos educativos del grupo de comparación (GC 1 ETC).
-*   Similar al de los establecimientos educativos del grupo de comparación (GC 2 ETC).
-*   Similar al de los establecimientos educativos del grupo de comparación (GC 3 ETC).
-*   Similar al de los establecimientos educativos del grupo de comparación (GC 4 ETC).
-
 ---
 
 **Tabla 3.2 Porcentaje de estudiantes por niveles de desempeño en Lectura Crítica**
@@ -244,67 +237,23 @@ A continuación se presenta el significado de cada símbolo:
 | GC 3 ETC | 1% ▲ | 21% ▲ | 58% ▼ | 20% ▼ |
 | GC 4 ETC | 0% ▲ | 8% ▲ | 44% ▼ | 48% ▼ |
 
-*N.D.: no hay información disponible.*
-
-**¿Qué significan los datos registrados en la Tabla 3.2?**
-Porcentaje de estudiantes por niveles de desempeño. Los niveles de desempeño tienen tres características principales: a) son particulares, b) son jerárquicos y c) son inclusivos. El nivel deseable es el 4.
-
-**Interpretación de símbolos:**
-
-*   • Igual
-*   ▲ Mayor
-*   ▼ Menor
-*(El color verde indica que la comparación favorece al establecimiento, el rojo que no).*
-
----
-
-### Lectura de resultados (Niveles de Desempeño - Lectura Crítica)
-
-**El porcentaje de estudiantes del establecimiento educativo en el nivel de desempeño 1 es:**
-
-*   Menor al de la Sede 0 / Jornada 0 / Modelo Flexible.
-*   Mayor al de la Sede 0 / Jornada 1 / Aula Regular.
-*   Mayor al de los establecimientos educativos de Colombia, ETC, Oficiales urbanos y rurales.
-*   Mayor al de los establecimientos educativos Privados ETC.
-*   Mayor al de los grupos de comparación GC 1, GC 2, GC 3 y GC 4.
-
-**El porcentaje de estudiantes del establecimiento educativo en el nivel de desempeño 2 es:**
-
-*   Menor al de la Sede 0 / Jornada 0 / Modelo Flexible.
-*   Mayor al de la Sede 0 / Jornada 1 / Aula Regular.
-*   Mayor al de los establecimientos educativos de Colombia, ETC, Oficiales urbanos y rurales.
-*   Mayor al de los establecimientos educativos Privados ETC.
-*   Menor al GC 1. Mayor al GC 2, GC 3 y GC 4.
-
-**El porcentaje de estudiantes del establecimiento educativo en el nivel de desempeño 3 es:**
-
-*   Mayor al de la Sede 0 / Jornada 0 / Modelo Flexible.
-*   Menor al de la Sede 0 / Jornada 1 / Aula Regular.
-*   Menor al de los establecimientos educativos de Colombia, ETC, Oficiales urbanos, Oficiales rurales y Privados.
-*   Menor al de los grupos de comparación GC 1, GC 2, GC 3 y GC 4.
-
-**El porcentaje de estudiantes del establecimiento educativo en el nivel de desempeño 4 es:**
-
-*   Igual al de la Sede 0 / Jornada 0 / Modelo Flexible.
-*   Mayor al de la Sede 0 / Jornada 1 / Aula Regular.
-*   Menor al de Colombia, ETC, Oficiales urbanos, Oficiales rurales y Privados.
-*   Mayor al GC 1. Menor al GC 2, GC 3 y GC 4.
-
----
-
-### Gráfica 3.3 Porcentaje de estudiantes por niveles de desempeño en Lectura Crítica
-
-*(Nota: Esta gráfica visualiza los datos de la Tabla 3.2 mediante barras apiladas. El escenario ideal es aquel en el cual los segmentos de color verde y amarillo ocupen la mayor parte de la barra).*
-
 ---
 
 **Figura 3.4 Porcentaje de promedio de respuestas incorrectas en cada aprendizaje evaluado en Lectura Crítica**
 
-| Aprendizaje | EE | Colombia | ETC |
-| :--- | :---: | :---: | :---: |
-| Reflexiona a partir de un texto y evalúa su contenido. | [NARANJA] 56% | [NARANJA] 45% | [NARANJA] 45% |
-| Comprende cómo se articulan las partes de un texto para darle un sentido global. | [NARANJA] 55% | [NARANJA] 44% | [NARANJA] 44% |
-| Identifica y entiende los contenidos locales que conforman un texto. | [NARANJA] 44% | [AMARILLO] 35% | [AMARILLO] 34% |
+```{r tabla_lectura_critica}
+datos_lc <- data.frame(
+  Aprendizaje = c(
+    "Reflexiona a partir de un texto y evalúa su contenido.",
+    "Comprende cómo se articulan las partes de un texto para darle un sentido global.",
+    "Identifica y entiende los contenidos locales que conforman un texto."
+  ),
+  EE = c("56%", "55%", "44%"),
+  Colombia = c("45%", "44%", "35%"),
+  ETC = c("45%", "44%", "34%")
+)
+crear_tabla_incorrectas(datos_lc)
+```
 
 **¿Para qué sirve la información presentada en la Figura 3.4?**
 Los colores se asignan según los siguientes rangos de respuestas incorrectas:
@@ -313,6 +262,7 @@ Los colores se asignan según los siguientes rangos de respuestas incorrectas:
 *   20% - 40%: Amarillo
 *   40% - 70%: Naranja
 *   > 70%: Rojo
+
 Cuanto menor sea el porcentaje promedio de respuestas incorrectas, mejor será el desempeño.
 
 ---
@@ -337,8 +287,6 @@ Cuanto menor sea el porcentaje promedio de respuestas incorrectas, mejor será e
 | GC 3 ETC | 58 ▼ | 12 • |
 | GC 4 ETC | 65 ▼ | 11 • |
 
-*(Siguen interpretaciones de símbolos y resultados textuales similares a la sección anterior, indicando que el EE tiene promedios menores a Colombia y la ETC).*
-
 ---
 
 **Tabla 4.2 Porcentaje de estudiantes por niveles de desempeño en Matemáticas**
@@ -358,22 +306,23 @@ Cuanto menor sea el porcentaje promedio de respuestas incorrectas, mejor será e
 | GC 3 ETC | 3% ▲ | 22% ▲ | 59% ▼ | 15% ▼ |
 | GC 4 ETC | 2% ▲ | 6% ▲ | 63% ▼ | 29% ▼ |
 
-*(Siguen interpretaciones textuales de los niveles de desempeño).*
-
----
-
-### Gráfica 4.3 Porcentaje de estudiantes por niveles de desempeño en Matemáticas
-*(Visualización de Tabla 4.2)*
-
 ---
 
 **Figura 4.4 Porcentaje de promedio de respuestas incorrectas en cada aprendizaje evaluado en Matemáticas**
 
-| Aprendizaje | EE | Colombia | ETC |
-| :--- | :---: | :---: | :---: |
-| Valida procedimientos y estrategias matemáticas utilizadas para dar solución a problemas. | [NARANJA] 64% | [NARANJA] 55% | [NARANJA] 52% |
-| Frente a un problema que involucre información cuantitativa, plantea e implementa estrategias que lleven a soluciones adecuadas. | [NARANJA] 63% | [NARANJA] 51% | [NARANJA] 49% |
-| Comprende y transforma la información cuantitativa y esquemática presentada en distintos formatos. | [NARANJA] 55% | [NARANJA] 41% | [AMARILLO] 39% |
+```{r tabla_matematicas}
+datos_mat <- data.frame(
+  Aprendizaje = c(
+    "Valida procedimientos y estrategias matemáticas utilizadas para dar solución a problemas.",
+    "Frente a un problema que involucre información cuantitativa, plantea e implementa estrategias que lleven a soluciones adecuadas.",
+    "Comprende y transforma la información cuantitativa y esquemática presentada en distintos formatos."
+  ),
+  EE = c("64%", "63%", "55%"),
+  Colombia = c("55%", "51%", "41%"),
+  ETC = c("52%", "49%", "39%")
+)
+crear_tabla_incorrectas(datos_mat)
+```
 
 ---
 
@@ -419,14 +368,22 @@ Cuanto menor sea el porcentaje promedio de respuestas incorrectas, mejor será e
 
 **Figura 5.4 Porcentaje de promedio de respuestas incorrectas en cada aprendizaje evaluado en Sociales Y Ciudadanas**
 
-| Aprendizaje | EE | Colombia | ETC |
-| :--- | :---: | :---: | :---: |
-| Comprende que los problemas y sus soluciones involucran distintas dimensiones y reconoce relaciones entre estas. | [NARANJA] 54% | [NARANJA] 41% | [AMARILLO] 39% |
-| Comprende modelos conceptuales, sus características y contextos de aplicación. | [NARANJA] 59% | [NARANJA] 51% | [NARANJA] 51% |
-| Contextualiza y evalúa usos de fuentes y argumentos. | [NARANJA] 61% | [NARANJA] 51% | [NARANJA] 51% |
-| Comprende dimensiones espaciales y temporales de eventos, problemáticas y prácticas sociales. | [NARANJA] 63% | [NARANJA] 50% | [NARANJA] 51% |
-| Comprende perspectivas de distintos actores y grupos sociales. | [NARANJA] 68% | [NARANJA] 62% | [NARANJA] 61% |
-| Evalúa usos sociales de las ciencias sociales. | [NARANJA] 66% | [NARANJA] 53% | [NARANJA] 54% |
+```{r tabla_sociales}
+datos_soc <- data.frame(
+  Aprendizaje = c(
+    "Comprende que los problemas y sus soluciones involucran distintas dimensiones y reconoce relaciones entre estas.",
+    "Comprende modelos conceptuales, sus características y contextos de aplicación.",
+    "Contextualiza y evalúa usos de fuentes y argumentos.",
+    "Comprende dimensiones espaciales y temporales de eventos, problemáticas y prácticas sociales.",
+    "Comprende perspectivas de distintos actores y grupos sociales.",
+    "Evalúa usos sociales de las ciencias sociales."
+  ),
+  EE = c("54%", "59%", "61%", "63%", "68%", "66%"),
+  Colombia = c("41%", "51%", "51%", "50%", "62%", "53%"),
+  ETC = c("39%", "51%", "51%", "51%", "61%", "54%")
+)
+crear_tabla_incorrectas(datos_soc)
+```
 
 ---
 
@@ -472,34 +429,48 @@ Cuanto menor sea el porcentaje promedio de respuestas incorrectas, mejor será e
 
 **Figura 6.4 Porcentaje de promedio de respuestas incorrectas en cada aprendizaje evaluado en Ciencias Naturales**
 
-| Aprendizaje | EE | Colombia | ETC |
-| :--- | :---: | :---: | :---: |
-| Modelar fenómenos de la naturaleza basado en el análisis de variables... (Procesos químicos) | [NARANJA] 54% | [NARANJA] 46% | [NARANJA] 46% |
-| Derivar conclusiones para algunos fenómenos de la naturaleza... (Procesos vivos) | [NARANJA] 61% | [NARANJA] 46% | [NARANJA] 44% |
-| Explicar cómo ocurren algunos fenómenos de la naturaleza... (Procesos químicos) | [NARANJA] 62% | [NARANJA] 43% | [NARANJA] 43% |
-| Utilizar algunas habilidades de pensamiento y de procedimiento para evaluar predicciones - Procesos físicos | [NARANJA] 64% | [NARANJA] 49% | [NARANJA] 48% |
-| Identificar las características de algunos fenómenos de la naturaleza... - CTS | [NARANJA] 56% | [AMARILLO] 36% | [AMARILLO] 37% |
-| Utilizar algunas habilidades de pensamiento y de procedimiento... (Procesos químicos) | [NARANJA] 59% | [NARANJA] 51% | [NARANJA] 49% |
-| Explicar cómo ocurren algunos fenómenos de la naturaleza... (Procesos físicos) | [NARANJA] 60% | [NARANJA] 50% | [NARANJA] 49% |
-| Identificar las características de algunos fenómenos de la naturaleza... (Procesos físicos) | [NARANJA] 66% | [NARANJA] 52% | [NARANJA] 53% |
-| Comprender que a partir de la investigación científica se construyen explicaciones sobre el mundo natural. - Procesos vivos | [NARANJA] 64% | [NARANJA] 50% | [NARANJA] 49% |
-| Derivar conclusiones para algunos fenómenos de la naturaleza... (Procesos físicos) | [NARANJA] 70% | [NARANJA] 57% | [NARANJA] 56% |
-| Observar y relacionar patrones en los datos para evaluar las predicciones. - Procesos vivos | [NARANJA] 69% | [NARANJA] 53% | [NARANJA] 52% |
-| Identificar las características de algunos fenómenos de la naturaleza... (Procesos químicos) | [NARANJA] 60% | [NARANJA] 42% | [NARANJA] 43% |
-| Utilizar algunas habilidades de pensamiento... (Procesos vivos) | [NARANJA] 59% | [NARANJA] 44% | [NARANJA] 43% |
-| Derivar conclusiones para algunos fenómenos de la naturaleza... (Procesos químicos) | [NARANJA] 64% | [NARANJA] 46% | [NARANJA] 44% |
-| Modelar fenómenos de la naturaleza... (Procesos vivos) | [NARANJA] 59% | [NARANJA] 48% | [NARANJA] 46% |
-| Explicar cómo ocurren algunos fenómenos de la naturaleza... (Procesos vivos) | [NARANJA] 68% | [NARANJA] 56% | [NARANJA] 55% |
-| Asociar fenómenos naturales con conceptos propios del conocimiento científico. - Procesos vivos | [NARANJA] 62% | [NARANJA] 43% | [NARANJA] 42% |
-| Observar y relacionar patrones en los datos para evaluar las predicciones. - Procesos químicos | [NARANJA] 52% | [AMARILLO] 29% | [AMARILLO] 29% |
-| Asociar fenómenos naturales con conceptos propios del conocimiento científico. - Procesos químicos | [NARANJA] 65% | [NARANJA] 48% | [NARANJA] 47% |
-| Modelar fenómenos de la naturaleza... (Procesos físicos) | [NARANJA] 62% | [NARANJA] 48% | [NARANJA] 49% |
-| Asociar fenómenos naturales con conceptos propios del conocimiento científico. - Procesos físicos | [NARANJA] 61% | [NARANJA] 46% | [NARANJA] 47% |
-| Analizar el potencial del uso de recursos naturales o artefactos... - CTS | [NARANJA] 61% | [NARANJA] 46% | [NARANJA] 46% |
-| Identificar las características de algunos fenómenos... (Procesos vivos) | [NARANJA] 64% | [NARANJA] 51% | [NARANJA] 50% |
-| Comprender que a partir de la investigación científica se construyen explicaciones sobre el mundo natural. - Procesos físicos | [NARANJA] 70% | [NARANJA] 59% | [NARANJA] 60% |
-| Observar y relacionar patrones en los datos para evaluar las predicciones. - Procesos físicos | [ROJO] 76% | [NARANJA] 63% | [NARANJA] 65% |
-| Comprender que a partir de la investigación científica se construyen explicaciones sobre el mundo natural. - Procesos químicos | [NARANJA] 66% | [NARANJA] 47% | [NARANJA] 47% |
+```{r tabla_ciencias}
+datos_cn <- data.frame(
+  Aprendizaje = c(
+    "Modelar fenómenos de la naturaleza... (Procesos químicos)",
+    "Derivar conclusiones... (Procesos vivos)",
+    "Explicar cómo ocurren algunos fenómenos... (Procesos químicos)",
+    "Utilizar habilidades de pensamiento... (Procesos físicos)",
+    "Identificar características de fenómenos... - CTS",
+    "Utilizar habilidades de pensamiento... (Procesos químicos)",
+    "Explicar cómo ocurren algunos fenómenos... (Procesos físicos)",
+    "Identificar características de fenómenos... (Procesos físicos)",
+    "Comprender investigación científica... (Procesos vivos)",
+    "Derivar conclusiones... (Procesos físicos)",
+    "Observar y relacionar patrones... (Procesos vivos)",
+    "Identificar características de fenómenos... (Procesos químicos)",
+    "Utilizar habilidades de pensamiento... (Procesos vivos)",
+    "Derivar conclusiones... (Procesos químicos)",
+    "Modelar fenómenos de la naturaleza... (Procesos vivos)",
+    "Explicar cómo ocurren algunos fenómenos... (Procesos vivos)",
+    "Asociar fenómenos naturales... (Procesos vivos)",
+    "Observar y relacionar patrones... (Procesos químicos)",
+    "Asociar fenómenos naturales... (Procesos químicos)",
+    "Modelar fenómenos de la naturaleza... (Procesos físicos)",
+    "Asociar fenómenos naturales... (Procesos físicos)",
+    "Analizar potencial de recursos naturales... - CTS",
+    "Identificar características de fenómenos... (Procesos vivos)",
+    "Comprender investigación científica... (Procesos físicos)",
+    "Observar y relacionar patrones... (Procesos físicos)",
+    "Comprender investigación científica... (Procesos químicos)"
+  ),
+  EE = c("54%", "61%", "62%", "64%", "56%", "59%", "60%", "66%", "64%", "70%",
+         "69%", "60%", "59%", "64%", "59%", "68%", "62%", "52%", "65%", "62%",
+         "61%", "61%", "64%", "70%", "76%", "66%"),
+  Colombia = c("46%", "46%", "43%", "49%", "36%", "51%", "50%", "52%", "50%", "57%",
+               "53%", "42%", "44%", "46%", "48%", "56%", "43%", "29%", "48%", "48%",
+               "46%", "46%", "51%", "59%", "63%", "47%"),
+  ETC = c("46%", "44%", "43%", "48%", "37%", "49%", "49%", "53%", "49%", "56%",
+          "52%", "43%", "43%", "44%", "46%", "55%", "42%", "29%", "47%", "49%",
+          "47%", "46%", "50%", "60%", "65%", "47%")
+)
+crear_tabla_incorrectas(datos_cn)
+```
 
 ---
 
