@@ -1039,7 +1039,7 @@ def mostrar_chat(df: pd.DataFrame = None, pagina_actual: str = "General", datos_
     with messages_container:
         # Mostrar historial de mensajes
         if len(st.session_state.chat_messages) == 0:
-            st.info("👋 ¡Hola! Soy tu asistente de IA. Puedes preguntarme sobre los resultados ICFES de Pedacito de Cielo (2024 - 2025), interpretaciones, comparaciones entre años, y recomendaciones pedagógicas. ¿En qué puedo ayudarte?")
+            st.info("👋 ¡Hola! Soy Pedazote, tu asistente de IA. Puedes preguntarme sobre los resultados ICFES de Pedacito de Cielo (2024 - 2025), interpretaciones, comparaciones entre años, y recomendaciones pedagógicas. ¿En qué puedo ayudarte?")
         else:
             # Mostrar todos los mensajes del historial
             for message in st.session_state.chat_messages:
