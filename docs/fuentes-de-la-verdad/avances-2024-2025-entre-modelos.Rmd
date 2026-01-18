@@ -1,0 +1,193 @@
+---
+title: "Análisis Comparativo entre Modelos Educativos - 2024 vs 2025"
+output:
+  html_document:
+    df_print: paged
+  pdf_document:
+    latex_engine: xelatex
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+library(flextable)
+library(officer)
+library(dplyr)
+
+set_flextable_defaults(
+  font.size = 9,
+  padding = 3
+)
+
+# Colores para indicadores de tendencia
+COLOR_POSITIVO <- "#28a745"
+COLOR_NEGATIVO <- "#dc3545"
+COLOR_NEUTRO <- "#6c757d"
+COLOR_ALERTA <- "#ffc107"
+
+# Función para crear tabla de evolución con colores
+crear_tabla_evolucion <- function(datos) {
+  ft <- flextable(datos) %>%
+    set_header_labels(
+      Indicador = "Indicador",
+      `2024` = "2024",
+      `2025` = "2025",
+      Variacion = "Variación",
+      Interpretacion = "Interpretación Pedagógica"
+    ) %>%
+    width(j = 1, width = 1.5) %>%
+    width(j = 2:3, width = 0.6) %>%
+    width(j = 4, width = 0.8) %>%
+    width(j = 5, width = 3) %>%
+    align(j = 2:4, align = "center", part = "all") %>%
+    align(j = c(1, 5), align = "left", part = "all") %>%
+    bold(part = "header") %>%
+    fontsize(size = 9, part = "all") %>%
+    border_outer(border = fp_border(color = "gray", width = 1)) %>%
+    border_inner_h(border = fp_border(color = "gray", width = 0.5)) %>%
+    border_inner_v(border = fp_border(color = "gray", width = 0.5))
+
+  ft
+}
+
+# Función para crear tabla de brechas
+crear_tabla_brechas <- function(datos) {
+  ft <- flextable(datos) %>%
+    width(j = 1, width = 1.5) %>%
+    width(j = 2:3, width = 1.2) %>%
+    width(j = 4, width = 2.5) %>%
+    align(j = 2:3, align = "center", part = "all") %>%
+    align(j = c(1, 4), align = "left", part = "all") %>%
+    bold(part = "header") %>%
+    fontsize(size = 9, part = "all") %>%
+    border_outer(border = fp_border(color = "gray", width = 1)) %>%
+    border_inner_h(border = fp_border(color = "gray", width = 0.5)) %>%
+    border_inner_v(border = fp_border(color = "gray", width = 0.5))
+
+  ft
+}
+```
+
+# Análisis Comparativo entre Modelos Educativos (2024-2025)
+
+Siguiendo la estructura del reporte y enfocándonos en la **evolución interna de cada modelo educativo**, aquí presento el análisis comparativo entre la **Jornada 0 (Sede Principal - Tarde / Modelo Flexible)** y la **Jornada 1 (Sede Principal - Única / Aula Regular)**.
+
+Este desglose es crucial porque el comportamiento de ambas jornadas fue **opuesto** entre 2024 y 2025.
+
+---
+
+## 1. Evolución Jornada 0 (Modelo Flexible / Tarde)
+
+**Tendencia: MEJORA SIGNIFICATIVA**
+
+Esta jornada, que atiende históricamente a población con mayores retos académicos o extraedad, tuvo un desempeño destacable en 2025, aumentando su puntaje en todas las áreas y reduciendo su dispersión (desviación).
+
+```{r tabla_jornada0}
+datos_j0 <- data.frame(
+  Indicador = c(
+    "Puntaje Global",
+    "Desviación Estándar",
+    "Lectura Crítica",
+    "Matemáticas",
+    "Sociales y C.",
+    "Ciencias Naturales",
+    "Inglés"
+  ),
+  `2024` = c(203, 36, 45, 41, 38, 39, 41),
+  `2025` = c(214, 43, 47, 42, 39, 42, 44),
+  Variacion = c("+11 pts", "+7", "+2", "+1", "+1", "+3", "+3"),
+  Interpretacion = c(
+    "Excelente avance. Supera el margen de error estadístico.",
+    "Aumentó el promedio, pero el grupo se volvió más heterogéneo.",
+    "Mejora.",
+    "Leve mejora.",
+    "Leve mejora.",
+    "Avance importante en competencias científicas.",
+    "Avance importante."
+  ),
+  check.names = FALSE,
+  stringsAsFactors = FALSE
+)
+crear_tabla_evolucion(datos_j0)
+```
+
+---
+
+## 2. Evolución Jornada 1 (Aula Regular / Única)
+
+**Tendencia: RETROCESO / ESTANCAMIENTO**
+
+A diferencia de la jornada flexible, la jornada regular (que suele tener los puntajes más altos) mostró una disminución en su desempeño global y retrocedió en áreas críticas como Matemáticas, Ciencias e Inglés.
+
+```{r tabla_jornada1}
+datos_j1 <- data.frame(
+  Indicador = c(
+    "Puntaje Global",
+    "Desviación Estándar",
+    "Lectura Crítica",
+    "Matemáticas",
+    "Sociales y C.",
+    "Ciencias Naturales",
+    "Inglés"
+  ),
+  `2024` = c(240, 41, 51, 49, 44, 47, 48),
+  `2025` = c(234, 44, 51, 47, 44, 44, 46),
+  Variacion = c("-6 pts", "+3", "0", "-2", "0", "-3", "-2"),
+  Interpretacion = c(
+    "Alerta. Se pierde terreno ganado previamente.",
+    "Mayor desigualdad interna entre estudiantes.",
+    "Estancamiento.",
+    "Retroceso en razonamiento cuantitativo.",
+    "Estancamiento.",
+    "Retroceso significativo.",
+    "Retroceso."
+  ),
+  check.names = FALSE,
+  stringsAsFactors = FALSE
+)
+crear_tabla_evolucion(datos_j1)
+```
+
+---
+
+## 3. Análisis de Brechas Internas (Equidad Institucional)
+
+¿Qué tanto se alejan los resultados de la Jornada Regular respecto a la Flexible?
+El objetivo del ICFES es que la educación sea de calidad independientemente de la jornada.
+
+*Nota: Una "Diferencia" positiva significa que la Jornada 1 supera a la 0. Si el número baja en 2025, significa que la brecha se cerró.*
+
+```{r tabla_brechas}
+datos_brechas <- data.frame(
+  Area = c("GLOBAL", "Lectura Crítica", "Matemáticas", "Sociales", "Naturales", "Inglés"),
+  `Diferencia J1 vs J0 (2024)` = c("+37 pts", "+6 pts", "+8 pts", "+6 pts", "+8 pts", "+7 pts"),
+  `Diferencia J1 vs J0 (2025)` = c("+20 pts", "+4 pts", "+5 pts", "+5 pts", "+2 pts", "+2 pts"),
+  `Comportamiento de la Brecha` = c(
+    "Se cerró drásticamente (17 pts).",
+    "Se redujo la brecha.",
+    "Se redujo la brecha.",
+    "Se redujo la brecha.",
+    "Cierre casi total de la brecha.",
+    "Cierre casi total de la brecha."
+  ),
+  check.names = FALSE,
+  stringsAsFactors = FALSE
+)
+crear_tabla_brechas(datos_brechas)
+```
+
+---
+
+## Conclusiones Estratégicas para Rectoría y Coordinación
+
+1. **El "Efecto Convergencia":** La brecha de calidad entre las dos jornadas se está cerrando rápidamente, pasando de 37 puntos de diferencia en 2024 a solo 20 puntos en 2025.
+   - *Lo Positivo:* La **Jornada 0 (Flexible)** está mejorando notablemente (+11 puntos globales). Las estrategias con esta población están funcionando.
+   - *Lo Negativo:* Parte del cierre de la brecha se debe a que la **Jornada 1 (Regular)** empeoró (-6 puntos globales). Esto es un "cierre de brecha hacia abajo" por parte de la regular, lo cual no es ideal.
+
+2. **Foco de Atención en Ciencias y Matemáticas (Jornada 1):** Es preocupante que la jornada regular haya bajado 3 puntos en Ciencias Naturales y 2 en Matemáticas. Esto sugiere revisar si hubo cambios en la planta docente, reducción de intensidad horaria o falta de prácticas de laboratorio/ejercitación en el último año.
+
+3. **Inglés y Naturales en Jornada 0:** Es destacable que los estudiantes de la jornada flexible subieron 3 puntos en estas áreas, quedando a solo 2 puntos de distancia de sus compañeros del aula regular. Vale la pena revisar qué metodología usaron los docentes de la tarde para replicarla o adaptarla.
+
+---
+
+*Fin del análisis comparativo entre modelos.*

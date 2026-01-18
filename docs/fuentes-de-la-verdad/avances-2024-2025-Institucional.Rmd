@@ -1,0 +1,184 @@
+---
+title: "Evolución Institucional ICFES Saber 11° - 2024 vs 2025"
+output:
+  html_document:
+    df_print: paged
+  pdf_document:
+    latex_engine: xelatex
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+library(flextable)
+library(officer)
+library(dplyr)
+
+set_flextable_defaults(
+  font.size = 9,
+  padding = 3
+)
+
+# Colores para indicadores de tendencia
+COLOR_POSITIVO <- "#28a745"
+COLOR_NEGATIVO <- "#dc3545"
+COLOR_NEUTRO <- "#6c757d"
+COLOR_ALERTA <- "#ffc107"
+
+# Función para crear tablas genéricas con formato
+crear_tabla_formato <- function(datos, anchos = NULL) {
+  ft <- flextable(datos) %>%
+    bold(part = "header") %>%
+    fontsize(size = 9, part = "all") %>%
+    border_outer(border = fp_border(color = "gray", width = 1)) %>%
+    border_inner_h(border = fp_border(color = "gray", width = 0.5)) %>%
+    border_inner_v(border = fp_border(color = "gray", width = 0.5))
+
+  if (!is.null(anchos)) {
+    for (i in seq_along(anchos)) {
+      ft <- ft %>% width(j = i, width = anchos[i])
+    }
+  }
+
+  ft
+}
+```
+
+# Evolución Institucional ICFES Saber 11° (2024-2025)
+
+Siguiendo la **filosofía del ICFES**, el análisis de resultados no debe limitarse al puntaje promedio, sino que debe enfocarse en:
+
+1. **La tendencia** (¿Mejora, se mantiene o retrocede?).
+2. **La movilidad de los niveles de desempeño** (¿Estamos logrando sacar a los estudiantes de los niveles inferiores?).
+3. **El cierre de brechas** (Comparación con la Entidad Territorial Certificada - ETC Quindío).
+
+---
+
+## 1. Evolución del Desempeño Global y Participación
+
+Esta tabla resume la "salud general" del establecimiento. Un aumento en la desviación estándar (como se observa) indica que, aunque el promedio subió levemente, la brecha académica interna entre los estudiantes del mismo colegio ha aumentado (hay más desigualdad en el aprendizaje).
+
+```{r tabla_global}
+datos_global <- data.frame(
+  Indicador = c("Puntaje Global (0-500)", "Estudiantes Evaluados", "Desviación Estándar"),
+  `2024` = c("219", "116", "42"),
+  `2025` = c("221", "95", "44"),
+  Variacion = c("+2", "-21", "+2"),
+  `Interpretación ICFES` = c(
+    "Leve mejoría, estadísticamente estable.",
+    "Disminución significativa en la matrícula/presentación.",
+    "Alerta: Los resultados son más dispersos; la heterogeneidad del grupo aumentó."
+  ),
+  check.names = FALSE,
+  stringsAsFactors = FALSE
+)
+crear_tabla_formato(datos_global, c(1.8, 0.6, 0.6, 0.7, 3))
+```
+
+---
+
+## 2. Comportamiento por Áreas (Puntaje Promedio)
+
+Comparativo directo de los puntajes promedio (escala 0-100). Se observa un estancamiento generalizado en las áreas núcleo.
+
+```{r tabla_areas}
+datos_areas <- data.frame(
+  Prueba = c("Lectura Crítica", "Matemáticas", "Sociales y Ciudadanas", "Ciencias Naturales", "Inglés"),
+  `Promedio 2024` = c(48, 44, 41, 43, 44),
+  `Promedio 2025` = c(48, 44, 41, 43, 45),
+  Variacion = c("0", "0", "0", "0", "+1"),
+  Estado = c("Estancado", "Estancado", "Estancado", "Estancado", "Leve Mejora"),
+  check.names = FALSE,
+  stringsAsFactors = FALSE
+)
+ft_areas <- crear_tabla_formato(datos_areas, c(1.5, 1, 1, 0.8, 1.2)) %>%
+  align(j = 2:4, align = "center", part = "all")
+ft_areas
+```
+
+---
+
+## 3. Movilidad en Niveles de Desempeño (Análisis de Calidad)
+
+**Este es el indicador más importante para el ICFES.** Muestra si el colegio está logrando mover a los estudiantes de los niveles insuficientes (1 y A-) hacia niveles satisfactorios.
+
+*Nota: Se busca reducir el porcentaje en Niveles bajos y aumentar en Niveles altos.*
+
+```{r tabla_niveles}
+datos_niveles <- data.frame(
+  Prueba = c(
+    "Lectura Crítica", "",
+    "Matemáticas", "",
+    "Sociales",
+    "Naturales",
+    "Inglés"
+  ),
+  Nivel = c(
+    "Nivel 1 (Bajo)", "Nivel 3+4 (Satisfactorio)",
+    "Nivel 1 (Bajo)", "Nivel 3+4 (Satisfactorio)",
+    "Nivel 1 (Bajo)",
+    "Nivel 1 (Bajo)",
+    "Nivel A- (Inferior)"
+  ),
+  `% 2024` = c("13%", "42%", "23%", "27%", "58%", "45%", "66%"),
+  `% 2025` = c("13%", "42%", "30%", "35%", "56%", "48%", "69%"),
+  `Tendencia Pedagógica` = c(
+    "Se mantiene la proporción de estudiantes con mayores dificultades.",
+    "No hubo movilidad hacia la excelencia.",
+    "Retroceso: Aumentó el % de estudiantes que no alcanzan competencias mínimas.",
+    "Polarización: Curiosamente, también aumentó el grupo de mejor desempeño.",
+    "Leve mejora: menos estudiantes en el nivel más bajo.",
+    "Retroceso: Casi la mitad de los estudiantes están en el nivel mínimo.",
+    "Retroceso: Aumentó la cantidad de estudiantes que no clasifican ni en A1."
+  ),
+  check.names = FALSE,
+  stringsAsFactors = FALSE
+)
+ft_niveles <- crear_tabla_formato(datos_niveles, c(1.3, 1.5, 0.6, 0.6, 3)) %>%
+  align(j = 3:4, align = "center", part = "all")
+ft_niveles
+```
+
+---
+
+## 4. Análisis de Brechas vs. Entidad Territorial (ETC Quindío)
+
+El objetivo del ICFES es que el establecimiento reduzca la distancia respecto al promedio de su región.
+
+```{r tabla_brechas}
+datos_brechas <- data.frame(
+  Prueba = c("Global", "Lectura Crítica", "Matemáticas", "Sociales", "Naturales", "Inglés"),
+  `Promedio EE 2025` = c(221, 48, 44, 41, 43, 45),
+  `Promedio ETC 2025` = c(264, 56, 55, 49, 52, 53),
+  `Brecha 2025` = c("-43 pts", "-8 pts", "-11 pts", "-8 pts", "-9 pts", "-8 pts"),
+  `Comparación vs Brecha 2024` = c(
+    "La brecha se redujo mínimamente (era -44 en 2024).",
+    "La brecha aumentó (era -7).",
+    "La brecha aumentó (era -10).",
+    "La brecha se redujo (era -9).",
+    "La brecha aumentó (era -8).",
+    "La brecha se redujo (era -9)."
+  ),
+  check.names = FALSE,
+  stringsAsFactors = FALSE
+)
+ft_brechas <- crear_tabla_formato(datos_brechas, c(1.2, 1.1, 1.1, 0.8, 2.8)) %>%
+  align(j = 2:4, align = "center", part = "all")
+ft_brechas
+```
+
+---
+
+## Conclusiones Pedagógicas (Enfoque ICFES)
+
+1. **Estancamiento de Promedios:** La institución muestra una **inercia en los resultados**. Los promedios son idénticos o casi idénticos de un año a otro. Esto sugiere que las estrategias implementadas entre 2024 y 2025 no generaron un impacto sistémico en los aprendizajes evaluados.
+
+2. **Polarización en Matemáticas:** Es el fenómeno más llamativo. Mientras el promedio se mantuvo igual (44), la distribución cambió drásticamente. Aumentaron los estudiantes "buenos" (Nivel 3 pasó del 27% al 35%), pero también aumentaron los estudiantes con serias dificultades (Nivel 1 pasó del 23% al 30%). **La clase se "partió" en dos extremos**, vaciando el nivel intermedio (Nivel 2).
+
+3. **Alerta en Inglés y Naturales:** En ambas áreas aumentó el porcentaje de estudiantes en el nivel más bajo (A- y Nivel 1). En Inglés, casi el 70% de los estudiantes no alcanza el nivel A1, lo cual es crítico.
+
+4. **Cierre de Brechas:** La institución sigue estando significativamente por debajo de la media de la Entidad Territorial Certificada (Quindío) y de Colombia en todas las áreas. No se observa una tendencia clara de cierre de brechas en este periodo.
+
+---
+
+*Fin del análisis institucional.*

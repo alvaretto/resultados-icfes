@@ -1,0 +1,439 @@
+---
+title: "REPORTE INSTITUCIONAL ICFES SABER 11° - 2025-3"
+subtitle: "INSTITUCION EDUCATIVA PEDACITO DE CIELO ALVARO URIBE VELEZ"
+output:
+  html_document:
+    df_print: paged
+  pdf_document:
+    latex_engine: xelatex
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+library(flextable)
+library(officer)
+library(dplyr)
+
+set_flextable_defaults(
+  font.size = 9,
+  padding = 3
+)
+
+# Colores según rangos de respuestas incorrectas
+COLOR_VERDE <- "#28a745"
+COLOR_AMARILLO <- "#ffc107"
+COLOR_NARANJA <- "#fd7e14"
+COLOR_ROJO <- "#dc3545"
+
+# Función para obtener color según porcentaje
+get_color <- function(pct) {
+  if (is.na(pct)) return("white")
+  if (pct < 20) return(COLOR_VERDE)
+  if (pct < 40) return(COLOR_AMARILLO)
+  if (pct <= 70) return(COLOR_NARANJA)
+  return(COLOR_ROJO)
+}
+
+# Función para crear tabla de respuestas incorrectas con colores
+crear_tabla_incorrectas <- function(datos) {
+  get_pct <- function(x) as.numeric(gsub("[^0-9]", "", x))
+
+  ft <- flextable(datos) %>%
+    set_header_labels(
+      Aprendizaje = "Aprendizaje",
+      EE = "EE",
+      Colombia = "Colombia",
+      ETC = "ETC"
+    ) %>%
+    width(j = 1, width = 4) %>%
+    width(j = 2:4, width = 0.8) %>%
+    align(j = 2:4, align = "center", part = "all") %>%
+    align(j = 1, align = "left", part = "all") %>%
+    bold(part = "header") %>%
+    fontsize(size = 9, part = "all")
+
+  for (i in seq_len(nrow(datos))) {
+    for (col in c("EE", "Colombia", "ETC")) {
+      pct <- get_pct(datos[[col]][i])
+      bg_color <- get_color(pct)
+      text_color <- if (bg_color == COLOR_AMARILLO) "black" else "white"
+
+      ft <- ft %>%
+        bg(i = i, j = col, bg = bg_color, part = "body") %>%
+        color(i = i, j = col, color = text_color, part = "body") %>%
+        bold(i = i, j = col, part = "body")
+    }
+  }
+
+  ft %>%
+    border_outer(border = fp_border(color = "gray", width = 1)) %>%
+    border_inner_h(border = fp_border(color = "gray", width = 0.5)) %>%
+    border_inner_v(border = fp_border(color = "gray", width = 0.5))
+}
+
+# Función para tablas genéricas
+crear_tabla_formato <- function(datos, anchos = NULL) {
+  ft <- flextable(datos) %>%
+    bold(part = "header") %>%
+    fontsize(size = 9, part = "all") %>%
+    border_outer(border = fp_border(color = "gray", width = 1)) %>%
+    border_inner_h(border = fp_border(color = "gray", width = 0.5)) %>%
+    border_inner_v(border = fp_border(color = "gray", width = 0.5))
+
+  if (!is.null(anchos)) {
+    for (i in seq_along(anchos)) {
+      ft <- ft %>% width(j = i, width = anchos[i])
+    }
+  }
+
+  ft
+}
+```
+
+# REPORTE INSTITUCIONAL ICFES SABER 11° - Aplicación 2025-3
+
+---
+
+## 1. Información General del Establecimiento
+
+```{r info_general}
+datos_info <- data.frame(
+  Dato = c("Nombre", "Código DANE", "Municipio - Departamento", "Sector", "Zona", "Grupo de comparación (GC)"),
+  Valor = c(
+    "INSTITUCION EDUCATIVA PEDACITO DE CIELO ALVARO URIBE VELEZ",
+    "163401000298",
+    "LA TEBAIDA - QUINDÍO",
+    "Oficial",
+    "Urbano",
+    "No disponible en el reporte"
+  ),
+  stringsAsFactors = FALSE
+)
+crear_tabla_formato(datos_info, c(2, 4))
+```
+
+---
+
+## 2. Ficha Técnica (Participación)
+
+*Tabla 1.1 del reporte (Pág. 4)*
+
+```{r ficha_tecnica}
+datos_ficha <- data.frame(
+  `Nivel de agregación` = c(
+    "Establecimiento educativo (EE)",
+    "Sede 0 / Jornada 0",
+    "Sede 0 / Jornada 1",
+    "Colombia",
+    "ETC (Entidad Territorial)",
+    "Oficiales urbanos ETC",
+    "Privados ETC"
+  ),
+  Matriculados = c(38, 0, 38, "517.550", "2.062", "1.663", 81),
+  Inscritos = c(98, 62, 36, "507.286", "2.124", "1.729", 78),
+  Presentes = c(95, 59, 36, "499.039", "2.085", "1.697", 76),
+  `Con resultados publicados` = c(95, 59, 36, "499.039", "2.085", "1.697", 76),
+  check.names = FALSE,
+  stringsAsFactors = FALSE
+)
+ft_ficha <- crear_tabla_formato(datos_ficha, c(2.2, 1, 1, 1, 1.3)) %>%
+  align(j = 2:5, align = "center", part = "all")
+ft_ficha
+```
+
+---
+
+## 3. Resultados Generales (Puntaje Global)
+
+*Tabla 2.1 del reporte (Pág. 5) - Escala 0 a 500 puntos.*
+
+```{r puntaje_global}
+datos_global <- data.frame(
+  `Nivel de agregación` = c(
+    "Establecimiento educativo (EE)",
+    "Sede 0 / Jornada 0",
+    "Sede 0 / Jornada 1",
+    "Colombia",
+    "ETC",
+    "Privados ETC"
+  ),
+  `Promedio Global` = c(221, 214, 234, 261, 264, 307),
+  `Desviación Estándar` = c(44, 43, 44, 53, 50, 46),
+  check.names = FALSE,
+  stringsAsFactors = FALSE
+)
+ft_global <- crear_tabla_formato(datos_global, c(2.5, 1.2, 1.2)) %>%
+  align(j = 2:3, align = "center", part = "all")
+ft_global
+```
+
+---
+
+## 4. Lectura Crítica
+
+### Puntaje Promedio (Tabla 3.1, Pág. 7)
+
+```{r lc_promedio}
+datos_lc_prom <- data.frame(
+  Nivel = c("EE", "Colombia", "ETC"),
+  `Promedio (0-100)` = c(48, 55, 56),
+  Desviación = c(10, 10, 10),
+  check.names = FALSE,
+  stringsAsFactors = FALSE
+)
+ft_lc <- crear_tabla_formato(datos_lc_prom, c(1.5, 1.2, 1)) %>%
+  align(j = 2:3, align = "center", part = "all")
+ft_lc
+```
+
+### Niveles de Desempeño (Tabla 3.2, Pág. 9)
+
+```{r lc_niveles}
+datos_lc_niv <- data.frame(
+  Nivel = c("EE", "Colombia", "ETC"),
+  `Nivel 1` = c("13%", "3%", "2%"),
+  `Nivel 2` = c("45%", "32%", "28%"),
+  `Nivel 3` = c("38%", "48%", "54%"),
+  `Nivel 4` = c("4%", "16%", "16%"),
+  check.names = FALSE,
+  stringsAsFactors = FALSE
+)
+ft_lc_niv <- crear_tabla_formato(datos_lc_niv, c(1.2, 0.8, 0.8, 0.8, 0.8)) %>%
+  align(j = 2:5, align = "center", part = "all")
+ft_lc_niv
+```
+
+### Respuestas Incorrectas por Aprendizaje (Figura 3.4, Pág. 13)
+
+*% Promedio de respuestas incorrectas (Menor porcentaje es mejor)*
+
+```{r lc_incorrectas}
+datos_lc <- data.frame(
+  Aprendizaje = c(
+    "Reflexiona a partir de un texto y evalúa su contenido.",
+    "Comprende cómo se articulan las partes de un texto para darle un sentido global.",
+    "Identifica y entiende los contenidos locales que conforman un texto."
+  ),
+  EE = c("61%", "54%", "44%"),
+  Colombia = c("51%", "44%", "33%"),
+  ETC = c("50%", "43%", "31%"),
+  stringsAsFactors = FALSE
+)
+crear_tabla_incorrectas(datos_lc)
+```
+
+**Leyenda de colores:**
+
+- **Verde** (< 20%): Excelente desempeño
+- **Amarillo** (20% - 40%): Buen desempeño
+- **Naranja** (40% - 70%): Desempeño por mejorar
+- **Rojo** (> 70%): Desempeño crítico
+
+---
+
+## 5. Matemáticas
+
+### Puntaje Promedio (Tabla 4.1, Pág. 14)
+
+```{r mat_promedio}
+datos_mat_prom <- data.frame(
+  Nivel = c("EE", "Colombia", "ETC"),
+  `Promedio (0-100)` = c(44, 53, 55),
+  Desviación = c(11, 13, 12),
+  check.names = FALSE,
+  stringsAsFactors = FALSE
+)
+ft_mat <- crear_tabla_formato(datos_mat_prom, c(1.5, 1.2, 1)) %>%
+  align(j = 2:3, align = "center", part = "all")
+ft_mat
+```
+
+### Niveles de Desempeño (Tabla 4.2, Pág. 16)
+
+```{r mat_niveles}
+datos_mat_niv <- data.frame(
+  Nivel = c("EE", "Colombia", "ETC"),
+  `Nivel 1` = c("30%", "10%", "7%"),
+  `Nivel 2` = c("34%", "32%", "29%"),
+  `Nivel 3` = c("35%", "50%", "53%"),
+  `Nivel 4` = c("0%", "9%", "10%"),
+  check.names = FALSE,
+  stringsAsFactors = FALSE
+)
+ft_mat_niv <- crear_tabla_formato(datos_mat_niv, c(1.2, 0.8, 0.8, 0.8, 0.8)) %>%
+  align(j = 2:5, align = "center", part = "all")
+ft_mat_niv
+```
+
+### Respuestas Incorrectas por Aprendizaje (Figura 4.4, Pág. 20)
+
+```{r mat_incorrectas}
+datos_mat <- data.frame(
+  Aprendizaje = c(
+    "Valida procedimientos y estrategias matemáticas utilizadas para dar solución a problemas.",
+    "Frente a un problema que involucre información cuantitativa, plantea e implementa estrategias que lleven a soluciones adecuadas.",
+    "Comprende y transforma la información cuantitativa y esquemática presentada en distintos formatos."
+  ),
+  EE = c("66%", "59%", "49%"),
+  Colombia = c("57%", "47%", "36%"),
+  ETC = c("57%", "46%", "33%"),
+  stringsAsFactors = FALSE
+)
+crear_tabla_incorrectas(datos_mat)
+```
+
+---
+
+## 6. Sociales y Ciudadanas
+
+### Puntaje Promedio (Tabla 5.1, Pág. 21)
+
+```{r soc_promedio}
+datos_soc_prom <- data.frame(
+  Nivel = c("EE", "Colombia", "ETC"),
+  `Promedio (0-100)` = c(41, 49, 49),
+  Desviación = c(11, 12, 12),
+  check.names = FALSE,
+  stringsAsFactors = FALSE
+)
+ft_soc <- crear_tabla_formato(datos_soc_prom, c(1.5, 1.2, 1)) %>%
+  align(j = 2:3, align = "center", part = "all")
+ft_soc
+```
+
+### Niveles de Desempeño (Tabla 5.2, Pág. 24)
+
+```{r soc_niveles}
+datos_soc_niv <- data.frame(
+  Nivel = c("EE", "Colombia", "ETC"),
+  `Nivel 1` = c("56%", "30%", "27%"),
+  `Nivel 2` = c("30%", "39%", "42%"),
+  `Nivel 3` = c("14%", "27%", "28%"),
+  `Nivel 4` = c("0%", "4%", "3%"),
+  check.names = FALSE,
+  stringsAsFactors = FALSE
+)
+ft_soc_niv <- crear_tabla_formato(datos_soc_niv, c(1.2, 0.8, 0.8, 0.8, 0.8)) %>%
+  align(j = 2:5, align = "center", part = "all")
+ft_soc_niv
+```
+
+### Respuestas Incorrectas por Aprendizaje (Figura 5.4, Pág. 29)
+
+```{r soc_incorrectas}
+datos_soc <- data.frame(
+  Aprendizaje = c(
+    "Comprende que los problemas y sus soluciones involucran distintas dimensiones.",
+    "Evalúa usos sociales de las ciencias sociales.",
+    "Contextualiza y evalúa usos de fuentes y argumentos.",
+    "Comprende perspectivas de distintos actores y grupos sociales.",
+    "Comprende dimensiones espaciales y temporales de eventos y prácticas sociales.",
+    "Comprende modelos conceptuales, sus características y contextos de aplicación."
+  ),
+  EE = c("71%", "69%", "63%", "62%", "61%", "53%"),
+  Colombia = c("69%", "57%", "52%", "50%", "42%", "42%"),
+  ETC = c("71%", "57%", "51%", "50%", "41%", "43%"),
+  stringsAsFactors = FALSE
+)
+crear_tabla_incorrectas(datos_soc)
+```
+
+---
+
+## 7. Ciencias Naturales
+
+### Puntaje Promedio (Tabla 6.1, Pág. 30)
+
+```{r cn_promedio}
+datos_cn_prom <- data.frame(
+  Nivel = c("EE", "Colombia", "ETC"),
+  `Promedio (0-100)` = c(43, 51, 52),
+  Desviación = c(9, 11, 10),
+  check.names = FALSE,
+  stringsAsFactors = FALSE
+)
+ft_cn <- crear_tabla_formato(datos_cn_prom, c(1.5, 1.2, 1)) %>%
+  align(j = 2:3, align = "center", part = "all")
+ft_cn
+```
+
+### Niveles de Desempeño (Tabla 6.2, Pág. 32)
+
+```{r cn_niveles}
+datos_cn_niv <- data.frame(
+  Nivel = c("EE", "Colombia", "ETC"),
+  `Nivel 1` = c("48%", "18%", "17%"),
+  `Nivel 2` = c("42%", "46%", "46%"),
+  `Nivel 3` = c("10%", "31%", "33%"),
+  `Nivel 4` = c("0%", "4%", "4%"),
+  check.names = FALSE,
+  stringsAsFactors = FALSE
+)
+ft_cn_niv <- crear_tabla_formato(datos_cn_niv, c(1.2, 0.8, 0.8, 0.8, 0.8)) %>%
+  align(j = 2:5, align = "center", part = "all")
+ft_cn_niv
+```
+
+### Respuestas Incorrectas por Aprendizaje (Selección Figura 6.4, Pág. 36-38)
+
+*Los porcentajes más altos indican mayor dificultad para los estudiantes del EE.*
+
+```{r cn_incorrectas}
+datos_cn <- data.frame(
+  Aprendizaje = c(
+    "Utilizar algunas habilidades... evaluar predicciones (Químicos)",
+    "Asociar fenómenos naturales... (Químicos)",
+    "Explicar cómo ocurren algunos fenómenos... (Químicos)",
+    "Modelar fenómenos de la naturaleza... (Físicos)",
+    "Modelar fenómenos de la naturaleza... (Vivos)",
+    "Derivar conclusiones... (Físicos)"
+  ),
+  EE = c("76%", "73%", "71%", "71%", "70%", "67%"),
+  Colombia = c("57%", "58%", "54%", "56%", "52%", "43%"),
+  ETC = c("57%", "59%", "55%", "56%", "52%", "43%"),
+  stringsAsFactors = FALSE
+)
+crear_tabla_incorrectas(datos_cn)
+```
+
+---
+
+## 8. Inglés
+
+### Puntaje Promedio (Tabla 7.1, Pág. 40)
+
+```{r ing_promedio}
+datos_ing_prom <- data.frame(
+  Nivel = c("EE", "Colombia", "ETC"),
+  `Promedio (0-100)` = c(45, 53, 53),
+  Desviación = c(10, 13, 12),
+  check.names = FALSE,
+  stringsAsFactors = FALSE
+)
+ft_ing <- crear_tabla_formato(datos_ing_prom, c(1.5, 1.2, 1)) %>%
+  align(j = 2:3, align = "center", part = "all")
+ft_ing
+```
+
+### Niveles de Desempeño (Tabla 7.2, Pág. 42)
+
+```{r ing_niveles}
+datos_ing_niv <- data.frame(
+  Nivel = c("EE", "Colombia", "ETC"),
+  `A-` = c("69%", "37%", "32%"),
+  A1 = c("22%", "29%", "34%"),
+  A2 = c("8%", "19%", "22%"),
+  B1 = c("2%", "11%", "9%"),
+  `B+` = c("0%", "3%", "2%"),
+  check.names = FALSE,
+  stringsAsFactors = FALSE
+)
+ft_ing_niv <- crear_tabla_formato(datos_ing_niv, c(1.2, 0.7, 0.7, 0.7, 0.7, 0.7)) %>%
+  align(j = 2:6, align = "center", part = "all")
+ft_ing_niv
+```
+
+---
+
+*Fin del reporte institucional 2025.*

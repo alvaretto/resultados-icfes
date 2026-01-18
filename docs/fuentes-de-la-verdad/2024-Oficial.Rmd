@@ -1,51 +1,77 @@
 ---
 title: "REPORTE DE RESULTADOS DEL EXAMEN SABER 11° - 2024-3"
 output:
-  pdf_document:
-    latex_engine: xelatex
-    keep_tex: false
   html_document:
     df_print: paged
+  pdf_document:
+    latex_engine: xelatex
+  word_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
-library(kableExtra)
+library(flextable)
+library(officer)
+library(dplyr)
 
-# Función para colorear celda según porcentaje de respuestas incorrectas
-colorear_celda <- function(texto) {
-  # Extraer el porcentaje numérico
-  pct <- as.numeric(gsub("[^0-9]", "", texto))
+# Configurar flextable para que funcione en todos los formatos
+set_flextable_defaults(
+  font.size = 9,
+  padding = 3
+)
 
-  if (is.na(pct)) return(texto)
+# Colores según rangos de respuestas incorrectas
+COLOR_VERDE <- "#28a745"
+COLOR_AMARILLO <- "#ffc107"
+COLOR_NARANJA <- "#fd7e14"
+COLOR_ROJO <- "#dc3545"
 
-  # Determinar color según rangos
-  if (pct < 20) {
-    color <- "#28a745"  # Verde
-  } else if (pct >= 20 & pct < 40) {
-    color <- "#ffc107"  # Amarillo
-  } else if (pct >= 40 & pct <= 70) {
-    color <- "#fd7e14"  # Naranja
-  } else {
-    color <- "#dc3545"  # Rojo
-  }
-
-  cell_spec(paste0(pct, "%"), background = color, color = "white", bold = TRUE)
+# Función para obtener color según porcentaje
+get_color <- function(pct) {
+  if (is.na(pct)) return("white")
+  if (pct < 20) return(COLOR_VERDE)
+  if (pct < 40) return(COLOR_AMARILLO)
+  if (pct <= 70) return(COLOR_NARANJA)
+  return(COLOR_ROJO)
 }
 
-# Función para crear tabla de respuestas incorrectas
+# Función para crear tabla de respuestas incorrectas con colores
 crear_tabla_incorrectas <- function(datos) {
-  # datos es un data.frame con columnas: Aprendizaje, EE, Colombia, ETC
-  for (col in c("EE", "Colombia", "ETC")) {
-    datos[[col]] <- sapply(datos[[col]], colorear_celda)
+  # Extraer valores numéricos para colorear
+  get_pct <- function(x) as.numeric(gsub("[^0-9]", "", x))
+
+  ft <- flextable(datos) %>%
+    set_header_labels(
+      Aprendizaje = "Aprendizaje",
+      EE = "EE",
+      Colombia = "Colombia",
+      ETC = "ETC"
+    ) %>%
+    width(j = 1, width = 4) %>%
+    width(j = 2:4, width = 0.8) %>%
+    align(j = 2:4, align = "center", part = "all") %>%
+    align(j = 1, align = "left", part = "all") %>%
+    bold(part = "header") %>%
+    fontsize(size = 9, part = "all")
+
+  # Aplicar colores celda por celda
+  for (i in seq_len(nrow(datos))) {
+    for (col in c("EE", "Colombia", "ETC")) {
+      pct <- get_pct(datos[[col]][i])
+      bg_color <- get_color(pct)
+      text_color <- if (bg_color == COLOR_AMARILLO) "black" else "white"
+
+      ft <- ft %>%
+        bg(i = i, j = col, bg = bg_color, part = "body") %>%
+        color(i = i, j = col, color = text_color, part = "body") %>%
+        bold(i = i, j = col, part = "body")
+    }
   }
 
-  kable(datos, escape = FALSE, format = "html", align = c("l", "c", "c", "c")) %>%
-    kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
-                  full_width = TRUE,
-                  font_size = 12) %>%
-    column_spec(1, width = "60%") %>%
-    column_spec(2:4, width = "13%")
+  ft %>%
+    border_outer(border = fp_border(color = "gray", width = 1)) %>%
+    border_inner_h(border = fp_border(color = "gray", width = 0.5)) %>%
+    border_inner_v(border = fp_border(color = "gray", width = 0.5))
 }
 ```
 
@@ -65,8 +91,6 @@ Este reporte incluye comparaciones a través de las cuales podrá saber cómo so
 \*Se mostrarán resultados por sedes cuando éstas existan y hayan sido seleccionadas previamente. Siempre que haya más de una jornada al interior de una misma sede o establecimiento se mostrarán resultados para cada una de ellas.
 
 \*\*Los grupos de comparación son agregaciones de establecimientos educativos que comparten características socioeconómicas entre sí. No son equivalentes a los niveles socioeconómicos definidos para la prueba Saber 3°, 5° y 9° ni al estrato socioeconómico del establecimiento educativo.
-
-En caso de que quiera conocer sobre la estructura de las pruebas que componen el Examen Saber 11°, lo invitamos a consultar la guía de orientación en `www.icfes.gov.co/web/guest/acerca-examen-saber-11` y seguir esta ruta: Información general - Contenido del examen - Estructura del examen.
 
 ### ▶ Información del establecimiento educativo
 
@@ -91,7 +115,7 @@ En caso de que quiera conocer sobre la estructura de las pruebas que componen el
 
 ---
 
-### ▶ Para simplificar y mejorar la presentación de la información contenida en este reporte se utilizarán las siguientes convenciones:
+### ▶ Convenciones utilizadas:
 
 | Código Dane | Nivel de agregación | Convención |
 | :--- | :--- | :--- |
@@ -105,28 +129,13 @@ En caso de que quiera conocer sobre la estructura de las pruebas que componen el
 
 **Tabla 1.1 Número de estudiantes matriculados, inscritos, presentes y con resultados publicados**
 
-| Nivel de agregación | Matriculados | Inscritos | Presentes | Con resultados publicados |
+| Nivel de agregación | Matriculados | Inscritos | Presentes | Con resultados |
 | :--- | :---: | :---: | :---: | :---: |
 | Establecimiento educativo (EE) | 120 | 120 | 116 | 116 |
 | Sede 0 / Jornada 0 / Modelo Flexible | 70 | 70 | 66 | 66 |
 | Sede 0 / Jornada 1 / Aula Regular | 50 | 50 | 50 | 50 |
 | Colombia | 528835 | 501558 | 494458 | 494458 |
 | ETC | 2287 | 2267 | 2225 | 2225 |
-| Oficiales urbanos ETC | 1872 | 1869 | 1832 | 1832 |
-| Oficiales rurales ETC | 323 | 309 | 304 | 304 |
-| Oficiales ETC | 2195 | 2178 | 2136 | 2136 |
-| Privados ETC | 92 | 89 | 89 | 89 |
-| GC 1 ETC | 2 | 2 | 2 | 2 |
-| GC 2 ETC | 1259 | 1256 | 1222 | 1222 |
-| GC 3 ETC | 971 | 955 | 947 | 947 |
-| GC 4 ETC | 55 | 54 | 54 | 54 |
-
-**¿Qué significan los datos registrados en la Tabla 1.1?**
-
-*   **Matriculados:** Estudiantes registrados en el Sistema Integrado de Matrícula (SIMAT) de acuerdo a la fecha de corte definida en la parte de arriba de este reporte.
-*   **Inscritos:** Estudiantes citados para la presentación del examen.
-*   **Presentes:** Inscritos que asistieron a las dos sesiones del examen.
-*   **Con resultados publicados:** Evaluados que a la fecha de corte tienen publicados sus resultados y que presentaron el Examen Saber 11° por primera vez.
 
 ---
 
@@ -141,105 +150,12 @@ En caso de que quiera conocer sobre la estructura de las pruebas que componen el
 | Sede 0 / Jornada 1 / Aula Regular | 240 ▼ | 41 • |
 | Colombia | 260 ▼ | 52 ▼ |
 | ETC | 263 ▼ | 49 ▼ |
-| Oficiales urbanos ETC | 261 ▼ | 49 ▼ |
-| Oficiales rurales ETC | 258 ▼ | 42 • |
-| Oficiales ETC | N.D. | N.D. |
-| Privados ETC | 315 ▼ | 45 • |
-| GC 1 ETC | 202 ▲ | 29 ▲ |
-| GC 2 ETC | 247 ▼ | 46 • |
-| GC 3 ETC | 279 ▼ | 46 • |
-| GC 4 ETC | 317 ▼ | 47 • |
-
-*N.D.: no hay información disponible.*
-
-**¿Qué significan los datos registrados en la Tabla 2.1?**
-
-*   **Promedio del puntaje global:** Representa el desempeño medio de los estudiantes en el Examen Saber 11°. El promedio del puntaje global se reporta en una escala de 0 a 500 puntos, sin decimales.
-*   **Desviación estándar:** Es una medida de dispersión de los datos.
-
-**¿Cómo interpretar los símbolos presentados en la tabla 2.1?**
-
-*   • Indica que los resultados obtenidos por el establecimiento educativo son similares a los obtenidos por la sede/jornada o el nivel de agregación en el que aparece el símbolo.
-*   ▲ Indica que los resultados obtenidos por el establecimiento educativo son considerablemente mayores a los obtenidos por la sede/jornada o el nivel de agregación en el que aparece el símbolo.
-*   ▼ Indica que los resultados obtenidos por el establecimiento educativo son considerablemente menores a los obtenidos por la sede/jornada o el nivel de agregación en el que aparece el símbolo.
-
----
-
-### Lectura de resultados
-
-**El promedio del puntaje global obtenido por el establecimiento educativo es considerablemente:**
-
-*   Mayor al de la Sede 0 / Jornada 0 / Modelo Flexible.
-*   Menor al de la Sede 0 / Jornada 1 / Aula Regular.
-*   Menor al de los establecimientos educativos de Colombia.
-*   Menor al de los establecimientos educativos de la ETC.
-*   Menor al de los establecimientos educativos Oficiales urbanos ETC.
-*   Menor al de los establecimientos educativos Oficiales rurales ETC.
-*   Menor al de los establecimientos educativos Privados ETC.
-*   Mayor al de los establecimientos educativos del grupo de comparación (GC 1 ETC).
-*   Menor al de los establecimientos educativos del grupo de comparación (GC 2 ETC).
-*   Menor al de los establecimientos educativos del grupo de comparación (GC 3 ETC).
-*   Menor al de los establecimientos educativos del grupo de comparación (GC 4 ETC).
-
-**La desviación estándar del promedio del puntaje global obtenida por el establecimiento educativo es considerablemente:**
-
-*   Similar al de la Sede 0 / Jornada 0 / Modelo Flexible.
-*   Similar al de la Sede 0 / Jornada 1 / Aula Regular.
-*   Menor al de los establecimientos educativos de Colombia.
-*   Menor al de los establecimientos educativos de la ETC.
-*   Menor al de los establecimientos educativos Oficiales urbanos ETC.
-*   Similar al de los establecimientos educativos Oficiales rurales ETC.
-*   Similar al de los establecimientos educativos Privados ETC.
-*   Mayor al de los establecimientos educativos del grupo de comparación (GC 1 ETC).
-*   Similar al de los establecimientos educativos del grupo de comparación (GC 2 ETC).
-*   Similar al de los establecimientos educativos del grupo de comparación (GC 3 ETC).
-*   Similar al de los establecimientos educativos del grupo de comparación (GC 4 ETC).
 
 ---
 
 # 3. LECTURA CRÍTICA
 
-**Tabla 3.1 Promedio y su desviación estándar en Lectura Crítica**
-
-| Nivel de agregación | Promedio | Desviación |
-| :--- | :---: | :---: |
-| Establecimiento educativo (EE) | 48 | 9 |
-| Sede 0 / Jornada 0 / Modelo Flexible | 45 • | 9 • |
-| Sede 0 / Jornada 1 / Aula Regular | 51 • | 9 • |
-| Colombia | 54 • | 10 • |
-| ETC | 55 • | 10 • |
-| Oficiales urbanos ETC | 54 • | 10 • |
-| Oficiales rurales ETC | 54 • | 9 • |
-| Oficiales ETC | N.D. | N.D. |
-| Privados ETC | 63 ▼ | 8 • |
-| GC 1 ETC | 46 • | 8 • |
-| GC 2 ETC | 52 • | 10 • |
-| GC 3 ETC | 58 ▼ | 9 • |
-| GC 4 ETC | 64 ▼ | 8 • |
-
----
-
-**Tabla 3.2 Porcentaje de estudiantes por niveles de desempeño en Lectura Crítica**
-
-| Nivel de agregación | 1 | 2 | 3 | 4 |
-| :--- | :---: | :---: | :---: | :---: |
-| Establecimiento educativo (EE) | 13% | 46% | 39% | 3% |
-| Sede 0 / Jornada 0 / Modelo Flexible | 18% ▼ | 56% ▼ | 23% ▲ | 3% • |
-| Sede 0 / Jornada 1 / Aula Regular | 6% ▲ | 32% ▲ | 60% ▼ | 2% ▲ |
-| Colombia | 4% ▲ | 31% ▲ | 50% ▼ | 15% ▼ |
-| ETC | 3% ▲ | 30% ▲ | 52% ▼ | 15% ▼ |
-| Oficiales urbanos ETC | 4% ▲ | 31% ▲ | 52% ▼ | 14% ▼ |
-| Oficiales rurales ETC | 3% ▲ | 31% ▲ | 55% ▼ | 11% ▼ |
-| Oficiales ETC | N.D. | N.D. | N.D. | N.D. |
-| Privados ETC | 0% ▲ | 8% ▲ | 49% ▼ | 43% ▼ |
-| GC 1 ETC | 0% ▲ | 50% ▼ | 50% ▼ | 0% ▲ |
-| GC 2 ETC | 5% ▲ | 38% ▲ | 48% ▼ | 9% ▼ |
-| GC 3 ETC | 1% ▲ | 21% ▲ | 58% ▼ | 20% ▼ |
-| GC 4 ETC | 0% ▲ | 8% ▲ | 44% ▼ | 48% ▼ |
-
----
-
-**Figura 3.4 Porcentaje de promedio de respuestas incorrectas en cada aprendizaje evaluado en Lectura Crítica**
+**Figura 3.4 Porcentaje de respuestas incorrectas por aprendizaje**
 
 ```{r tabla_lectura_critica}
 datos_lc <- data.frame(
@@ -250,65 +166,24 @@ datos_lc <- data.frame(
   ),
   EE = c("56%", "55%", "44%"),
   Colombia = c("45%", "44%", "35%"),
-  ETC = c("45%", "44%", "34%")
+  ETC = c("45%", "44%", "34%"),
+  stringsAsFactors = FALSE
 )
 crear_tabla_incorrectas(datos_lc)
 ```
 
-**¿Para qué sirve la información presentada en la Figura 3.4?**
-Los colores se asignan según los siguientes rangos de respuestas incorrectas:
+**Leyenda de colores:**
 
-*   < 20%: Verde
-*   20% - 40%: Amarillo
-*   40% - 70%: Naranja
-*   > 70%: Rojo
-
-Cuanto menor sea el porcentaje promedio de respuestas incorrectas, mejor será el desempeño.
+- **Verde** (< 20%): Excelente desempeño
+- **Amarillo** (20% - 40%): Buen desempeño
+- **Naranja** (40% - 70%): Desempeño por mejorar
+- **Rojo** (> 70%): Desempeño crítico
 
 ---
 
 # 4. MATEMÁTICAS
 
-**Tabla 4.1 Promedio y su desviación estándar en Matemáticas**
-
-| Nivel de agregación | Promedio | Desviación |
-| :--- | :---: | :---: |
-| Establecimiento educativo (EE) | 44 | 11 |
-| Sede 0 / Jornada 0 / Modelo Flexible | 41 • | 11 • |
-| Sede 0 / Jornada 1 / Aula Regular | 49 ▼ | 10 • |
-| Colombia | 53 ▼ | 13 • |
-| ETC | 54 ▼ | 12 • |
-| Oficiales urbanos ETC | 54 ▼ | 12 • |
-| Oficiales rurales ETC | 53 ▼ | 11 • |
-| Oficiales ETC | N.D. | N.D. |
-| Privados ETC | 65 ▼ | 10 • |
-| GC 1 ETC | 35 ▲ | 4 ▲ |
-| GC 2 ETC | 51 • | 11 • |
-| GC 3 ETC | 58 ▼ | 12 • |
-| GC 4 ETC | 65 ▼ | 11 • |
-
----
-
-**Tabla 4.2 Porcentaje de estudiantes por niveles de desempeño en Matemáticas**
-
-| Nivel de agregación | 1 | 2 | 3 | 4 |
-| :--- | :---: | :---: | :---: | :---: |
-| Establecimiento educativo (EE) | 23% | 50% | 27% | 0% |
-| Sede 0 / Jornada 0 / Modelo Flexible | 30% ▼ | 53% ▼ | 17% ▲ | 0% • |
-| Sede 0 / Jornada 1 / Aula Regular | 14% ▲ | 46% ▲ | 40% ▼ | 0% • |
-| Colombia | 9% ▲ | 33% ▲ | 50% ▼ | 8% ▼ |
-| ETC | 8% ▲ | 31% ▲ | 53% ▼ | 9% ▼ |
-| Oficiales urbanos ETC | 8% ▲ | 32% ▲ | 52% ▼ | 8% ▼ |
-| Oficiales rurales ETC | 5% ▲ | 33% ▲ | 56% ▼ | 5% ▼ |
-| Privados ETC | 1% ▲ | 5% ▲ | 65% ▼ | 29% ▼ |
-| GC 1 ETC | 50% ▼ | 50% • | 0% ▲ | 0% • |
-| GC 2 ETC | 11% ▲ | 38% ▲ | 48% ▼ | 3% ▼ |
-| GC 3 ETC | 3% ▲ | 22% ▲ | 59% ▼ | 15% ▼ |
-| GC 4 ETC | 2% ▲ | 6% ▲ | 63% ▼ | 29% ▼ |
-
----
-
-**Figura 4.4 Porcentaje de promedio de respuestas incorrectas en cada aprendizaje evaluado en Matemáticas**
+**Figura 4.4 Porcentaje de respuestas incorrectas por aprendizaje**
 
 ```{r tabla_matematicas}
 datos_mat <- data.frame(
@@ -319,7 +194,8 @@ datos_mat <- data.frame(
   ),
   EE = c("64%", "63%", "55%"),
   Colombia = c("55%", "51%", "41%"),
-  ETC = c("52%", "49%", "39%")
+  ETC = c("52%", "49%", "39%"),
+  stringsAsFactors = FALSE
 )
 crear_tabla_incorrectas(datos_mat)
 ```
@@ -328,59 +204,22 @@ crear_tabla_incorrectas(datos_mat)
 
 # 5. SOCIALES Y CIUDADANAS
 
-**Tabla 5.1 Promedio y su desviación estándar en Sociales Y Ciudadanas**
-
-| Nivel de agregación | Promedio | Desviación |
-| :--- | :---: | :---: |
-| Establecimiento educativo (EE) | 41 | 10 |
-| Sede 0 / Jornada 0 / Modelo Flexible | 38 • | 9 • |
-| Sede 0 / Jornada 1 / Aula Regular | 44 • | 11 • |
-| Colombia | 49 ▼ | 12 • |
-| ETC | 50 ▼ | 12 • |
-| Oficiales urbanos ETC | 49 ▼ | 12 • |
-| Oficiales rurales ETC | 49 ▼ | 11 • |
-| Privados ETC | 61 ▼ | 12 • |
-| GC 1 ETC | 39 • | 13 • |
-| GC 2 ETC | 47 • | 11 • |
-| GC 3 ETC | 53 ▼ | 11 • |
-| GC 4 ETC | 60 ▼ | 13 • |
-
----
-
-**Tabla 5.2 Porcentaje de estudiantes por niveles de desempeño en Sociales Y Ciudadanas**
-
-| Nivel de agregación | 1 | 2 | 3 | 4 |
-| :--- | :---: | :---: | :---: | :---: |
-| Establecimiento educativo (EE) | 58% | 32% | 10% | 0% |
-| Sede 0 / Jornada 0 / Modelo Flexible | 67% ▼ | 26% ▲ | 8% ▲ | 0% • |
-| Sede 0 / Jornada 1 / Aula Regular | 46% ▲ | 40% ▼ | 14% ▼ | 0% • |
-| Colombia | 27% ▲ | 41% ▼ | 28% ▼ | 4% ▼ |
-| ETC | 25% ▲ | 43% ▼ | 30% ▼ | 3% ▼ |
-| Oficiales urbanos ETC | 25% ▲ | 43% ▼ | 29% ▼ | 3% ▼ |
-| Oficiales rurales ETC | 25% ▲ | 48% ▼ | 26% ▼ | 1% ▼ |
-| Privados ETC | 8% ▲ | 17% ▲ | 60% ▼ | 14% ▼ |
-| GC 1 ETC | 50% ▲ | 50% ▼ | 0% ▲ | 0% • |
-| GC 2 ETC | 32% ▲ | 44% ▼ | 22% ▼ | 2% ▼ |
-| GC 3 ETC | 16% ▲ | 42% ▼ | 39% ▼ | 4% ▼ |
-| GC 4 ETC | 10% ▲ | 19% ▲ | 56% ▼ | 15% ▼ |
-
----
-
-**Figura 5.4 Porcentaje de promedio de respuestas incorrectas en cada aprendizaje evaluado en Sociales Y Ciudadanas**
+**Figura 5.4 Porcentaje de respuestas incorrectas por aprendizaje**
 
 ```{r tabla_sociales}
 datos_soc <- data.frame(
   Aprendizaje = c(
-    "Comprende que los problemas y sus soluciones involucran distintas dimensiones y reconoce relaciones entre estas.",
+    "Comprende que los problemas y sus soluciones involucran distintas dimensiones.",
     "Comprende modelos conceptuales, sus características y contextos de aplicación.",
     "Contextualiza y evalúa usos de fuentes y argumentos.",
-    "Comprende dimensiones espaciales y temporales de eventos, problemáticas y prácticas sociales.",
+    "Comprende dimensiones espaciales y temporales de eventos y prácticas sociales.",
     "Comprende perspectivas de distintos actores y grupos sociales.",
     "Evalúa usos sociales de las ciencias sociales."
   ),
   EE = c("54%", "59%", "61%", "63%", "68%", "66%"),
   Colombia = c("41%", "51%", "51%", "50%", "62%", "53%"),
-  ETC = c("39%", "51%", "51%", "51%", "61%", "54%")
+  ETC = c("39%", "51%", "51%", "51%", "61%", "54%"),
+  stringsAsFactors = FALSE
 )
 crear_tabla_incorrectas(datos_soc)
 ```
@@ -389,85 +228,28 @@ crear_tabla_incorrectas(datos_soc)
 
 # 6. CIENCIAS NATURALES
 
-**Tabla 6.1 Promedio y su desviación estándar en Ciencias Naturales**
-
-| Nivel de agregación | Promedio | Desviación |
-| :--- | :---: | :---: |
-| Establecimiento educativo (EE) | 43 | 8 |
-| Sede 0 / Jornada 0 / Modelo Flexible | 39 ▲ | 7 • |
-| Sede 0 / Jornada 1 / Aula Regular | 47 ▼ | 8 • |
-| Colombia | 51 ▼ | 11 • |
-| ETC | 51 ▼ | 10 • |
-| Oficiales urbanos ETC | 51 ▼ | 10 • |
-| Oficiales rurales ETC | 51 ▼ | 9 • |
-| Privados ETC | 61 ▼ | 11 • |
-| GC 1 ETC | 42 • | 1 ▲ |
-| GC 2 ETC | 48 • | 9 • |
-| GC 3 ETC | 55 ▼ | 10 • |
-| GC 4 ETC | 61 ▼ | 11 • |
-
----
-
-**Tabla 6.2 Porcentaje de estudiantes por niveles de desempeño en Ciencias Naturales**
-
-| Nivel de agregación | 1 | 2 | 3 | 4 |
-| :--- | :---: | :---: | :---: | :---: |
-| Establecimiento educativo (EE) | 45% | 47% | 8% | 0% |
-| Sede 0 / Jornada 0 / Modelo Flexible | 59% ▼ | 39% ▲ | 2% ▲ | 0% • |
-| Sede 0 / Jornada 1 / Aula Regular | 26% ▲ | 58% ▼ | 16% ▼ | 0% • |
-| Colombia | 18% ▲ | 47% • | 31% ▼ | 4% ▼ |
-| ETC | 16% ▲ | 50% ▼ | 31% ▼ | 3% ▼ |
-| Oficiales urbanos ETC | 17% ▲ | 50% ▼ | 30% ▼ | 3% ▼ |
-| Oficiales rurales ETC | 14% ▲ | 56% ▼ | 29% ▼ | 1% ▼ |
-| Privados ETC | 5% ▲ | 19% ▲ | 67% ▼ | 9% ▼ |
-| GC 1 ETC | 0% ▲ | 100% ▼ | 0% ▲ | 0% • |
-| GC 2 ETC | 22% ▲ | 56% ▼ | 21% ▼ | 1% ▼ |
-| GC 3 ETC | 8% ▲ | 44% ▲ | 43% ▼ | 5% ▼ |
-| GC 4 ETC | 4% ▲ | 21% ▲ | 63% ▼ | 12% ▼ |
-
----
-
-**Figura 6.4 Porcentaje de promedio de respuestas incorrectas en cada aprendizaje evaluado en Ciencias Naturales**
+**Figura 6.4 Porcentaje de respuestas incorrectas por aprendizaje**
 
 ```{r tabla_ciencias}
 datos_cn <- data.frame(
   Aprendizaje = c(
-    "Modelar fenómenos de la naturaleza... (Procesos químicos)",
-    "Derivar conclusiones... (Procesos vivos)",
-    "Explicar cómo ocurren algunos fenómenos... (Procesos químicos)",
-    "Utilizar habilidades de pensamiento... (Procesos físicos)",
-    "Identificar características de fenómenos... - CTS",
-    "Utilizar habilidades de pensamiento... (Procesos químicos)",
-    "Explicar cómo ocurren algunos fenómenos... (Procesos físicos)",
-    "Identificar características de fenómenos... (Procesos físicos)",
-    "Comprender investigación científica... (Procesos vivos)",
-    "Derivar conclusiones... (Procesos físicos)",
-    "Observar y relacionar patrones... (Procesos vivos)",
-    "Identificar características de fenómenos... (Procesos químicos)",
-    "Utilizar habilidades de pensamiento... (Procesos vivos)",
-    "Derivar conclusiones... (Procesos químicos)",
-    "Modelar fenómenos de la naturaleza... (Procesos vivos)",
-    "Explicar cómo ocurren algunos fenómenos... (Procesos vivos)",
-    "Asociar fenómenos naturales... (Procesos vivos)",
-    "Observar y relacionar patrones... (Procesos químicos)",
-    "Asociar fenómenos naturales... (Procesos químicos)",
-    "Modelar fenómenos de la naturaleza... (Procesos físicos)",
-    "Asociar fenómenos naturales... (Procesos físicos)",
-    "Analizar potencial de recursos naturales... - CTS",
-    "Identificar características de fenómenos... (Procesos vivos)",
-    "Comprender investigación científica... (Procesos físicos)",
-    "Observar y relacionar patrones... (Procesos físicos)",
-    "Comprender investigación científica... (Procesos químicos)"
+    "Modelar fenómenos de la naturaleza (Procesos químicos)",
+    "Derivar conclusiones (Procesos vivos)",
+    "Explicar cómo ocurren fenómenos (Procesos químicos)",
+    "Utilizar habilidades de pensamiento (Procesos físicos)",
+    "Identificar características de fenómenos - CTS",
+    "Utilizar habilidades de pensamiento (Procesos químicos)",
+    "Explicar cómo ocurren fenómenos (Procesos físicos)",
+    "Identificar características de fenómenos (Procesos físicos)",
+    "Comprender investigación científica (Procesos vivos)",
+    "Derivar conclusiones (Procesos físicos)",
+    "Observar y relacionar patrones (Procesos vivos)",
+    "Observar y relacionar patrones (Procesos físicos)"
   ),
-  EE = c("54%", "61%", "62%", "64%", "56%", "59%", "60%", "66%", "64%", "70%",
-         "69%", "60%", "59%", "64%", "59%", "68%", "62%", "52%", "65%", "62%",
-         "61%", "61%", "64%", "70%", "76%", "66%"),
-  Colombia = c("46%", "46%", "43%", "49%", "36%", "51%", "50%", "52%", "50%", "57%",
-               "53%", "42%", "44%", "46%", "48%", "56%", "43%", "29%", "48%", "48%",
-               "46%", "46%", "51%", "59%", "63%", "47%"),
-  ETC = c("46%", "44%", "43%", "48%", "37%", "49%", "49%", "53%", "49%", "56%",
-          "52%", "43%", "43%", "44%", "46%", "55%", "42%", "29%", "47%", "49%",
-          "47%", "46%", "50%", "60%", "65%", "47%")
+  EE = c("54%", "61%", "62%", "64%", "56%", "59%", "60%", "66%", "64%", "70%", "69%", "76%"),
+  Colombia = c("46%", "46%", "43%", "49%", "36%", "51%", "50%", "52%", "50%", "57%", "53%", "63%"),
+  ETC = c("46%", "44%", "43%", "48%", "37%", "49%", "49%", "53%", "49%", "56%", "52%", "65%"),
+  stringsAsFactors = FALSE
 )
 crear_tabla_incorrectas(datos_cn)
 ```
@@ -476,7 +258,7 @@ crear_tabla_incorrectas(datos_cn)
 
 # 7. INGLÉS
 
-**Tabla 7.1 Promedio y su desviación estándar en Inglés**
+**Tabla 7.1 Promedio y desviación estándar en Inglés**
 
 | Nivel de agregación | Promedio | Desviación |
 | :--- | :---: | :---: |
@@ -485,32 +267,6 @@ crear_tabla_incorrectas(datos_cn)
 | Sede 0 / Jornada 1 / Aula Regular | 48 ▼ | 10 • |
 | Colombia | 52 ▼ | 13 • |
 | ETC | 53 ▼ | 12 • |
-| Oficiales urbanos ETC | 52 ▼ | 11 • |
-| Oficiales rurales ETC | 51 • | 10 • |
-| Privados ETC | 70 ▼ | 13 • |
-| GC 1 ETC | 41 • | 1 ▲ |
-| GC 2 ETC | 49 • | 10 • |
-| GC 3 ETC | 56 ▼ | 11 • |
-| GC 4 ETC | 73 ▼ | 12 • |
-
----
-
-**Tabla 7.2 Porcentaje de estudiantes por niveles de desempeño en Inglés**
-
-| Nivel de agregación | A- | A1 | A2 | B1 | B+ |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| Establecimiento educativo (EE) | 66% | 26% | 6% | 3% | 0% |
-| Sede 0 / Jornada 0 / Modelo Flexible | 79% ▼ | 18% ▲ | 3% ▲ | 0% ▲ | 0% • |
-| Sede 0 / Jornada 1 / Aula Regular | 48% ▲ | 36% ▼ | 10% ▼ | 6% ▼ | 0% • |
-| Colombia | 39% ▲ | 30% ▼ | 17% ▼ | 10% ▼ | 3% ▼ |
-| ETC | 34% ▲ | 35% ▼ | 20% ▼ | 9% ▼ | 3% ▼ |
-| Oficiales urbanos ETC | 35% ▲ | 35% ▼ | 20% ▼ | 8% ▼ | 2% ▼ |
-| Oficiales rurales ETC | 36% ▲ | 40% ▼ | 18% ▼ | 5% ▼ | 0% • |
-| Privados ETC | 5% ▲ | 12% ▲ | 23% ▼ | 37% ▼ | 23% ▼ |
-| GC 1 ETC | 100% ▼ | 0% ▲ | 0% ▲ | 0% ▲ | 0% • |
-| GC 2 ETC | 44% ▲ | 37% ▼ | 13% ▼ | 4% ▼ | 1% ▼ |
-| GC 3 ETC | 23% ▲ | 33% ▼ | 28% ▼ | 13% ▼ | 3% ▼ |
-| GC 4 ETC | 2% ▲ | 8% ▲ | 25% ▼ | 35% ▼ | 31% ▼ |
 
 ---
 
