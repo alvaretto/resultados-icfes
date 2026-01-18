@@ -988,7 +988,7 @@ def main():
         st.markdown("---")
 
         # Toggle para activar/desactivar chat (PRIMERO, antes de navegación)
-        st.markdown("### 🤖 Asistente de IA")
+        st.markdown("### 🤖 Pedazote, asistente de IA")
 
         # Inicializar estado si no existe
         if "chat_activado" not in st.session_state:
@@ -1006,7 +1006,7 @@ def main():
 
         # Mostrar información sobre el chat
         if mostrar_chat_ia:
-            st.success("✅ Chat activado")
+            st.success("✅ Chat Pedazote activado")
             num_mensajes = len(st.session_state.get("chat_messages", []))
             if num_mensajes > 0:
                 st.info(f"💬 {num_mensajes} mensajes")
