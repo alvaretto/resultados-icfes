@@ -1005,7 +1005,7 @@ def mostrar_chat(df: pd.DataFrame = None, pagina_actual: str = "General", datos_
         margin-bottom: 2rem;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     ">
-        <h1 style="color: white; margin: 0;">🤖 Asistente de IA - Resultados ICFES</h1>
+        <h1 style="color: white; margin: 0;">🤖 Pedazote - Asistente de IA - Resultados ICFES - PCielo</h1>
         <p style="color: white; margin: 0.5rem 0 0 0; opacity: 0.9;">
             Pregunta sobre los datos, interpretaciones y recomendaciones pedagógicas
         </p>
