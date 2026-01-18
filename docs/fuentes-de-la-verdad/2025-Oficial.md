@@ -2,7 +2,12 @@
 output:
   pdf_document:
     latex_engine: xelatex
-  html_document: default
+header-includes:
+  - \usepackage{xcolor}
+  - \definecolor{verde}{RGB}{0,128,0}
+  - \definecolor{amarillo}{RGB}{204,153,0}
+  - \definecolor{naranja}{RGB}{255,140,0}
+  - \definecolor{rojo}{RGB}{220,20,60}
 ---
 
 Aquí tienes la transcripción del reporte para el año 2025-3 en formato Markdown.
@@ -251,9 +256,9 @@ Porcentaje de estudiantes por niveles de desempeño. Los niveles de desempeño t
 
 | Aprendizaje | EE | Colombia | ETC |
 | :--- | :---: | :---: | :---: |
-| Identifica y entiende los contenidos locales que conforman un texto. | 🟠 44% | 🟡 33% | 🟡 31% |
-| Comprende cómo se articulan las partes de un texto para darle un sentido global. | 🟠 54% | 🟠 44% | 🟠 43% |
-| Reflexiona a partir de un texto y evalúa su contenido. | 🟠 61% | 🟠 51% | 🟠 50% |
+| Identifica y entiende los contenidos locales que conforman un texto. | \textcolor{naranja}{●} 44% | \textcolor{amarillo}{●} 33% | \textcolor{amarillo}{●} 31% |
+| Comprende cómo se articulan las partes de un texto para darle un sentido global. | \textcolor{naranja}{●} 54% | \textcolor{naranja}{●} 44% | \textcolor{naranja}{●} 43% |
+| Reflexiona a partir de un texto y evalúa su contenido. | \textcolor{naranja}{●} 61% | \textcolor{naranja}{●} 51% | \textcolor{naranja}{●} 50% |
 
 **¿Para qué sirve la información presentada en la Figura 3.4?**
 Los colores se asignan según los siguientes rangos de respuestas incorrectas:
@@ -359,9 +364,9 @@ Cuanto menor sea el porcentaje promedio de respuestas incorrectas, mejor será e
 
 | Aprendizaje | EE | Colombia | ETC |
 | :--- | :---: | :---: | :---: |
-| Valida procedimientos y estrategias matemáticas utilizadas para dar solución a problemas. | 🟠 66% | 🟠 57% | 🟠 57% |
-| Frente a un problema que involucre información cuantitativa, plantea e implementa estrategias que lleven a soluciones adecuadas. | 🟠 59% | 🟠 47% | 🟠 46% |
-| Comprende y transforma la información cuantitativa y esquemática presentada en distintos formatos. | 🟠 49% | 🟡 36% | 🟡 33% |
+| Valida procedimientos y estrategias matemáticas utilizadas para dar solución a problemas. | \textcolor{naranja}{●} 66% | \textcolor{naranja}{●} 57% | \textcolor{naranja}{●} 57% |
+| Frente a un problema que involucre información cuantitativa, plantea e implementa estrategias que lleven a soluciones adecuadas. | \textcolor{naranja}{●} 59% | \textcolor{naranja}{●} 47% | \textcolor{naranja}{●} 46% |
+| Comprende y transforma la información cuantitativa y esquemática presentada en distintos formatos. | \textcolor{naranja}{●} 49% | \textcolor{amarillo}{●} 36% | \textcolor{amarillo}{●} 33% |
 
 ---
 
@@ -450,12 +455,12 @@ Cuanto menor sea el porcentaje promedio de respuestas incorrectas, mejor será e
 
 | Aprendizaje | EE | Colombia | ETC |
 | :--- | :---: | :---: | :---: |
-| Contextualiza y evalúa usos de fuentes y argumentos. | 🟠 63% | 🟠 52% | 🟠 51% |
-| Comprende dimensiones espaciales y temporales de eventos, problemáticas y prácticas sociales. | 🟠 61% | 🟠 42% | 🟠 41% |
-| Comprende que los problemas y sus soluciones involucran distintas dimensiones y reconoce relaciones entre estas. | 🔴 71% | 🟠 69% | 🔴 71% |
-| Comprende perspectivas de distintos actores y grupos sociales. | 🟠 62% | 🟠 50% | 🟠 50% |
-| Evalúa usos sociales de las ciencias sociales. | 🟠 69% | 🟠 57% | 🟠 57% |
-| Comprende modelos conceptuales, sus características y contextos de aplicación. | 🟠 53% | 🟠 42% | 🟠 43% |
+| Contextualiza y evalúa usos de fuentes y argumentos. | \textcolor{naranja}{●} 63% | \textcolor{naranja}{●} 52% | \textcolor{naranja}{●} 51% |
+| Comprende dimensiones espaciales y temporales de eventos, problemáticas y prácticas sociales. | \textcolor{naranja}{●} 61% | \textcolor{naranja}{●} 42% | \textcolor{naranja}{●} 41% |
+| Comprende que los problemas y sus soluciones involucran distintas dimensiones y reconoce relaciones entre estas. | \textcolor{rojo}{●} 71% | \textcolor{naranja}{●} 69% | \textcolor{rojo}{●} 71% |
+| Comprende perspectivas de distintos actores y grupos sociales. | \textcolor{naranja}{●} 62% | \textcolor{naranja}{●} 50% | \textcolor{naranja}{●} 50% |
+| Evalúa usos sociales de las ciencias sociales. | \textcolor{naranja}{●} 69% | \textcolor{naranja}{●} 57% | \textcolor{naranja}{●} 57% |
+| Comprende modelos conceptuales, sus características y contextos de aplicación. | \textcolor{naranja}{●} 53% | \textcolor{naranja}{●} 42% | \textcolor{naranja}{●} 43% |
 
 ---
 
@@ -539,32 +544,32 @@ Cuanto menor sea el porcentaje promedio de respuestas incorrectas, mejor será e
 
 | Aprendizaje | EE | Colombia | ETC |
 | :--- | :---: | :---: | :---: |
-| Identificar las características de algunos fenómenos de la naturaleza basado en el análisis de información y conceptos propios del conocimiento científico. - Procesos químicos | 🟠 61% | 🟠 50% | 🟠 49% |
-| Observar y relacionar patrones en los datos para evaluar las predicciones. - Procesos físicos | 🟠 44% | 🟡 30% | 🟡 28% |
-| Asociar fenómenos naturales con conceptos propios del conocimiento científico. - Procesos físicos | 🟠 70% | 🟠 58% | 🟠 59% |
-| Derivar conclusiones para algunos fenómenos de la naturaleza basándose en conocimientos científicos... - Procesos vivos | 🟠 63% | 🟠 48% | 🟠 47% |
-| Identificar las características de algunos fenómenos de la naturaleza basado en el análisis de información... - Procesos vivos | 🟠 64% | 🟠 57% | 🟠 57% |
-| Derivar conclusiones para algunos fenómenos de la naturaleza basándose en conocimientos científicos... - Procesos químicos | 🟠 51% | 🟠 42% | 🟡 40% |
-| Asociar fenómenos naturales con conceptos propios del conocimiento científico. - Procesos químicos | 🔴 73% | 🟠 58% | 🟠 59% |
-| Utilizar algunas habilidades de pensamiento y de procedimiento para evaluar predicciones - Procesos físicos | 🟠 59% | 🟡 38% | 🟡 37% |
-| Identificar las características de algunos fenómenos de la naturaleza... (Procesos físicos?) | 🟠 52% | 🟡 36% | 🟡 35% |
-| Modelar fenómenos de la naturaleza basado en el análisis de variables... - Procesos vivos | 🟠 70% | 🟠 52% | 🟠 52% |
-| Explicar cómo ocurren algunos fenómenos de la naturaleza basado en observaciones... - Procesos vivos | 🟠 56% | 🟡 40% | 🟡 39% |
-| Comprender que a partir de la investigación científica se construyen explicaciones sobre el mundo natural. - Procesos vivos | 🟠 55% | 🟠 43% | 🟠 42% |
-| Observar y relacionar patrones en los datos para evaluar las predicciones. - Procesos vivos | 🟠 63% | 🟠 42% | 🟠 41% |
-| Utilizar algunas habilidades de pensamiento y de procedimiento para evaluar predicciones - Procesos vivos | 🟠 57% | 🟠 41% | 🟡 40% |
-| Modelar fenómenos de la naturaleza basado en el análisis de variables... - Procesos físicos | 🔴 71% | 🟠 56% | 🟠 56% |
-| Identificar las características de algunos fenómenos de la naturaleza basado en el análisis de información... - Procesos físicos | 🟠 60% | 🟠 49% | 🟠 48% |
-| Analizar el potencial del uso de recursos naturales o artefactos y sus efectos sobre el entorno y la salud... - CTS | 🟠 47% | 🟡 35% | 🟡 35% |
-| Modelar fenómenos de la naturaleza basado en el análisis de variables... - Procesos químicos | 🟠 65% | 🟠 43% | 🟠 45% |
-| Explicar cómo ocurren algunos fenómenos de la naturaleza basado en observaciones... - Procesos químicos | 🔴 71% | 🟠 54% | 🟠 55% |
-| Observar y relacionar patrones en los datos para evaluar las predicciones. - Procesos químicos | 🟠 61% | 🟠 49% | 🟠 48% |
-| Derivar conclusiones para algunos fenómenos de la naturaleza basándose en conocimientos científicos... - Procesos físicos | 🟠 67% | 🟠 43% | 🟠 43% |
-| Asociar fenómenos naturales con conceptos propios del conocimiento científico. - Procesos vivos | 🟠 58% | 🟠 54% | 🟠 53% |
+| Identificar las características de algunos fenómenos de la naturaleza basado en el análisis de información y conceptos propios del conocimiento científico. - Procesos químicos | \textcolor{naranja}{●} 61% | \textcolor{naranja}{●} 50% | \textcolor{naranja}{●} 49% |
+| Observar y relacionar patrones en los datos para evaluar las predicciones. - Procesos físicos | \textcolor{naranja}{●} 44% | \textcolor{amarillo}{●} 30% | \textcolor{amarillo}{●} 28% |
+| Asociar fenómenos naturales con conceptos propios del conocimiento científico. - Procesos físicos | \textcolor{naranja}{●} 70% | \textcolor{naranja}{●} 58% | \textcolor{naranja}{●} 59% |
+| Derivar conclusiones para algunos fenómenos de la naturaleza basándose en conocimientos científicos... - Procesos vivos | \textcolor{naranja}{●} 63% | \textcolor{naranja}{●} 48% | \textcolor{naranja}{●} 47% |
+| Identificar las características de algunos fenómenos de la naturaleza basado en el análisis de información... - Procesos vivos | \textcolor{naranja}{●} 64% | \textcolor{naranja}{●} 57% | \textcolor{naranja}{●} 57% |
+| Derivar conclusiones para algunos fenómenos de la naturaleza basándose en conocimientos científicos... - Procesos químicos | \textcolor{naranja}{●} 51% | \textcolor{naranja}{●} 42% | \textcolor{amarillo}{●} 40% |
+| Asociar fenómenos naturales con conceptos propios del conocimiento científico. - Procesos químicos | \textcolor{rojo}{●} 73% | \textcolor{naranja}{●} 58% | \textcolor{naranja}{●} 59% |
+| Utilizar algunas habilidades de pensamiento y de procedimiento para evaluar predicciones - Procesos físicos | \textcolor{naranja}{●} 59% | \textcolor{amarillo}{●} 38% | \textcolor{amarillo}{●} 37% |
+| Identificar las características de algunos fenómenos de la naturaleza... (Procesos físicos?) | \textcolor{naranja}{●} 52% | \textcolor{amarillo}{●} 36% | \textcolor{amarillo}{●} 35% |
+| Modelar fenómenos de la naturaleza basado en el análisis de variables... - Procesos vivos | \textcolor{naranja}{●} 70% | \textcolor{naranja}{●} 52% | \textcolor{naranja}{●} 52% |
+| Explicar cómo ocurren algunos fenómenos de la naturaleza basado en observaciones... - Procesos vivos | \textcolor{naranja}{●} 56% | \textcolor{amarillo}{●} 40% | \textcolor{amarillo}{●} 39% |
+| Comprender que a partir de la investigación científica se construyen explicaciones sobre el mundo natural. - Procesos vivos | \textcolor{naranja}{●} 55% | \textcolor{naranja}{●} 43% | \textcolor{naranja}{●} 42% |
+| Observar y relacionar patrones en los datos para evaluar las predicciones. - Procesos vivos | \textcolor{naranja}{●} 63% | \textcolor{naranja}{●} 42% | \textcolor{naranja}{●} 41% |
+| Utilizar algunas habilidades de pensamiento y de procedimiento para evaluar predicciones - Procesos vivos | \textcolor{naranja}{●} 57% | \textcolor{naranja}{●} 41% | \textcolor{amarillo}{●} 40% |
+| Modelar fenómenos de la naturaleza basado en el análisis de variables... - Procesos físicos | \textcolor{rojo}{●} 71% | \textcolor{naranja}{●} 56% | \textcolor{naranja}{●} 56% |
+| Identificar las características de algunos fenómenos de la naturaleza basado en el análisis de información... - Procesos físicos | \textcolor{naranja}{●} 60% | \textcolor{naranja}{●} 49% | \textcolor{naranja}{●} 48% |
+| Analizar el potencial del uso de recursos naturales o artefactos y sus efectos sobre el entorno y la salud... - CTS | \textcolor{naranja}{●} 47% | \textcolor{amarillo}{●} 35% | \textcolor{amarillo}{●} 35% |
+| Modelar fenómenos de la naturaleza basado en el análisis de variables... - Procesos químicos | \textcolor{naranja}{●} 65% | \textcolor{naranja}{●} 43% | \textcolor{naranja}{●} 45% |
+| Explicar cómo ocurren algunos fenómenos de la naturaleza basado en observaciones... - Procesos químicos | \textcolor{rojo}{●} 71% | \textcolor{naranja}{●} 54% | \textcolor{naranja}{●} 55% |
+| Observar y relacionar patrones en los datos para evaluar las predicciones. - Procesos químicos | \textcolor{naranja}{●} 61% | \textcolor{naranja}{●} 49% | \textcolor{naranja}{●} 48% |
+| Derivar conclusiones para algunos fenómenos de la naturaleza basándose en conocimientos científicos... - Procesos físicos | \textcolor{naranja}{●} 67% | \textcolor{naranja}{●} 43% | \textcolor{naranja}{●} 43% |
+| Asociar fenómenos naturales con conceptos propios del conocimiento científico. - Procesos vivos | \textcolor{naranja}{●} 58% | \textcolor{naranja}{●} 54% | \textcolor{naranja}{●} 53% |
 | Comprender que a partir de la investigación científica se construyen explicaciones sobre el mundo natural. - Procesos químicos | N.D. | N.D. | N.D. |
-| Utilizar algunas habilidades de pensamiento y de procedimiento para evaluar predicciones - Procesos químicos | 🔴 76% | 🟠 57% | 🟠 57% |
-| Comprender que a partir de la investigación científica se construyen explicaciones sobre el mundo natural. - Procesos físicos | 🟠 61% | 🟠 60% | 🟠 60% |
-| Explicar cómo ocurren algunos fenómenos de la naturaleza basado en... (Físicos) | 🟠 46% | 🟠 44% | 🟠 42% |
+| Utilizar algunas habilidades de pensamiento y de procedimiento para evaluar predicciones - Procesos químicos | \textcolor{rojo}{●} 76% | \textcolor{naranja}{●} 57% | \textcolor{naranja}{●} 57% |
+| Comprender que a partir de la investigación científica se construyen explicaciones sobre el mundo natural. - Procesos físicos | \textcolor{naranja}{●} 61% | \textcolor{naranja}{●} 60% | \textcolor{naranja}{●} 60% |
+| Explicar cómo ocurren algunos fenómenos de la naturaleza basado en... (Físicos) | \textcolor{naranja}{●} 46% | \textcolor{naranja}{●} 44% | \textcolor{naranja}{●} 42% |
 
 ---
 
