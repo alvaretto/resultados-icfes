@@ -8,7 +8,10 @@ scipy>=1.12.0
 # Dependencias para Chat de IA (opcional)
 # Descomenta las que necesites según tu proveedor LLM
 
-# Para usar Groq (recomendado - gratis)
+# Para usar Anthropic Claude (Haiku recomendado - bajo costo)
+anthropic>=0.40.0
+
+# Para usar Groq (alternativa gratuita)
 groq>=0.33.0
 
 # Para usar LangChain (framework avanzado)
