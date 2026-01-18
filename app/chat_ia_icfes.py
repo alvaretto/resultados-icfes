@@ -1026,7 +1026,6 @@ def mostrar_chat(df: pd.DataFrame = None, pagina_actual: str = "General", datos_
     st.markdown("---")
 
     # Preguntas sugeridas
-    st.markdown("#### 💡 Preguntas Sugeridas")
     pregunta_sugerida = mostrar_preguntas_sugeridas()
 
     st.markdown("---")
