@@ -18,6 +18,10 @@ Resultados-ICFES-2025/
 │   ├── RESUMEN-EJECUTIVO-APLICACION.md           📊 Resumen ejecutivo
 │   └── ESTRUCTURA-PROYECTO.md                    📁 Este archivo
 │
+├── 🤖 CHAT IA Y BÚSQUEDA WEB
+│   ├── app/chat_ia_icfes.py                      💬 Chat con LLM (Anthropic/Groq)
+│   └── app/brave_search.py                       🔍 Búsqueda web (Brave Search API)
+│
 ├── 📊 DATOS 2024 (Fuente: PDF Oficial ICFES)
 │   ├── data/globales_pcielo_2024.md              🏛️ Datos institucionales
 │   ├── data/globales_pcielo_aula_regular_2024.md 📘 Datos Aula Regular
@@ -311,6 +315,9 @@ streamlit_app.py (1145 líneas)
 │  openpyxl >= 3.1.2                      │
 │  numpy >= 1.26.0                        │
 │  scipy >= 1.12.0                        │
+│  anthropic >= 0.40.0  (Chat IA)         │
+│  groq >= 0.33.0       (Chat IA alt.)    │
+│  requests >= 2.31.0   (Búsqueda web)    │
 └─────────────────────────────────────────┘
 ```
 
@@ -380,7 +387,7 @@ streamlit run streamlit_app.py --server.port 8501
 
 ---
 
-**Última actualización:** 2025-10-23  
-**Versión:** 2.0  
-**Estado:** ✅ Funcional
+**Última actualización:** 2026-01-18
+**Versión:** 2.1
+**Estado:** ✅ Funcional (con Chat IA y Búsqueda Web)
 

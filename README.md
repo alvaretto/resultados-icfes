@@ -17,13 +17,14 @@ La solución incluye scripts de automatización asistida, utilidades de verifica
 3. Fase 1 – Descarga oficial de resultados ICFES
 4. Fase 2 – Extracción de puntajes y organización de datos
 5. Fase 3 – App Streamlit: análisis 2025 y comparativos 2024 → 2025
-6. Datos requeridos y formatos
-7. Inicio rápido (app)
-8. Solución de problemas
-9. Scripts y utilidades
-10. Despliegue (local y Streamlit Cloud)
-11. Capturas
-12. Créditos
+6. Chat IA con Búsqueda Web
+7. Datos requeridos y formatos
+8. Inicio rápido (app)
+9. Solución de problemas
+10. Scripts y utilidades
+11. Despliegue (local y Streamlit Cloud)
+12. Capturas
+13. Créditos
 
 ---
 
@@ -133,7 +134,51 @@ Detalles de la app y configuración:
 
 ---
 
-## 6) Datos requeridos y formatos
+## 6) Chat IA con Búsqueda Web
+
+El asistente de IA "Pedazote" incluye búsqueda web integrada para responder preguntas sobre recursos educativos y aprendizajes por grado.
+
+### Características
+
+- **Proveedores LLM**: Anthropic Claude (principal) o Groq (fallback)
+- **Búsqueda web**: Brave Search API para información actualizada
+- **Detección inteligente**: Activa búsqueda automáticamente cuando se pregunta sobre:
+  - Aprendizajes de grados 3° a 10°
+  - Cartillas y materiales de Evaluar para Avanzar
+  - Matrices de referencia ICFES
+  - Recursos pedagógicos oficiales
+
+### Metodología para grados inferiores
+
+Cuando se pregunta sobre aprendizajes para grados 7°, 8°, etc., el chat:
+
+1. **Identifica debilidades** en Saber 11° 2025 (datos institucionales)
+2. **Busca en web** qué aprendizajes de grados inferiores desarrollan esas competencias
+3. **Cruza ambas fuentes** para recomendar aprendizajes específicos con justificación
+
+### Configuración
+
+Agregar API keys en `.streamlit/secrets.toml`:
+
+```toml
+# LLM (elegir uno)
+ANTHROPIC_API_KEY = "sk-ant-..."
+GROQ_API_KEY = "gsk_..."
+
+# Búsqueda web (opcional pero recomendado)
+BRAVE_SEARCH_API_KEY = "BSA..."  # Obtener en https://brave.com/search/api/
+```
+
+### Archivos del módulo
+
+| Archivo | Descripción |
+|---------|-------------|
+| `app/chat_ia_icfes.py` | Chat principal con integración LLM |
+| `app/brave_search.py` | Módulo de búsqueda web con Brave Search |
+
+---
+
+## 7) Datos requeridos y formatos
 
 Colocar en `data/` para que la app funcione:
 
@@ -145,7 +190,7 @@ Estructuras de columnas esperadas y ejemplos: ver `docs-proyecto/README-WEBAPP.m
 
 ---
 
-## 7) Inicio rápido (app)
+## 8) Inicio rápido (app)
 
 1) `pip install -r requirements.txt`
 2) Copia los Excel a `data/` (ver sección anterior)
@@ -155,7 +200,7 @@ Guía paso a paso: `INICIO-RAPIDO.md`.
 
 ---
 
-## 8) Solución de problemas
+## 9) Solución de problemas
 
 - Dependencias: `pip install -r requirements.txt`
 - Verificar datos: `ls -la data/RESULTADOS-ICFES-*.xlsx`
@@ -164,7 +209,7 @@ Guía paso a paso: `INICIO-RAPIDO.md`.
 
 ---
 
-## 9) Scripts y utilidades
+## 10) Scripts y utilidades
 
 Descarga/inspección (Fase 1):
 
@@ -184,14 +229,14 @@ App/diagnóstico (Fase 3):
 
 ---
 
-## 10) Despliegue
+## 11) Despliegue
 
 - Local: `./iniciar_aplicacion.sh` o `streamlit run streamlit_app.py`.
 - Streamlit Cloud: ver `INSTRUCCIONES-STREAMLIT-CLOUD.md` e `INSTRUCCIONES-DESPLIEGUE-STREAMLIT-CLOUD.md`. Revisa `config/requirements-webapp.txt` si aplica.
 
 ---
 
-## 11) Capturas
+## 12) Capturas
 
 - `captura_login_firefox.png`: Flujo de acceso al sitio oficial de resultados
 - `captura_resultados.png`: Vista general de la app
@@ -199,7 +244,7 @@ App/diagnóstico (Fase 3):
 
 ---
 
-## 12) Créditos
+## 13) Créditos
 
 Institución: Pedacito de Cielo (La Tebaida, Quindío)
 Años comparados: 2024 vs 2025
@@ -214,6 +259,6 @@ Documentación relacionada:
 - `INICIO-RAPIDO.md`
 - `docs-proyecto/README-WEBAPP.md`
 
-Última actualización: 2025-10-23  
-Versión: 2.0  
-Estado: ✅ Funcional
+Última actualización: 2026-01-18
+Versión: 2.1
+Estado: ✅ Funcional (con Chat IA y Búsqueda Web)

@@ -9,10 +9,11 @@ a interpretar y analizar los resultados del examen ICFES Saber 11.
 
 Características:
 - Respuestas contextualizadas con datos reales
-- Soporte para múltiples proveedores LLM (Groq, Ollama, Together.ai)
+- Soporte para múltiples proveedores LLM (Anthropic, Groq)
 - Memoria conversacional
 - Streaming de respuestas
 - Preguntas sugeridas
+- Búsqueda web con Brave Search para recursos educativos actualizados
 
 Autor: Sistema de Análisis ICFES
 Fecha: 2025-10-22
@@ -23,6 +24,29 @@ import pandas as pd
 from typing import Dict, List, Optional
 import os
 import streamlit.components.v1 as components
+
+# Importar módulo de búsqueda web
+try:
+    from app.brave_search import (
+        necesita_busqueda_web,
+        buscar_y_formatear,
+        verificar_configuracion as verificar_brave_search
+    )
+    BUSQUEDA_WEB_DISPONIBLE = True
+except ImportError:
+    # Fallback si se ejecuta directamente o hay error de import
+    try:
+        from brave_search import (
+            necesita_busqueda_web,
+            buscar_y_formatear,
+            verificar_configuracion as verificar_brave_search
+        )
+        BUSQUEDA_WEB_DISPONIBLE = True
+    except ImportError:
+        BUSQUEDA_WEB_DISPONIBLE = False
+        necesita_busqueda_web = lambda x: False
+        buscar_y_formatear = lambda x: None
+        verificar_brave_search = lambda: {"api_key_presente": False}
 
 # ============================================================================
 # CONFIGURACIÓN
@@ -820,6 +844,50 @@ INSTRUCCIONES IMPORTANTES:
 - Cuando menciones un recurso, SIEMPRE incluye la URL completa
 - Relaciona los recursos con los aprendizajes específicos que tienen mayor porcentaje de error
 
+🌐 BÚSQUEDA WEB - INFORMACIÓN ACTUALIZADA (MUY IMPORTANTE):
+- Si recibes una sección "INFORMACIÓN DE BÚSQUEDA WEB", contiene resultados actualizados de internet
+- DEBES usar esta información para responder preguntas sobre:
+  - Cartillas y materiales de Evaluar para Avanzar
+  - Aprendizajes por reforzar en grados específicos (3° a 10°)
+  - Documentación oficial actualizada del ICFES/MEN
+  - Recursos pedagógicos y didácticos
+  - Matrices de referencia y evidencias de aprendizaje
+- Prioriza las fuentes marcadas como [OFICIAL] (icfes.gov.co, mineducacion.gov.co, colombiaaprende.edu.co)
+- Incluye las URLs de los recursos encontrados para que el usuario acceda directamente
+- Sintetiza la información de manera pedagógica y útil
+
+⚠️ PREGUNTAS SOBRE GRADOS INFERIORES (3° a 10°) - METODOLOGÍA CRÍTICA:
+Cuando pregunten qué aprendizajes reforzar en grados inferiores, DEBES seguir este proceso:
+
+PASO 1 - IDENTIFICAR DEBILIDADES EN SABER 11° (datos institucionales):
+- Revisa los datos de Pedacito de Cielo 2025 en tu base de conocimiento
+- Identifica las áreas/aprendizajes con MAYOR porcentaje de error:
+  * Matemáticas: 66% error en razonamiento cuantitativo
+  * Lectura Crítica: 61% error en reflexión y evaluación
+  * Ciencias Naturales: >70% error en varios aprendizajes
+- Estas son las competencias que los estudiantes NO dominan al llegar a 11°
+
+PASO 2 - BUSCAR APRENDIZAJES PRECURSORES (información web):
+- Usa la información de búsqueda web para encontrar:
+  * Qué aprendizajes de grados 7°, 8°, 9° desarrollan esas competencias débiles
+  * Matrices de referencia del ICFES que muestren la progresión
+  * Guías de Evaluar para Avanzar para esos grados
+
+PASO 3 - CRUZAR Y RECOMENDAR:
+- Recomienda ESPECÍFICAMENTE los aprendizajes de grados inferiores que:
+  * Son PRECURSORES de las competencias débiles en Saber 11°
+  * Aparecen en documentación oficial (matrices, guías ICFES)
+- Explica la conexión: "Reforzar X en grado 7° porque desarrolla Y que tiene 66% error en 11°"
+- Incluye URLs de los recursos oficiales encontrados
+
+EJEMPLO DE RESPUESTA CORRECTA:
+"Según los resultados de Saber 11° 2025, Pedacito de Cielo tiene 66% de error en razonamiento cuantitativo.
+Para grados 7° y 8°, según la matriz de referencia del ICFES [URL], se deben reforzar:
+- Aprendizaje X (grado 7°): porque es precursor de razonamiento cuantitativo
+- Aprendizaje Y (grado 8°): porque desarrolla la competencia de resolución de problemas"
+
+NO respondas solo con información genérica de la web. SIEMPRE conecta con los datos reales de la institución.
+
 FORMATO DE RESPUESTAS:
 - Usa listas con viñetas para información estructurada
 - Destaca datos importantes con **negritas**
@@ -889,6 +957,15 @@ def generar_respuesta(prompt: str, contexto: str = "") -> str:
         system_content += f"\n\n{obtener_recursos_educativos()}"
         if contexto:
             system_content += f"\n\nCONTEXTO ADICIONAL CON DATOS DE LA SESIÓN ACTUAL:\n{contexto}"
+
+        # Búsqueda web si la pregunta lo requiere
+        try:
+            resultados_web = buscar_y_formatear(prompt)
+            if resultados_web:
+                system_content += f"\n\n{resultados_web}"
+        except Exception as e:
+            # Si falla la búsqueda web, continuar sin ella
+            pass
 
         # Construir historial de mensajes
         historial = []

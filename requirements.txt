@@ -14,6 +14,9 @@ anthropic>=0.40.0
 # Para usar Groq (alternativa gratuita)
 groq>=0.33.0
 
+# Para búsqueda web con Brave Search
+requests>=2.31.0
+
 # Para usar LangChain (framework avanzado)
 # langchain>=0.1.0
 # langchain-groq>=0.0.1
