@@ -40,16 +40,23 @@ El análisis revela un fenómeno preocupante: mientras el promedio se mantuvo es
 
 ## 2. Inventario de Ejercicios Disponibles
 
-### 2.1 Repositorio Principal: En-Produccion
+### 2.1 Repositorio Principal: 03-En-Produccion
 
-Ubicación: `/home/bootcamp/Proyectos-2026/RepositorioMatematicasICFES_R_Exams/A-Produccion/En-Produccion`
+**Ubicación**: `/home/bootcamp/Proyectos-2026/RepositorioMatematicasICFES_R_Exams/A-Produccion/03-En-Produccion`
+
+**Total de ejercicios**: 187 archivos .Rmd (incluyendo copias y plantillas)
 
 #### Categorías disponibles:
 
-- 01-Numeros-Reales/Pensamiento-Numerico
-- 02-Funciones/Pensamiento-Variacional-Espacial
-- 05-Geometría/Pensamiento-Espacial
-- 06-Estadística-Y-Probabilidad/Pensamiento-Aleatorio
+| Categoría | Pensamiento | Ejercicios Únicos |
+|-----------|-------------|-------------------|
+| 01-Numeros-Reales | Numérico | 4 |
+| 02-Funciones | Variacional-Espacial | 21 |
+| 03-Razones-Trigonometricas | Espacial | Por inventariar |
+| 04-Funciones_Identidades-Trigonometricas | Variacional | Por inventariar |
+| 05-Geometría | Espacial | 3 |
+| 06-Estadística-Y-Probabilidad | Aleatorio | 64+ |
+| Ejemplos-Funcionales-Rmd | Plantillas | ~85 |
 
 ### 2.2 Repositorio Complementario: En-Desarrollo
 
@@ -59,70 +66,98 @@ Ejercicios con alto potencial pedagógico pendientes de validación final.
 
 ---
 
-## 3. Priorización de Ejercicios - En-Produccion
+## 3. Priorización de Ejercicios - 03-En-Produccion
 
 ### 3.1 PRIORIDAD MÁXIMA - Validación de Procedimientos (Falencia: 66% error)
 
 Estos ejercicios atacan directamente la falencia principal identificada.
 
-| Ejercicio | Ruta Relativa | Justificación |
+| Ejercicio | Ruta Completa | Justificación |
 |-----------|---------------|---------------|
-| `2023-Matematicas-11-2-09-Opc-A.Rmd` | `/02-Funciones/.../Variación-Lineal-Auto-Viajero-09/` | Detectar errores en cálculos de rapidez media |
-| `2023-Matematicas-11-2-09-Opc-B.Rmd` | `/02-Funciones/.../Variación-Lineal-Auto-Viajero-09/` | Variante del ejercicio anterior |
-| `2023-Matematicas-11-2-09-Opc-C.Rmd` | `/02-Funciones/.../Variación-Lineal-Auto-Viajero-09/` | Variante del ejercicio anterior |
-| `2023-Matematicas-11-2-09-Opc-D.Rmd` | `/02-Funciones/.../Variación-Lineal-Auto-Viajero-09/` | Variante del ejercicio anterior |
-| `2023-Matematicas-11-2-09-Op-M.Rmd` | `/02-Funciones/.../Variación-Lineal-Auto-Viajero-09/` | Variante del ejercicio anterior |
-| `vuelo_acrobatico_A.Rmd` | `/02-Funciones/.../Variacion-Lineal-Vuelo-Acrobatico/` | Validación de pasos en variación lineal |
-| `vuelo_acrobatico_B.Rmd` | `/02-Funciones/.../Variacion-Lineal-Vuelo-Acrobatico/` | Variante del ejercicio anterior |
-| `vuelo_acrobatico_C.Rmd` | `/02-Funciones/.../Variacion-Lineal-Vuelo-Acrobatico/` | Variante del ejercicio anterior |
-| `vuelo_acrobatico_mejorado_*.Rmd` | `/02-Funciones/.../Variacion-Lineal-Vuelo-Acrobatico/` | Versiones mejoradas |
+| `2023-Matematicas-11-2-09-Opc-A.Rmd` | `02-Funciones/Pensamiento-Variacional-Espacial/11-Variacion-Lineal-Y-Exponencial_Razon-De-Cambio/Variación-Lineal-Auto-Viajero-09/` | Detectar errores en cálculos de rapidez media |
+| `2023-Matematicas-11-2-09-Opc-B.Rmd` | (misma ruta) | Variante del ejercicio anterior |
+| `2023-Matematicas-11-2-09-Opc-C.Rmd` | (misma ruta) | Variante del ejercicio anterior |
+| `2023-Matematicas-11-2-09-Opc-D.Rmd` | (misma ruta) | Variante del ejercicio anterior |
+| `2023-Matematicas-11-2-09-Op-M.Rmd` | (misma ruta) | Variante maestra |
+| `Variación-Lineal-Auto-Viajero-cloze-Opc-*.Rmd` | (misma ruta) | Versiones cloze (A, B, C, D) |
+| `vuelo_acrobatico_A.Rmd` | `02-Funciones/.../Variacion-Lineal-Vuelo-Acrobatico/` | Validación de pasos en variación lineal |
+| `vuelo_acrobatico_B.Rmd` | (misma ruta) | Variante |
+| `vuelo_acrobatico_C.Rmd` | (misma ruta) | Variante |
+| `vuelo_acrobatico_D.Rmd` | (misma ruta) | Variante |
+| `vuelo_acrobatico_mejorado_A.Rmd` | (misma ruta) | Versión mejorada |
+| `vuelo_acrobatico_mejorado_B.Rmd` | (misma ruta) | Versión mejorada |
+| `vuelo_acrobatico_mejorado_C.Rmd` | (misma ruta) | Versión mejorada |
+| `vuelo_acrobatico_mejorado_D.Rmd` | (misma ruta) | Versión mejorada |
 
 ### 3.2 PRIORIDAD MÁXIMA - Comprensión y Transformación de Info Cuantitativa (49-59% error)
 
 | Ejercicio | Ruta Relativa | Justificación |
 |-----------|---------------|---------------|
-| `p25_SAI_CFA11S123.Rmd` | `/06-Estadística/.../Media/Promedios-Borrados/` | Reconstruir información faltante desde promedios |
-| `Media-Mediana-Moda.Rmd` | `/06-Estadística/.../01-MediaMedianaModa/Calificaciones-Universitarias/` | Medidas de tendencia central con interpretación |
-| `mediana_salas_cine_formulacion_ejecucion_n2_v1.Rmd` | `/06-Estadística/.../Mediana/` | Formulación y ejecución con mediana |
+| `p25_SAI_CFA11S123.Rmd` | `06-Estadística/.../Media/Promedios-Borrados/` | Reconstruir información faltante desde promedios |
+| `Media-Mediana-Moda.Rmd` | `06-Estadística/.../01-MediaMedianaModa/Calificaciones-Universitarias/` | Medidas de tendencia central con interpretación |
+| `Media-Mediana-Moda-pdf.Rmd` | (misma ruta) | Versión PDF |
+| `mediana_salas_cine_formulacion_ejecucion_n2_v1.Rmd` | `06-Estadística/.../Mediana/mediana_salas_cine.../` | Formulación y ejecución con mediana |
+| `mediana_aleatorio_argumentacion_n2_v1.Rmd` | (misma ruta) | Argumentación con mediana |
+| `mediana_aleatorio_interpretacion_n2_v1.Rmd` | (misma ruta) | Interpretación con mediana |
+| `costo_promedio_diario_numerico_variacional_formulacion_ejecucion_n2_v1.Rmd` | `06-Estadística/.../Gas_natural.../` | Costo promedio y variación |
 
 ### 3.3 PRIORIDAD ALTA - Interpretación de Gráficos Estadísticos
 
 | Ejercicio | Ruta Relativa | Justificación |
 |-----------|---------------|---------------|
-| `Adopcion_Mascotas_Aleatorio_Interpretacion_n3_v1-Opc-A.Rmd` | `/06-Estadística/.../Graficos_Estadisticos_Adopcion_Mascotas/` | Nivel 3 de interpretación gráfica |
-| `Adopcion_Mascotas_Aleatorio_Interpretacion_n3_v1-Opc-B2.Rmd` | `/06-Estadística/.../Graficos_Estadisticos_Adopcion_Mascotas/` | Variante |
-| `Adopcion_Mascotas_Aleatorio_Interpretacion_n3_v1-Opc-C2.Rmd` | `/06-Estadística/.../Graficos_Estadisticos_Adopcion_Mascotas/` | Variante |
-| `Adopcion_Mascotas_Aleatorio_Interpretacion_n3_v1-Opc-D2.Rmd` | `/06-Estadística/.../Graficos_Estadisticos_Adopcion_Mascotas/` | Variante |
-| `accidentalidad-vial-genero-01.Rmd` | `/06-Estadística/.../Accidentalidad_Vial_Genero-16/` | Variables cualitativas |
-| `accidentalidad-vial-genero-02.Rmd` | `/06-Estadística/.../Accidentalidad_Vial_Genero-16/` | Distribución de frecuencias |
-| `consumo_gas_natural_porcentaje_maximo_*.Rmd` | `/06-Estadística/.../Gas_natural_*/` | Porcentajes y lectura de gráficos |
+| `Adopcion_Mascotas_Aleatorio_Interpretacion_n3_v1-Opc-A.Rmd` | `06-Estadística/.../Graficos_Estadisticos_Adopcion_Mascotas/` | Nivel 3 de interpretación gráfica |
+| `Adopcion_Mascotas_Aleatorio_Interpretacion_n3_v1-Opc-A2v2.Rmd` | (misma ruta) | Versión 2 |
+| `Adopcion_Mascotas_Aleatorio_Interpretacion_n3_v1-Opc-B2.Rmd` | (misma ruta) | Variante B |
+| `Adopcion_Mascotas_Aleatorio_Interpretacion_n3_v1-Opc-B2v2.Rmd` | (misma ruta) | Versión 2 |
+| `Adopcion_Mascotas_Aleatorio_Interpretacion_n3_v1-Opc-C2.Rmd` | (misma ruta) | Variante C |
+| `Adopcion_Mascotas_Aleatorio_Interpretacion_n3_v1-Opc-C2v2.Rmd` | (misma ruta) | Versión 2 |
+| `Adopcion_Mascotas_Aleatorio_Interpretacion_n3_v1-Opc-D2.Rmd` | (misma ruta) | Variante D |
+| `Adopcion_Mascotas_Aleatorio_Interpretacion_n3_v1-Opc-D2v2.Rmd` | (misma ruta) | Versión 2 |
+| `accidentalidad-vial-genero-01.Rmd` | `06-Estadística/.../Accidentalidad_Vial_Genero-16/` | Variables cualitativas |
+| `accidentalidad-vial-genero-02.Rmd` | (misma ruta) | Distribución de frecuencias |
+| `consumo_gas_natural_porcentaje_maximo_aleatorio_interpretacion_representacion_n2_v1.Rmd` | `06-Estadística/.../Gas_natural.../` | Porcentajes y lectura de gráficos |
+| `pasteleria_sabores_ventas_estadistica_interpretacion_representacion_n2_v1.Rmd` | `06-Estadística/.../Pasteleria_sabores.../` | Interpretación gráficos de ventas |
+| `poblaciones_paises_graficas_lineas_interpretacion_representacion_n2_v1.Rmd` | `06-Estadística/.../poblaciones_paises.../` | Gráficas de líneas |
+| `ExportacionesGraficosEstadisticaInterpretacion_n3_v1.Rmd` | `06-Estadística/.../ExportacionesGraficos-Tebailandia/` | Nivel 3 interpretación |
+| `ExportacionesGraficosEstadisticaInterpretacion_n3_cloze_v1.Rmd` | (misma ruta) | Versión cloze |
 
 ### 3.4 PRIORIDAD MEDIA - Probabilidad y Conteo
 
 | Ejercicio | Ruta Relativa | Justificación |
 |-----------|---------------|---------------|
-| `DVenn_All_GenMus_01.Rmd` | `/06-Estadística/.../Diagramas de Venn/GénerosMusicales/` | Diagramas de Venn con contexto musical |
-| `DVenn_All_GenMus_03.Rmd` | `/06-Estadística/.../Diagramas de Venn/GénerosMusicales/` | Variante avanzada |
-| `11_C01_G09_2020_Tipo1.Rmd` | `/06-Estadística/.../Probabilidad-Bolas-Colores/` | Probabilidad básica |
-| `probabilidad_intervalos_curva_*.Rmd` | `/06-Estadística/.../Probabilidad-Intervalos-Curva-13-S1-2024B/` | Probabilidad con distribuciones |
+| `DVenn_All_GenMus_01.Rmd` | `06-Estadística/.../Diagramas de Venn/GénerosMusicales/` | Diagramas de Venn con contexto musical |
+| `DVenn_All_GenMus_03.Rmd` | (misma ruta) | Variante avanzada |
+| `11_C01_G09_2020_Tipo1.Rmd` | `06-Estadística/.../Probabilidad-Bolas-Colores/` | Probabilidad básica |
+| `probabilidad_intervalos_curva_interpretacion_representacion_n2_v1.Rmd` | `06-Estadística/.../Probabilidad-Intervalos-Curva-13-S1-2024B/` | Probabilidad con distribuciones |
+| `probabilidad_intervalos_curva_interpretacion_representacion_n2_tikz_v1.Rmd` | (misma ruta) | Versión TikZ |
+| `probabilidad_intervalos_curva_interpretacion_representacion_n2_tikz_cloze_v1.Rmd` | (misma ruta) | Versión cloze |
+| `probabilidad_intervalos_curva_interpretacion_representacion_n2_tikz_cloze_v1_2.Rmd` | (misma ruta) | Variante 2 |
 
-### 3.5 PRIORIDAD MEDIA - Medidas de Posición
+### 3.5 PRIORIDAD MEDIA - Medidas de Posición y Dispersión
 
 | Ejercicio | Ruta Relativa | Justificación |
 |-----------|---------------|---------------|
-| `estadistica_diagramas_caja_interpretacion_representacion_Nivel2_v2.Rmd` | `/06-Estadística/.../06-Medidas-De-Posición/` | Interpretación de boxplots |
-| `2023-Matematicas-11-2-04-Op-B.Rmd` | `/06-Estadística/.../Mediana/Baterías-Celulares/` | Mediana con datos |
-| `2023-Matematicas-11-2-04-Op-C.Rmd` | `/06-Estadística/.../Mediana/Baterías-Celulares/` | Variante |
-| `2023-Matematicas-11-2-04-Op-D.Rmd` | `/06-Estadística/.../Mediana/Baterías-Celulares/` | Variante |
+| `estadistica_diagramas_caja_interpretacion_representacion_Nivel2_v2.Rmd` | `06-Estadística/.../06-Medidas-De-Posición/` | Interpretación de boxplots |
+| `2023-Matematicas-11-2-04-Op-B.Rmd` | `06-Estadística/.../Mediana/Baterías-Celulares/` | Mediana con datos |
+| `2023-Matematicas-11-2-04-Op-B-V2.Rmd` | (misma ruta) | Versión 2 |
+| `2023-Matematicas-11-2-04-Op-C.Rmd` | (misma ruta) | Variante C |
+| `2023-Matematicas-11-2-04-Op-C-V2.Rmd` | (misma ruta) | Versión 2 |
+| `2023-Matematicas-11-2-04-Op-D.Rmd` | (misma ruta) | Variante D |
+| `2023-Matematicas-11-2-04-Op-D-V2.Rmd` | (misma ruta) | Versión 2 |
+| `mediana_moda_farmaceutica_01.Rmd` | `06-Estadística/.../Mediana-Farmaceutica/` | Contexto farmacéutico |
+| `confint2-cloze.Rmd` | `06-Estadística/.../05-Medidas-De-Dispersión/confint2-cloze/` | Intervalos de confianza |
 
 ### 3.6 PRIORIDAD COMPLEMENTARIA - Números Reales y Geometría
 
 | Ejercicio | Ruta Relativa | Justificación |
 |-----------|---------------|---------------|
-| `fracciones_reparto_premio_v1.Rmd` | `/01-Numeros-Reales/.../22-S2-2025-SEDQ-fracciones_reparto_premio/` | Operaciones con fracciones |
-| `fracciones_reparto_premio_v2.Rmd` | `/01-Numeros-Reales/.../22-S2-2025-SEDQ-fracciones_reparto_premio/` | Variante |
-| `fracciones_reparto_premio_v3.Rmd` | `/01-Numeros-Reales/.../22-S2-2025-SEDQ-fracciones_reparto_premio/` | Variante |
-| `conversion_unidades_area_formulacion_ejecucion_n2_v1.Rmd` | `/05-Geometría/.../17-Conversión-de-Unidades/` | Conversión de unidades de área |
+| `fracciones_reparto_premio_v1.Rmd` | `01-Numeros-Reales/.../22-S2-2025-SEDQ-fracciones_reparto_premio/` | Operaciones con fracciones |
+| `fracciones_reparto_premio_v2.Rmd` | (misma ruta) | Variante |
+| `fracciones_reparto_premio_v3.Rmd` | (misma ruta) | Variante |
+| `fracciones_reparto_premio_v4.Rmd` | (misma ruta) | Variante |
+| `conversion_unidades_area_formulacion_ejecucion_n2_v1.Rmd` | `05-Geometría/.../17-Conversión-de-Unidades/` | Conversión de unidades de área |
+| `raiz_cubica_empaquetamiento_geometrico_metrico_formulacion_ejecucion_n2_v1.Rmd` | `05-Geometría/.../18-Volumen-Y-Raíz-Cúbica/` | Volumen y raíz cúbica |
+| `raiz_cubica_empaquetamiento_geometrico_metrico_formulacion_ejecucion_n2_v1_cloze.Rmd` | (misma ruta) | Versión cloze |
 
 ---
 
@@ -218,6 +253,7 @@ Ejercicios a aplicar:
 
 - `tablas_frecuencia_argumentacion_n3_v1.Rmd` (En-Desarrollo)
 - `consumo_gas_natural_*.Rmd`
+- `pasteleria_sabores_ventas_*.Rmd`
 
 #### Semana 7: Medidas de Posición
 
@@ -261,6 +297,7 @@ Ejercicios a aplicar:
 
 Ejercicios a aplicar:
 
+- `raiz_cubica_empaquetamiento_*.Rmd`
 - `volumen_cilindro_geometrico_*.Rmd` (En-Desarrollo)
 - `proyeccion_usuarios_parabola_*.Rmd`
 
@@ -296,7 +333,7 @@ Orden estricto de prioridad para implementación inmediata:
 | Sistemas de ecuaciones | Alta (validación) | Crear nuevos ejercicios |
 | Funciones cuadráticas aplicadas | Alta | Expandir desde `proyeccion_usuarios_parabola` |
 | Proporcionalidad directa/inversa | Media-Alta | Crear ejercicios contextualizados |
-| Perímetro y área compuestas | Media | Crear ejercicios para En-Produccion |
+| Perímetro y área compuestas | Media | Crear ejercicios para 03-En-Produccion |
 | Razonamiento proporcional | Alta (transformación) | Crear ejercicios |
 
 ### 7.2 Fortalezas del Repositorio
@@ -305,6 +342,7 @@ Orden estricto de prioridad para implementación inmediata:
 - Buenos ejercicios de validación de procedimientos en variación lineal
 - Ejercicios con contextos colombianos relevantes (En-Desarrollo)
 - Sistema de aleatorización que permite generar múltiples versiones
+- Nuevas categorías de Trigonometría (03 y 04) para explorar
 
 ---
 
@@ -312,15 +350,34 @@ Orden estricto de prioridad para implementación inmediata:
 
 ### 8.1 Sobre el Repositorio
 
-- **Archivos duplicados**: Existen muchos archivos "Copia de..." que son redundantes. Usar únicamente los archivos originales.
-- **Ejercicios En-Desarrollo**: Deben validarse y moverse a En-Produccion antes de su uso en aula.
-- **Metadatos ICFES**: Los ejercicios en En-Desarrollo incluyen metadatos explícitos (competencia, nivel, componente) que facilitan el alineamiento curricular.
+**ALERTA - Archivos Duplicados:**
 
-### 8.2 Sobre la Implementación
+El repositorio contiene múltiples archivos "Copia de..." que son redundantes y deben evitarse:
 
-- Priorizar la terminación de ejercicios en En-Desarrollo marcados como URGENTE.
-- Usar el sistema de semillas aleatorias para generar versiones diferentes en cada aplicación.
-- Monitorear el desempeño por competencia para ajustar el plan según resultados.
+- `Copia de 2023-Matematicas-11-2-09_Op_C.Rmd`
+- `Copia de 2023-Matematicas-11-2-09-Op-E(a).Rmd`
+- `Copia de vuelo_acrobatico_*.Rmd`
+- `Copia de accidentalidad-vial-genero-*.Rmd`
+- `Copia de DVenn_All_GenMus_*.Rmd`
+- `Copia de p25_SAI_CFA11S123.Rmd`
+- Y varios más...
+
+**Recomendación**: Usar ÚNICAMENTE los archivos originales. Las copias deben eliminarse o moverse a un directorio de archivo.
+
+### 8.2 Sobre la Estructura
+
+- **Ruta correcta**: `03-En-Produccion` (no `En-Produccion`)
+- **Nuevas categorías disponibles**:
+  - `03-Razones-Trigonometricas`
+  - `04-Funciones_Identidades-Trigonometricas`
+- **Directorio de plantillas**: `Ejemplos-Funcionales-Rmd/` contiene plantillas reutilizables
+
+### 8.3 Sobre la Implementación
+
+- Priorizar la terminación de ejercicios en En-Desarrollo marcados como URGENTE
+- Usar el sistema de semillas aleatorias para generar versiones diferentes en cada aplicación
+- Monitorear el desempeño por competencia para ajustar el plan según resultados
+- Explorar las nuevas categorías de Trigonometría para diversificar el banco de ejercicios
 
 ---
 
@@ -353,11 +410,42 @@ Orden estricto de prioridad para implementación inmediata:
 Repositorio Principal:
 /home/bootcamp/Proyectos-2026/RepositorioMatematicasICFES_R_Exams/A-Produccion/
 
-├── En-Produccion/
+├── 03-En-Produccion/
 │   ├── 01-Numeros-Reales/
+│   │   └── Pensamiento-Numerico/
+│   │       └── 03-Numeros-Reales/
+│   │           └── 22-S2-2025-SEDQ-fracciones_reparto_premio/
+│   │
 │   ├── 02-Funciones/
+│   │   └── Pensamiento-Variacional-Espacial/
+│   │       └── 11-Variacion-Lineal-Y-Exponencial_Razon-De-Cambio/
+│   │           ├── Variación-Lineal-Auto-Viajero-09/
+│   │           └── Variacion-Lineal-Vuelo-Acrobatico/
+│   │
+│   ├── 03-Razones-Trigonometricas/
+│   │   └── Pensamiento-Espacial/
+│   │
+│   ├── 04-Funciones_Identidades-Trigonometricas/
+│   │   └── Pensamiento-Variacional/
+│   │
 │   ├── 05-Geometría/
-│   └── 06-Estadística-Y-Probabilidad/
+│   │   └── Pensamiento-Espacial/
+│   │       ├── 17-Conversión-de-Unidades/
+│   │       └── 18-Volumen-Y-Raíz-Cúbica/
+│   │
+│   ├── 06-Estadística-Y-Probabilidad/
+│   │   └── Pensamiento-Aleatorio/
+│   │       ├── 01-Variables-Cualitativas_Distribucion-De-Frecuencias/
+│   │       ├── 03-Variables-Cuantitativas-Continuas-Distribución-de-Frecuencias/
+│   │       ├── 04-Medidas-De-Tendencia-Central/
+│   │       ├── 05-Medidas-De-Dispersión/
+│   │       ├── 06-Medidas-De-Posición/
+│   │       ├── 07-Probabilidad_Principios-Aditivo-Multiplicativo-Conteo/
+│   │       └── 09-Probabilidad-Condicionada_Independencia-De-Sucesos/
+│   │
+│   └── Ejemplos-Funcionales-Rmd/
+│       ├── Avances-Pedagogicos/
+│       └── Plantillas/
 │
 └── En-Desarrollo/
     ├── piscinas_baldosas_patrones.../
@@ -383,8 +471,36 @@ Repositorio Principal:
 - Geométrico-Métrico
 - Aleatorio
 
+### Anexo D: Ejercicios a NO usar (Copias redundantes)
+
+Los siguientes archivos son copias y NO deben usarse:
+
+```
+02-Funciones/
+  - Copia de 2023-Matematicas-11-2-09_Op_C.Rmd
+  - Copia de 2023-Matematicas-11-2-09-Op-E(a).Rmd
+  - Copia de vuelo_acrobatico_A.Rmd
+  - Copia de vuelo_acrobatico_B.Rmd
+  - Copia de vuelo_acrobatico_C (1).Rmd
+
+06-Estadística-Y-Probabilidad/
+  - Copia de accidentalidad-vial-genero-01.Rmd
+  - Copia de accidentalidad-vial-genero-02.Rmd
+  - Copia de Media-Mediana-Moda.Rmd
+  - Copia de 2023-Matematicas-11-2-04-Op-B.Rmd
+  - Copia de 2023-Matematicas-11-2-04-Op-C.Rmd
+  - Copia de p25_SAI_CFA11S123.Rmd
+  - Copia de confint2-cloze.Rmd
+  - Copia de DVenn_All_GenMus_01.Rmd
+  - Copia de DVenn_All_GenMus_03.Rmd
+  - Copia de 11_C01_G09_2020_Tipo1.Rmd
+  - Y carpetas "Copia de ..." completas
+```
+
 ---
 
-*Documento generado el 30 de enero de 2026*
+*Documento actualizado el 6 de febrero de 2026*
 
 *Basado en análisis de resultados ICFES 2024-2025 y repositorio de ejercicios R-Exams*
+
+*Ruta del repositorio: `/home/bootcamp/Proyectos-2026/RepositorioMatematicasICFES_R_Exams/A-Produccion/03-En-Produccion`*
