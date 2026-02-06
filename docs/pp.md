@@ -1,7 +1,7 @@
 ---
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
   word_document: default
 ---
 La Institución Educativa Pedacito de Cielo (IEPC), un establecimiento oficial y urbano ubicado en La Tebaida, Quindío, requiere un Plan de Mejoramiento Académico Integral (PAI) para el año 2026, basado en el análisis de sus resultados del Examen Saber $11^\circ$ 2025-3.

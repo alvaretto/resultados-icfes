@@ -2,10 +2,10 @@
 title: "REPORTE INSTITUCIONAL ICFES SABER 11° - 2025-3"
 subtitle: "INSTITUCION EDUCATIVA PEDACITO DE CIELO ALVARO URIBE VELEZ"
 output:
-  html_document:
-    df_print: paged
   pdf_document:
     latex_engine: xelatex
+  html_document:
+    df_print: paged
   word_document: default
 ---
 

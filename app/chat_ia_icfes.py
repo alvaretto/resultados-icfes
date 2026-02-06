@@ -73,7 +73,7 @@ PROVEEDORES = {
     "groq": MODELOS_GROQ
 }
 
-# Configuración por defecto - Priorizar Anthropic Haiku si está disponible
+# Configuración por defecto - Usar Anthropic Sonnet
 PROVEEDOR_DEFAULT = "anthropic"
 MODELO_DEFAULT_ANTHROPIC = "haiku"
 MODELO_DEFAULT_GROQ = "llama-3.3-70b"
