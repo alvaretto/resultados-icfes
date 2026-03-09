@@ -93,7 +93,7 @@ Estos ejercicios atacan directamente la falencia principal identificada.
 
 | Ejercicio | Ruta Relativa | Justificación |
 |-----------|---------------|---------------|
-| `p25_SAI_CFA11S123.Rmd` | `06-Estadística/.../Media/Promedios-Borrados/` | Reconstruir información faltante desde promedios |
+| `promedios_borrados_edades_aleatorio_formulacion_n2_v1.Rmd` | `06-Estadística/.../Media/Promedios-Borrados/` | Reconstruir información faltante desde promedios |
 | `Media-Mediana-Moda.Rmd` | `06-Estadística/.../01-MediaMedianaModa/Calificaciones-Universitarias/` | Medidas de tendencia central con interpretación |
 | `Media-Mediana-Moda-pdf.Rmd` | (misma ruta) | Versión PDF |
 | `mediana_salas_cine_formulacion_ejecucion_n2_v1.Rmd` | `06-Estadística/.../Mediana/mediana_salas_cine.../` | Formulación y ejecución con mediana |
@@ -225,7 +225,7 @@ Objetivo: Atacar la falencia del 49% de error en comprensión de datos.
 
 Ejercicios a aplicar:
 
-- `p25_SAI_CFA11S123.Rmd`
+- `promedios_borrados_edades_aleatorio_formulacion_n2_v1.Rmd`
 - `consumo_telefonico_adicional_n2_v1.Rmd` (En-Desarrollo)
 - `Media-Mediana-Moda.Rmd`
 
@@ -313,7 +313,7 @@ Orden estricto de prioridad para implementación inmediata:
 
 1. **`2023-Matematicas-11-2-09-Opc-A.Rmd`** - Validación de procedimientos (66% error)
 2. **`piscinas_baldosas_patrones_*.Rmd`** - Patrones numéricos (30% Nivel 1)
-3. **`p25_SAI_CFA11S123.Rmd`** - Promedios y transformación de datos
+3. **`promedios_borrados_edades_aleatorio_formulacion_n2_v1.Rmd`** - Promedios y transformación de datos
 4. **`proceso_recaudacion_sitio_turistico_*.Rmd`** - Argumentación contextualizada
 5. **`tablas_frecuencia_argumentacion_n3_v1.Rmd`** - Argumentación Nivel 3
 6. **`consumo_telefonico_adicional_n2_v1.Rmd`** - Interpretación de consumo
@@ -359,7 +359,7 @@ El repositorio contiene múltiples archivos "Copia de..." que son redundantes y 
 - `Copia de vuelo_acrobatico_*.Rmd`
 - `Copia de accidentalidad-vial-genero-*.Rmd`
 - `Copia de DVenn_All_GenMus_*.Rmd`
-- `Copia de p25_SAI_CFA11S123.Rmd`
+- ~~`Copia de p25_SAI_CFA11S123.Rmd`~~ **(ELIMINADO - 2026-02-06)**
 - Y varios más...
 
 **Recomendación**: Usar ÚNICAMENTE los archivos originales. Las copias deben eliminarse o moverse a un directorio de archivo.
@@ -489,7 +489,7 @@ Los siguientes archivos son copias y NO deben usarse:
   - Copia de Media-Mediana-Moda.Rmd
   - Copia de 2023-Matematicas-11-2-04-Op-B.Rmd
   - Copia de 2023-Matematicas-11-2-04-Op-C.Rmd
-  - Copia de p25_SAI_CFA11S123.Rmd
+  - ~~Copia de p25_SAI_CFA11S123.Rmd~~ (ELIMINADO)
   - Copia de confint2-cloze.Rmd
   - Copia de DVenn_All_GenMus_01.Rmd
   - Copia de DVenn_All_GenMus_03.Rmd
