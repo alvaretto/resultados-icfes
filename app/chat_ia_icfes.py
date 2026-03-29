@@ -24,6 +24,9 @@ import pandas as pd
 from typing import Dict, List, Optional
 import os
 import streamlit.components.v1 as components
+from .logger import get_logger
+
+logger = get_logger(__name__)
 
 # Importar módulo de búsqueda web
 try:
@@ -199,10 +202,12 @@ def configurar_cliente_anthropic(modelo: str = "haiku"):
         return client
 
     except ImportError as e:
+        logger.error("Error al importar librería anthropic: %s", e)
         st.error(f"⚠️ Error al importar librería anthropic: {e}")
         st.info("💡 Instala la dependencia: `pip install anthropic`")
         return None
     except Exception as e:
+        logger.error("Error al configurar cliente Anthropic: %s", e)
         st.error(f"⚠️ Error al configurar cliente Anthropic: {e}")
         return None
 
@@ -239,10 +244,12 @@ def configurar_cliente_groq(modelo: str = "llama-3.3-70b"):
         return client
 
     except ImportError as e:
+        logger.error("Error al importar librería groq: %s", e)
         st.error(f"⚠️ Error al importar librería: {e}")
         st.info("💡 Instala la dependencia: `pip install groq`")
         return None
     except Exception as e:
+        logger.error("Error al configurar cliente Groq: %s", e)
         st.error(f"⚠️ Error al configurar cliente Groq: {e}")
         return None
 
@@ -964,8 +971,7 @@ def generar_respuesta(prompt: str, contexto: str = "") -> str:
             if resultados_web:
                 system_content += f"\n\n{resultados_web}"
         except Exception as e:
-            # Si falla la búsqueda web, continuar sin ella
-            pass
+            logger.warning("Búsqueda web falló, continuando sin ella: %s", e)
 
         # Construir historial de mensajes
         historial = []
@@ -1003,6 +1009,7 @@ def generar_respuesta(prompt: str, contexto: str = "") -> str:
         return respuesta_filtrada
 
     except Exception as e:
+        logger.error("Error al generar respuesta LLM: %s", e)
         return f"⚠️ Error al generar respuesta: {str(e)}"
 
 # ============================================================================

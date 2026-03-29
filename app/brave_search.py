@@ -15,6 +15,9 @@ import os
 import requests
 from typing import Optional, List, Dict, Any
 import re
+from .logger import get_logger
+
+logger = get_logger(__name__)
 
 # Import condicional de Streamlit (para permitir uso fuera de Streamlit)
 try:
@@ -342,12 +345,14 @@ def buscar_en_web(
             "resultados": []
         }
     except requests.exceptions.RequestException as e:
+        logger.error("Error de conexión Brave Search: %s", e)
         return {
             "exito": False,
             "error": f"Error de conexión: {str(e)}",
             "resultados": []
         }
     except Exception as e:
+        logger.error("Error inesperado Brave Search: %s", e)
         return {
             "exito": False,
             "error": f"Error inesperado: {str(e)}",

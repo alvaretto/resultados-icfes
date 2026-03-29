@@ -34,6 +34,7 @@ pdfs_descargados/*.pdf
 
 # Logs (pueden contener información sensible)
 logs/*.txt
+logs/*.log
 
 # Mantener la carpeta pero no los logs
 !logs/.gitkeep
@@ -72,4 +73,24 @@ geckodriver.log
 
 # Augment AI configuration
 .augment/
-node_modules
+node_modules/
+
+# Next.js / Vercel (residuos de migración)
+.next/
+.vercel/
+next-env.d.ts
+
+# Variables de entorno locales
+.env
+.env.local
+.env.*.local
+
+# R session artifacts
+.RData
+.Rhistory
+
+# Archivos de proceso del servidor de desarrollo
+.dev-server.pid
+
+# Claude Code (configuración local del proyecto)
+.claude/
