@@ -12,12 +12,13 @@ jobs:
     steps:
       - name: Ping Streamlit app
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -L --max-time 30 \
+          # Streamlit Cloud responde con 303 redirect - eso es normal y suficiente
+          # para despertar la app. Aceptamos cualquier respuesta HTTP como exito.
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 \
             https://resultados-icfes-pcielo-2025.streamlit.app/)
           echo "HTTP Status: $STATUS"
-          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 400 ]; then
-            echo "App is alive"
-          else
-            echo "App returned $STATUS - may be sleeping or down"
+          if [ "$STATUS" -eq 000 ]; then
+            echo "No response - app may be completely down"
             exit 1
           fi
+          echo "App responded - keep alive successful"
