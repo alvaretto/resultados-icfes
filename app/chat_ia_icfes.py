@@ -1028,29 +1028,29 @@ def mostrar_preguntas_sugeridas() -> Optional[str]:
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        if st.button("📊 Avance institucional", use_container_width=True):
+        if st.button("📊 Avance institucional", width="stretch"):
             return "¿Cómo mejoró el puntaje global de la institución entre 2024 y 2025?"
     
     with col2:
-        if st.button("📚 Área más fuerte", use_container_width=True):
+        if st.button("📚 Área más fuerte", width="stretch"):
             return "¿Cuál es el área de conocimiento con mejor desempeño en 2025?"
     
     with col3:
-        if st.button("🎯 Áreas a mejorar", use_container_width=True):
+        if st.button("🎯 Áreas a mejorar", width="stretch"):
             return "¿En qué áreas debemos enfocarnos para mejorar los resultados?"
     
     col4, col5, col6 = st.columns(3)
     
     with col4:
-        if st.button("🔄 Comparar modelos", use_container_width=True):
+        if st.button("🔄 Comparar modelos", width="stretch"):
             return "¿Cómo se comparan los resultados entre Aula Regular y Modelo Flexible?"
     
     with col5:
-        if st.button("📈 Interpretar puntajes", use_container_width=True):
+        if st.button("📈 Interpretar puntajes", width="stretch"):
             return "¿Cómo interpreto los puntajes y niveles de desempeño?"
     
     with col6:
-        if st.button("💪 Recomendaciones", use_container_width=True):
+        if st.button("💪 Recomendaciones", width="stretch"):
             return "¿Qué estrategias pedagógicas recomiendas para mejorar?"
     
     return None
@@ -1100,7 +1100,7 @@ def mostrar_chat(df: pd.DataFrame = None, pagina_actual: str = "General", datos_
     col1, col2, col3 = st.columns([2, 1, 1])
 
     with col2:
-        if st.button("🗑️ Limpiar conversación", use_container_width=True, type="secondary"):
+        if st.button("🗑️ Limpiar conversación", width="stretch", type="secondary"):
             limpiar_conversacion()
 
     with col3:

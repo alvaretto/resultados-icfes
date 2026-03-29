@@ -84,7 +84,7 @@ def mostrar_ficha_tecnica(datos_2024, stats_2025, datos_2025_raw):
             presentes_2025 - presentes_2024
         ]
     })
-    st.dataframe(df_participacion, use_container_width=True, hide_index=True)
+    st.dataframe(df_participacion, width="stretch", hide_index=True)
 
     if tasa_2025 >= 95:
         st.success("✅ **Excelente tasa de participación:** La institución mantiene una alta asistencia al examen Saber 11°")
@@ -134,7 +134,7 @@ def mostrar_analisis_dispersion(datos_2024, stats_2025, titulo="Análisis de Dis
             st.warning(f"⚠️ **Mayor heterogeneidad**\n\nLos resultados son {diferencia:.1f} puntos más dispersos")
 
     st.markdown("#### 📈 Comparación de Dispersión 2024 vs 2025")
-    st.plotly_chart(crear_grafico_dispersion(desv_2024, desv_2025), use_container_width=True)
+    st.plotly_chart(crear_grafico_dispersion(desv_2024, desv_2025), width="stretch")
 
     st.markdown("#### 📊 Desviación Estándar por Área de Conocimiento")
 
@@ -159,7 +159,7 @@ def mostrar_analisis_dispersion(datos_2024, stats_2025, titulo="Análisis de Dis
             'Estado': estado
         })
 
-    st.dataframe(pd.DataFrame(areas_data), use_container_width=True, hide_index=True)
+    st.dataframe(pd.DataFrame(areas_data), width="stretch", hide_index=True)
 
     st.markdown("#### 💡 Interpretación Pedagógica")
 
@@ -202,7 +202,7 @@ def mostrar_niveles_desempeno_area(df, area, titulo="Distribución por Niveles d
 
     distribucion, porcentajes, total_estudiantes = calcular_distribucion_niveles(df, area)
 
-    st.plotly_chart(crear_grafico_niveles_area(distribucion, porcentajes, area), use_container_width=True)
+    st.plotly_chart(crear_grafico_niveles_area(distribucion, porcentajes, area), width="stretch")
 
     col1, col2 = st.columns([2, 1])
 
@@ -212,7 +212,7 @@ def mostrar_niveles_desempeno_area(df, area, titulo="Distribución por Niveles d
             'Estudiantes': [distribucion[n] for n in NIVELES_ORDEN],
             'Porcentaje': [f"{porcentajes[n]:.1f}%" for n in NIVELES_ORDEN]
         })
-        st.dataframe(df_niveles, use_container_width=True, hide_index=True)
+        st.dataframe(df_niveles, width="stretch", hide_index=True)
 
     with col2:
         nivel_predominante = distribucion.idxmax()
@@ -254,10 +254,10 @@ def mostrar_resumen_niveles_todas_areas(df):
             'Avanzado': f"{distribucion['Avanzado']} ({porcentajes['Avanzado']:.1f}%)"
         })
 
-    st.dataframe(pd.DataFrame(datos_resumen), use_container_width=True, hide_index=True)
+    st.dataframe(pd.DataFrame(datos_resumen), width="stretch", hide_index=True)
 
     st.markdown("#### 📈 Comparación Visual de Niveles por Área")
-    st.plotly_chart(crear_grafico_niveles_todas_areas(df), use_container_width=True)
+    st.plotly_chart(crear_grafico_niveles_todas_areas(df), width="stretch")
 
     st.markdown("#### 💪 Fortalezas y Áreas de Mejora por Niveles de Desempeño")
     col1, col2 = st.columns(2)
@@ -322,7 +322,7 @@ def mostrar_verificacion_datos(datos_2024, stats_regular_2025, stats_flexible_20
                 for k, v in DATOS_INSTITUCIONES_TEBAIDA.items()
             ]).sort_values('Puntaje Global', ascending=False).reset_index(drop=True)
             df_2024['Posición'] = range(1, len(df_2024) + 1)
-            st.dataframe(df_2024[['Posición', 'Institución', 'Puntaje Global']], use_container_width=True, hide_index=True)
+            st.dataframe(df_2024[['Posición', 'Institución', 'Puntaje Global']], width="stretch", hide_index=True)
 
         with col_año[1]:
             st.markdown("#### 📅 Ranking 2025")
@@ -331,7 +331,7 @@ def mostrar_verificacion_datos(datos_2024, stats_regular_2025, stats_flexible_20
                 for k, v in DATOS_INSTITUCIONES_TEBAIDA.items()
             ]).sort_values('Puntaje Global', ascending=False).reset_index(drop=True)
             df_2025['Posición'] = range(1, len(df_2025) + 1)
-            st.dataframe(df_2025[['Posición', 'Institución', 'Puntaje Global']], use_container_width=True, hide_index=True)
+            st.dataframe(df_2025[['Posición', 'Institución', 'Puntaje Global']], width="stretch", hide_index=True)
 
         st.markdown("### 📊 Comparativo Visual 2024 vs 2025")
 
@@ -344,7 +344,7 @@ def mostrar_verificacion_datos(datos_2024, stats_regular_2025, stats_flexible_20
             PROMEDIOS_REFERENCIA['PROMEDIO TEBAIDA']['2025'],
             PROMEDIOS_REFERENCIA['PROMEDIO COLOMBIA']['2025']
         )
-        st.plotly_chart(fig, use_container_width=True, key="ranking_general")
+        st.plotly_chart(fig, width="stretch", key="ranking_general")
 
     with tab2:
         st.markdown("### 📈 Evolución 2024 → 2025")
@@ -361,9 +361,9 @@ def mostrar_verificacion_datos(datos_2024, stats_regular_2025, stats_flexible_20
             })
 
         df_avance = pd.DataFrame(datos_avance).sort_values('Avance', ascending=False)
-        st.dataframe(df_avance, use_container_width=True, hide_index=True)
+        st.dataframe(df_avance, width="stretch", hide_index=True)
 
-        st.plotly_chart(crear_grafico_avances_municipio(df_avance), use_container_width=True, key="evolucion_avance")
+        st.plotly_chart(crear_grafico_avances_municipio(df_avance), width="stretch", key="evolucion_avance")
 
     with tab3:
         st.markdown("### 🎯 Posición de I.E. Pedacito de Cielo en el Municipio")
@@ -481,7 +481,7 @@ def mostrar_verificacion_datos(datos_2024, stats_regular_2025, stats_flexible_20
                 'vs Colombia 2025': '-'
             })
 
-        st.dataframe(pd.DataFrame(datos_completos), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(datos_completos), width="stretch", hide_index=True)
 
         st.markdown("#### 🎯 Posición Relativa de Pedacito de Cielo (7 Instituciones)")
 
@@ -504,7 +504,7 @@ def mostrar_verificacion_datos(datos_2024, stats_regular_2025, stats_flexible_20
             PROMEDIOS_REFERENCIA['PROMEDIO TEBAIDA']['2025'],
             PROMEDIOS_REFERENCIA['PROMEDIO COLOMBIA']['2025']
         )
-        st.plotly_chart(fig_pos, use_container_width=True, key="posicion_relativa")
+        st.plotly_chart(fig_pos, width="stretch", key="posicion_relativa")
 
         st.markdown("---")
         st.markdown("### 📝 Conclusiones del Análisis Municipal")

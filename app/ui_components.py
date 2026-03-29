@@ -228,7 +228,7 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025,
                 datos_2024['Institucional']['puntaje_global'],
                 stats_institucional_2025['puntaje_global']
             ),
-            use_container_width=True
+            width="stretch"
         )
 
         st.markdown("---")
@@ -281,10 +281,10 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025,
                               'Avance': avance, 'Estado': texto_avance})
 
             df_tabla = pd.DataFrame(tabla)
-            st.dataframe(df_tabla, use_container_width=True, hide_index=True)
+            st.dataframe(df_tabla, width="stretch", hide_index=True)
             st.plotly_chart(
                 crear_grafico_avances_modelo(df_tabla, f"Avances por Área - {titulo_modelo.split('- ')[1]} (2024 → 2025)"),
-                use_container_width=True
+                width="stretch"
             )
             st.markdown("---")
 
@@ -328,10 +328,10 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025,
                                      'Avance': avance, 'Estado': texto_avance})
 
         df_areas_inst = pd.DataFrame(tabla_areas_inst)
-        st.dataframe(df_areas_inst, use_container_width=True, hide_index=True)
+        st.dataframe(df_areas_inst, width="stretch", hide_index=True)
         st.plotly_chart(
             crear_grafico_avances_modelo(df_areas_inst, "Avances por Área - Nivel Institucional (2024 → 2025)"),
-            use_container_width=True
+            width="stretch"
         )
 
         st.markdown("---")
@@ -351,7 +351,7 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025,
             datos_comparacion_modelos.append({'Área': area, 'Modelo': 'Modelo Flexible', 'Avance': avance_flexible})
 
         df_comp_modelos = pd.DataFrame(datos_comparacion_modelos)
-        st.plotly_chart(crear_grafico_comparacion_modelos_areas(df_comp_modelos), use_container_width=True)
+        st.plotly_chart(crear_grafico_comparacion_modelos_areas(df_comp_modelos), width="stretch")
 
         tabla_comp_modelos = []
         for area in AREAS:
@@ -370,7 +370,7 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025,
                 'Diferencia': avance_regular - avance_flexible
             })
 
-        st.dataframe(pd.DataFrame(tabla_comp_modelos), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(tabla_comp_modelos), width="stretch", hide_index=True)
         st.markdown("---")
         st.info("💡 Para ver la comparación detallada de puntajes por área entre grupos, consulta la pestaña '👥 Resultados por Grupos'")
 
@@ -393,8 +393,8 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025,
             })
 
         df_grupos = pd.DataFrame(tabla_grupos)
-        st.dataframe(df_grupos, use_container_width=True, hide_index=True)
-        st.plotly_chart(crear_grafico_grupos(df_grupos), use_container_width=True)
+        st.dataframe(df_grupos, width="stretch", hide_index=True)
+        st.plotly_chart(crear_grafico_grupos(df_grupos), width="stretch")
 
         st.markdown("---")
         st.markdown("#### 🔄 Comparación entre Grupos del Mismo Modelo")
@@ -415,7 +415,7 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025,
                                  color_discrete_sequence=['#667eea', '#4c5fd5'])
             fig_regular.update_xaxes(tickangle=-45)
             fig_regular.update_layout(height=400)
-            st.plotly_chart(fig_regular, use_container_width=True)
+            st.plotly_chart(fig_regular, width="stretch")
 
             if '11A' in stats_grupos_2025 and '11B' in stats_grupos_2025:
                 diff = stats_grupos_2025['11A']['puntaje_global'] - stats_grupos_2025['11B']['puntaje_global']
@@ -440,7 +440,7 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025,
                                   color_discrete_sequence=['#764ba2', '#9b59b6', '#8e44ad'])
             fig_flexible.update_xaxes(tickangle=-45)
             fig_flexible.update_layout(height=400)
-            st.plotly_chart(fig_flexible, use_container_width=True)
+            st.plotly_chart(fig_flexible, width="stretch")
 
             grupos_flex_ordenados = sorted(
                 [(g, stats_grupos_2025[g]['puntaje_global']) for g in ['P3A', 'P3B', 'P3C']
@@ -462,12 +462,12 @@ def mostrar_pagina_inicio(datos_2024, stats_regular_2025, stats_flexible_2025,
             for area in AREAS
         ]
 
-        st.plotly_chart(crear_grafico_lineas_grupos(pd.DataFrame(datos_areas_grupos)), use_container_width=True)
+        st.plotly_chart(crear_grafico_lineas_grupos(pd.DataFrame(datos_areas_grupos)), width="stretch")
 
         st.markdown("#### 🏆 Ranking de Grupos por Puntaje Global")
         df_ranking = df_grupos[['Grupo', 'Modelo', 'Estudiantes', 'Puntaje Global']].sort_values('Puntaje Global', ascending=False)
         df_ranking.insert(0, 'Posición', range(1, len(df_ranking) + 1))
-        st.dataframe(df_ranking, use_container_width=True, hide_index=True)
+        st.dataframe(df_ranking, width="stretch", hide_index=True)
 
     # ── TAB 5: NIVELES DE DESEMPEÑO ──────────────────────────────────────────
     with tab5:
@@ -530,11 +530,11 @@ def mostrar_estadisticas_estudiante(datos_2025_raw):
 
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.dataframe(df_areas_estudiante, use_container_width=True, hide_index=True)
+        st.dataframe(df_areas_estudiante, width="stretch", hide_index=True)
     with col2:
         fig = px.bar(df_areas_estudiante, x='Área', y='Puntaje', color='Puntaje',
                      color_continuous_scale='Viridis', title=f"Puntajes de {estudiante_seleccionado}")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
 
 # ============================================================================
@@ -566,15 +566,15 @@ def mostrar_estadisticas_grado(datos_2025_raw):
 
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.dataframe(df_promedios, use_container_width=True, hide_index=True)
+        st.dataframe(df_promedios, width="stretch", hide_index=True)
     with col2:
         fig = px.bar(df_promedios, x='Área', y='Promedio', color='Promedio',
                      color_continuous_scale='Blues', title=f"Promedios por Área - {grado_seleccionado}")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     st.markdown("#### 👥 Estudiantes del Grado")
     df_grado_display = df_grado[['Primer Nombre', 'Primer Apellido', 'Puntaje Global'] + AREAS].copy()
-    st.dataframe(df_grado_display.sort_values('Puntaje Global', ascending=False), use_container_width=True, hide_index=True)
+    st.dataframe(df_grado_display.sort_values('Puntaje Global', ascending=False), width="stretch", hide_index=True)
 
 
 # ============================================================================
@@ -608,7 +608,7 @@ def mostrar_estadisticas_area(datos_2024, datos_2025_raw, stats_institucional_20
                        labels={area_seleccionada: 'Puntaje'},
                        color_discrete_map={'Aula Regular (Jornada 1)': '#667eea',
                                            'Modelo Flexible (Jornada 0)': '#764ba2'})
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     st.markdown(f"#### 🏫 Comparativo por Modelo Educativo - {area_seleccionada}")
     col1, col2 = st.columns(2)
@@ -672,17 +672,17 @@ def mostrar_estadisticas_modelo(datos_2024, stats_regular_2025, stats_flexible_2
         texto_avance, _ = formatear_avance(avance)
         tabla_areas.append({'Área': area, '2024': puntaje_2024, '2025': puntaje_2025, 'Avance': texto_avance})
 
-    st.dataframe(pd.DataFrame(tabla_areas), use_container_width=True, hide_index=True)
+    st.dataframe(pd.DataFrame(tabla_areas), width="stretch", hide_index=True)
 
     col1, col2 = st.columns(2)
     with col1:
         st.plotly_chart(
             crear_grafico_comparativo_areas(datos_2024_modelo, datos_2025_modelo,
                                             f"Comparativo por Áreas - {modelo_seleccionado}"),
-            use_container_width=True
+            width="stretch"
         )
     with col2:
-        st.plotly_chart(crear_grafico_avances(datos_2024_modelo, datos_2025_modelo), use_container_width=True)
+        st.plotly_chart(crear_grafico_avances(datos_2024_modelo, datos_2025_modelo), width="stretch")
 
 
 # ============================================================================
@@ -707,14 +707,14 @@ def mostrar_rankings(datos_2025_raw):
         ['Nombre Completo', 'Grupo', 'Modelo', 'Puntaje Global'] + AREAS
     ].copy()
     df_top10.insert(0, 'Posición', range(1, len(df_top10) + 1))
-    st.dataframe(df_top10, use_container_width=True, hide_index=True)
+    st.dataframe(df_top10, width="stretch", hide_index=True)
 
     fig = px.bar(df_top10, x='Nombre Completo', y='Puntaje Global', color='Modelo',
                  title="Top 10 Estudiantes - Puntaje Global",
                  color_discrete_map={'Aula Regular (Jornada 1)': '#667eea',
                                      'Modelo Flexible (Jornada 0)': '#764ba2'})
     fig.update_xaxes(tickangle=-45)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     st.markdown("---")
     st.markdown("#### 🌟 Mejores Estudiantes por Área")
@@ -726,7 +726,7 @@ def mostrar_rankings(datos_2025_raw):
                 ['Nombre Completo', 'Grupo', 'Modelo', area, 'Puntaje Global']
             ].copy()
             df_top_area.insert(0, 'Posición', range(1, len(df_top_area) + 1))
-            st.dataframe(df_top_area, use_container_width=True, hide_index=True)
+            st.dataframe(df_top_area, width="stretch", hide_index=True)
 
     st.markdown("---")
     st.markdown("#### 🏫 Rankings por Modelo Educativo")
@@ -750,7 +750,7 @@ def mostrar_rankings(datos_2025_raw):
                 ['Nombre Completo', 'Grupo', 'Puntaje Global']
             ].copy()
             df_top.insert(0, 'Posición', range(1, len(df_top) + 1))
-            st.dataframe(df_top, use_container_width=True, hide_index=True)
+            st.dataframe(df_top, width="stretch", hide_index=True)
 
     st.markdown("---")
     st.markdown("#### 🎓 Rankings por Grado")
@@ -762,7 +762,7 @@ def mostrar_rankings(datos_2025_raw):
         ['Nombre Completo', 'Modelo', 'Puntaje Global'] + AREAS
     ].copy()
     df_grado_ranking.insert(0, 'Posición', range(1, len(df_grado_ranking) + 1))
-    st.dataframe(df_grado_ranking, use_container_width=True, hide_index=True)
+    st.dataframe(df_grado_ranking, width="stretch", hide_index=True)
 
 
 # ============================================================================
@@ -807,7 +807,7 @@ def mostrar_descarga_datos(datos_2025_raw):
     df_descarga = df_descarga.drop(columns=[c for c in columnas_a_eliminar if c in df_descarga.columns])
 
     st.markdown("#### 👀 Vista Previa de los Datos")
-    st.dataframe(df_descarga.head(10), use_container_width=True)
+    st.dataframe(df_descarga.head(10), width="stretch")
     st.markdown(f"**Total de registros:** {len(df_descarga)}")
 
     st.markdown("#### 💾 Descargar")
@@ -819,7 +819,7 @@ def mostrar_descarga_datos(datos_2025_raw):
             data=df_descarga.to_csv(index=False, encoding='utf-8-sig'),
             file_name=f"{nombre_archivo}.csv",
             mime="text/csv",
-            use_container_width=True
+            width="stretch"
         )
 
     with col2:
@@ -832,7 +832,7 @@ def mostrar_descarga_datos(datos_2025_raw):
             data=buffer,
             file_name=f"{nombre_archivo}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            use_container_width=True
+            width="stretch"
         )
 
     st.markdown("---")
@@ -853,7 +853,7 @@ def mostrar_descarga_datos(datos_2025_raw):
     }
 
     df_estadisticas = pd.DataFrame(estadisticas_resumen)
-    st.dataframe(df_estadisticas, use_container_width=True, hide_index=True)
+    st.dataframe(df_estadisticas, width="stretch", hide_index=True)
 
     st.download_button(
         label="📄 Descargar Estadísticas (CSV)",
