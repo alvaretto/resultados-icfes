@@ -1,0 +1,50 @@
+# Latido semanal: impide que GitHub deshabilite los workflows programados.
+#
+# GitHub documenta: "In a public repository, scheduled workflows are automatically
+# disabled when no repository activity has occurred in 60 days". Eso fue exactamente
+# lo que paso aqui: ultimo push 2026-03-29 + 60 dias = 2026-05-28, la fecha de la
+# ultima corrida del despertador. Quedo en "disabled_inactivity" y nadie se entero,
+# porque un workflow deshabilitado no falla: simplemente deja de existir.
+#
+# El commit vacio va a la rama ci-heartbeat, no a main: registra actividad en el repo
+# sin ensuciar el historial de main ni disparar un redespliegue en Streamlit Cloud.
+
+name: Heartbeat (mantiene vivos los crons)
+
+on:
+  schedule:
+    - cron: '23 6 * * 1'   # lunes 06:23 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write   # para empujar el commit vacio
+  actions: write    # para re-habilitar el despertador si ya fue deshabilitado
+
+jobs:
+  latido:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Commit vacio en ci-heartbeat (reinicia el contador de 60 dias)
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin ci-heartbeat --depth=1 2>/dev/null || true
+          git checkout -B ci-heartbeat origin/ci-heartbeat 2>/dev/null || git checkout -B ci-heartbeat
+          git commit --allow-empty -m "chore(ci): latido $(date -u +%F) — mantiene activos los workflows programados"
+          git push origin ci-heartbeat
+
+      - name: Red de seguridad — re-habilitar el despertador si GitHub lo apago
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          estado=$(gh api "repos/${{ github.repository }}/actions/workflows/keep-alive.yml" --jq .state)
+          echo "Estado de keep-alive.yml: $estado"
+          if [ "$estado" != "active" ]; then
+            gh workflow enable keep-alive.yml --repo "${{ github.repository }}"
+            echo "::warning::keep-alive.yml estaba en '$estado' y fue re-habilitado."
+          fi

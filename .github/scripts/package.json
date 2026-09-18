@@ -1,0 +1,9 @@
+{
+  "name": "keep-alive-streamlit",
+  "private": true,
+  "type": "module",
+  "description": "Despertador real (navegador) para la app de Streamlit Community Cloud",
+  "dependencies": {
+    "playwright": "1.63.0"
+  }
+}

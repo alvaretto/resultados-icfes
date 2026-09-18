@@ -1,24 +1,47 @@
+# Despertador de la app en Streamlit Community Cloud.
+#
+# Streamlit duerme toda app sin trafico durante 12 h y el despertar es MANUAL
+# (hay que hacer clic en "Yes, get this app back up!"). Por eso esto NO es un ping:
+# abre un navegador real, hace el clic si hace falta y comprueba que la app quedo viva.
+#
+# La version anterior hacia `curl` cada 6 h y aceptaba cualquier codigo HTTP como exito:
+# dio "success" 243 veces mientras la app dormia, porque / responde 303 y /healthz
+# responde 200 {"status":"ok"} este viva o dormida.
+#
+# Cadencia de 3 h = 4 oportunidades dentro de cada ventana de 12 h, margen suficiente
+# para las corridas que GitHub retrasa o descarta bajo carga.
+
 name: Keep Streamlit alive
 
 on:
   schedule:
-    # Cada 6 horas: 00:00, 06:00, 12:00, 18:00 UTC
-    - cron: '0 */6 * * *'
-  workflow_dispatch: # Permite ejecucion manual desde GitHub
+    - cron: '17 */3 * * *'   # 00:17, 03:17, 06:17... UTC (minuto 17: evita el pico del minuto 0)
+  workflow_dispatch:
+
+concurrency:
+  group: keep-alive
+  cancel-in-progress: false
 
 jobs:
-  ping:
+  despertar:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - name: Ping Streamlit app
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Instalar Playwright + Chromium
+        working-directory: .github/scripts
         run: |
-          # Streamlit Cloud responde con 303 redirect - eso es normal y suficiente
-          # para despertar la app. Aceptamos cualquier respuesta HTTP como exito.
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 \
-            https://resultados-icfes-pcielo-2025.streamlit.app/)
-          echo "HTTP Status: $STATUS"
-          if [ "$STATUS" -eq 000 ]; then
-            echo "No response - app may be completely down"
-            exit 1
-          fi
-          echo "App responded - keep alive successful"
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+
+      - name: Despertar la app y verificar que quedo viva
+        working-directory: .github/scripts
+        env:
+          APP_URL: https://resultados-icfes-pcielo-2025.streamlit.app/
+        run: node keep-alive.mjs
+        # Si la app no queda VIVA, este paso falla: GitHub envia correo al dueno del repo.
