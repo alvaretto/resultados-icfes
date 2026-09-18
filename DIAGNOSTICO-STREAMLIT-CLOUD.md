@@ -1,138 +1,107 @@
-# Diagnóstico de Despliegue en Streamlit Cloud
+# Hibernación en Streamlit Community Cloud — diagnóstico y defensa
 
-**Fecha:** 2025-10-21  
 **URL:** https://resultados-icfes-pcielo-2025.streamlit.app/
-
-## ✅ Estado Actual
-
-### Verificaciones Completadas
-
-1. **✅ Dependencias:** Todas las dependencias están correctamente instaladas
-   - streamlit >= 1.32.0
-   - pandas >= 2.2.0
-   - plotly >= 5.18.0
-   - openpyxl >= 3.1.2
-   - numpy >= 1.26.0
-   - scipy >= 1.12.0
-
-2. **✅ Archivos de Datos:** Todos los archivos necesarios están en el repositorio
-   - `ITC-RESULTADOS-ICFES-2025-ADAPTADO.xlsx` (raíz)
-   - `RESULTADOS-ICFES-EJEMPLO.xlsx` (raíz)
-
-3. **✅ Aplicación Local:** La aplicación funciona correctamente en local
-   ```bash
-   python -m streamlit run streamlit_app.py
-   # ✅ Se ejecuta sin errores
-   ```
-
-4. **✅ Sintaxis:** No hay errores de sintaxis en `streamlit_app.py` ni `app.py`
-
-5. **✅ Estructura del Repositorio:** El repositorio está correctamente configurado
-
-## 📋 Estructura de Archivos
-
-```
-/
-├── streamlit_app.py          # Punto de entrada (ejecuta app.py)
-├── app.py                     # Aplicación principal
-├── requirements.txt           # Dependencias
-├── .streamlit/
-│   └── config.toml           # Configuración de Streamlit
-├── ITC-RESULTADOS-ICFES-2025-ADAPTADO.xlsx  # Datos reales
-└── RESULTADOS-ICFES-EJEMPLO.xlsx            # Datos de ejemplo
-```
-
-## 🔍 Cómo Funciona
-
-1. **streamlit_app.py** es el punto de entrada que Streamlit Cloud ejecuta
-2. Este archivo ejecuta el contenido de **app.py**
-3. **app.py** busca archivos de datos en este orden:
-   - `ITC-RESULTADOS-ICFES-2025-ADAPTADO.xlsx` (prioridad 1)
-   - `RESULTADOS-ICFES-AULA-REGULAR-2025.xlsx` (prioridad 2)
-   - `RESULTADOS-ICFES-EJEMPLO.xlsx` (prioridad 3)
-
-## 🎯 Próximos Pasos para Verificar en Streamlit Cloud
-
-### 1. Acceder a los Logs de Streamlit Cloud
-
-1. Ve a https://share.streamlit.io/
-2. Inicia sesión con tu cuenta
-3. Busca la aplicación "resultados-icfes-pcielo-2025"
-4. Haz clic en "Manage app"
-5. Ve a la pestaña "Logs"
-
-### 2. Verificar el Estado del Despliegue
-
-Busca en los logs:
-- ✅ **Si dice "You can now view your Streamlit app"** → La app está funcionando
-- ❌ **Si hay errores de importación** → Problema con dependencias
-- ❌ **Si hay errores de archivo no encontrado** → Problema con rutas de archivos
-- ❌ **Si hay errores de sintaxis** → Problema con el código
-
-### 3. Forzar Redespliegue (si es necesario)
-
-Si la aplicación no se actualiza automáticamente:
-
-1. En Streamlit Cloud, ve a "Manage app"
-2. Haz clic en "Reboot app"
-3. Espera 2-3 minutos a que se redespliegue
-
-### 4. Verificar Configuración de la App
-
-Asegúrate de que en Streamlit Cloud:
-- **Main file path:** `streamlit_app.py`
-- **Python version:** 3.9 o superior
-- **Repository:** `alvaretto/resultados-icfes`
-- **Branch:** `main`
-
-## 🐛 Posibles Problemas y Soluciones
-
-### Problema 1: "ModuleNotFoundError"
-**Solución:** Verificar que `requirements.txt` esté en la raíz del repositorio
-
-### Problema 2: "FileNotFoundError"
-**Solución:** Verificar que los archivos `.xlsx` estén en el repositorio y no sean ignorados por `.gitignore`
-
-### Problema 3: "App is not loading"
-**Solución:** Forzar redespliegue desde Streamlit Cloud
-
-### Problema 4: "Memory limit exceeded"
-**Solución:** Los archivos de datos son pequeños (~8-9 KB), no debería haber problema de memoria
-
-## 📊 Información del Repositorio
-
-- **Repositorio:** https://github.com/alvaretto/resultados-icfes.git
-- **Rama:** main
-- **Último commit:** 9310b7a - "🔧 Corregir streamlit_app.py para ejecutar correctamente en Streamlit Cloud"
-
-## ✅ Conclusión
-
-**La aplicación está lista para desplegarse en Streamlit Cloud.**
-
-Todos los archivos necesarios están en el repositorio y la aplicación funciona correctamente en local. Si hay problemas en Streamlit Cloud, revisa los logs para identificar el error específico.
+**Última revisión:** 2026-09-18
+**Estado:** despertador automático activo y verificado en producción
 
 ---
 
-**Última actualización:** 2025-10-23  
-**Versión:** 2.0  
-**Estado:** ✅ Funcional
+## El problema
 
-## 📝 Comandos Útiles para Verificación Local
+Streamlit Community Cloud duerme **toda app que pase 12 horas sin tráfico**
+(«All apps without traffic for 12 hours go to sleep», documentación oficial).
+Quien entra entonces no ve el panel: ve una pantalla con «Zzzz — This app has gone
+to sleep due to inactivity» y un botón **«Yes, get this app back up!»**.
 
-```bash
-# Verificar archivos en el repositorio
-git ls-files | grep -E '\.(py|txt|xlsx)$'
+El despertar es **manual**: alguien tiene que hacer ese clic. Para un docente o un
+directivo que abre el enlace, eso se lee como «el panel está roto».
 
-# Probar la aplicación localmente
-python -m streamlit run streamlit_app.py
+## Por qué el primer intento de solución no sirvió (2026-03-28 → 2026-05-28)
 
-# Verificar dependencias
-python -c "import streamlit; import pandas; import plotly; import openpyxl; import numpy; import scipy; print('OK')"
+Se añadió un workflow que hacía `curl` cada 6 h y aceptaba cualquier código HTTP
+como éxito. Falló por dos motivos independientes, ambos verificados:
+
+**1. El chequeo era ciego.** Medido el 2026-09-18 con la app dormida:
+
+| Sonda | App dormida | App viva |
+|---|---|---|
+| `GET /` | `303` | `303` *(idéntico)* |
+| `GET /healthz` | `200 {"status":"ok"}` | `200 {"status":"ok"}` *(idéntico)* |
+| `GET /_stcore/health` | `303` a auth | `303` a auth |
+
+Ningún endpoint HTTP distingue los dos estados. El workflow reportó **«success»
+243 veces mientras la app dormía**. Cualquier monitor tipo curl, UptimeRobot o
+cron-job.org tiene exactamente el mismo punto ciego.
+
+**2. El cron llevaba 113 días apagado.** GitHub documenta: *«In a public repository,
+scheduled workflows are automatically disabled when no repository activity has
+occurred in 60 days»*. Último push `2026-03-29` + 60 días = **`2026-05-28`**, que es
+la fecha de la última corrida registrada. El API lo confirmaba sin ambigüedad:
+
+```
+gh api repos/alvaretto/resultados-icfes/actions/workflows --jq '.workflows[].state'
+→ "disabled_inactivity"
 ```
 
-## 🔗 Enlaces Útiles
+Y un workflow deshabilitado **no falla**: deja de correr en silencio, sin avisar a nadie.
 
-- **Aplicación:** https://resultados-icfes-pcielo-2025.streamlit.app/
-- **Streamlit Cloud Dashboard:** https://share.streamlit.io/
-- **Documentación Streamlit:** https://docs.streamlit.io/
+## Cómo se distingue viva de dormida
 
+Solo con un navegador real, y leyendo **dentro de los frames**: la app se sirve
+dentro de un `<iframe>`, así que el `innerText` del frame superior está **vacío**
+cuando la app funciona correctamente.
+
+| Señal | DORMIDA | VIVA |
+|---|---|---|
+| `<title>` | `Streamlit` | `Análisis ICFES - Pedacito de Cielo · Streamlit` |
+| Texto en frames | `Zzzz… gone to sleep…` | ~2.600 caracteres del panel |
+| `<iframe>` de la app | ausente | presente |
+
+## La defensa montada
+
+| Pieza | Qué hace | Cadencia |
+|---|---|---|
+| `.github/scripts/keep-alive.mjs` | Abre un navegador real, detecta la hibernación, **hace el clic**, espera el arranque en frío y verifica por frames que quedó viva. Reintenta una vez. Sale con error si no lo logra. | — |
+| `.github/workflows/keep-alive.yml` | Ejecuta el despertador. 3 h da 4 oportunidades por cada ventana de 12 h, margen para las corridas que GitHub retrasa o descarta bajo carga. | cada 3 h (minuto 17) |
+| `.github/workflows/heartbeat.yml` | Commit vacío en la rama `ci-heartbeat` para reiniciar el contador de 60 días, más una red de seguridad que re-habilita el despertador si GitHub lo apagó. | lunes 06:23 UTC |
+| `.github/scripts/verificar.sh` | Verificación manual desde tu máquina. | a demanda |
+
+La rama `ci-heartbeat` existe solo para registrar actividad: no toca `main` ni
+dispara redespliegues en Streamlit Cloud.
+
+## Cómo comprobarlo tú mismo
+
+```bash
+# ¿Está viva ahora? (la despierta si hace falta)
+.github/scripts/verificar.sh
+
+# ¿El despertador sigue corriendo?
+gh run list --workflow=keep-alive.yml --limit 5
+
+# ¿GitHub volvió a apagar los crons?  Debe decir "active" en ambos.
+gh api repos/alvaretto/resultados-icfes/actions/workflows --jq '.workflows[] | "\(.path) -> \(.state)"'
+
+# Forzar una corrida ahora
+gh workflow run keep-alive.yml --repo alvaretto/resultados-icfes
+```
+
+## Qué puede volver a romperlo
+
+1. **Que GitHub pierda 4 corridas seguidas** (12 h completas). Poco probable; entonces
+   la app duerme hasta la siguiente corrida, que la despierta sola.
+2. **Que el commit del bot no cuente como actividad del repo.** Es el único supuesto
+   no demostrado todavía: se confirma revisando el estado de los workflows después
+   del 2026-11-17 (60 días desde hoy).
+3. **Que Streamlit cambie el texto del botón o la estructura del DOM.** El despertador
+   fallaría de forma ruidosa, no silenciosa: GitHub envía correo al dueño del repo
+   cuando un workflow programado falla.
+4. **Que se acabe el plan gratuito o cambie la política de hibernación.** La solución
+   de fondo, si el panel llega a ser el enlace institucional permanente, es moverlo a
+   una plataforma que despierte sola con la primera petición (Cloud Run, Fly.io,
+   Render): ahí esta pantalla no existe.
+
+---
+
+*Documento actualizado tras verificar cada afirmación contra el sistema real.
+Las versiones anteriores daban el despliegue por «✅ Funcional» mientras la app
+llevaba meses durmiendo.*
