@@ -65,6 +65,8 @@ cuando la app funciona correctamente.
 | `.github/workflows/keep-alive.yml` | Ejecuta el despertador. 3 h da 4 oportunidades por cada ventana de 12 h, margen para las corridas que GitHub retrasa o descarta bajo carga. | cada 3 h (minuto 17) |
 | `.github/workflows/heartbeat.yml` | Commit vacío en la rama `ci-heartbeat` para reiniciar el contador de 60 días, más una red de seguridad que re-habilita el despertador si GitHub lo apagó. | lunes 06:23 UTC |
 | `.github/scripts/verificar.sh` | Verificación manual desde tu máquina. | a demanda |
+| Alerta a Telegram en ambos workflows | Si el despertador no logra dejar viva la app, o si falla el latido, avisa al canal de Hermes. Credenciales en secretos del repo, nunca en el YAML. | al fallar |
+| `~/.local/bin/icfes-streamlit-watchdog.sh` + timer systemd | Vigía **fuera de GitHub**: avisa por Telegram si los crons aparecen apagados o si el despertador lleva más de 8 h sin correr. Silencio = todo normal. | cada 6 h |
 
 La rama `ci-heartbeat` existe solo para registrar actividad: no toca `main` ni
 dispara redespliegues en Streamlit Cloud.
@@ -93,8 +95,8 @@ gh workflow run keep-alive.yml --repo alvaretto/resultados-icfes
    no demostrado todavía: se confirma revisando el estado de los workflows después
    del 2026-11-17 (60 días desde hoy).
 3. **Que Streamlit cambie el texto del botón o la estructura del DOM.** El despertador
-   fallaría de forma ruidosa, no silenciosa: GitHub envía correo al dueño del repo
-   cuando un workflow programado falla.
+   fallaría de forma ruidosa, no silenciosa: llega alerta a Telegram (bot de Hermes) y
+   correo de GitHub al dueño del repo.
 4. **Que se acabe el plan gratuito o cambie la política de hibernación.** La solución
    de fondo, si el panel llega a ser el enlace institucional permanente, es moverlo a
    una plataforma que despierte sola con la primera petición (Cloud Run, Fly.io,
