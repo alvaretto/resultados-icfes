@@ -48,3 +48,18 @@ jobs:
             gh workflow enable keep-alive.yml --repo "${{ github.repository }}"
             echo "::warning::keep-alive.yml estaba en '$estado' y fue re-habilitado."
           fi
+
+      - name: Avisar por Telegram (bot de Hermes) si el latido fallo
+        if: failure()
+        env:
+          TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+          CORRIDA: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          [ -n "$TOKEN" ] && [ -n "$CHAT" ] || exit 0
+          TEXTO="[Panel ICFES] Fallo el latido semanal
+          Sin el, GitHub apagara los crons a los 60 dias y el panel volvera a dormirse en silencio.
+          Corrida: $CORRIDA"
+          curl -sS -X POST "https://api.telegram.org/bot$TOKEN/sendMessage" \
+            -d chat_id="$CHAT" --data-urlencode text="$TEXTO" \
+            -o /dev/null -w "telegram sendMessage: %{http_code}\n"

@@ -17,6 +17,11 @@ on:
   schedule:
     - cron: '17 */3 * * *'   # 00:17, 03:17, 06:17... UTC (minuto 17: evita el pico del minuto 0)
   workflow_dispatch:
+    inputs:
+      app_url:
+        description: 'URL a verificar (solo para probar la alerta; en blanco = la app real)'
+        required: false
+        default: ''
 
 concurrency:
   group: keep-alive
@@ -42,6 +47,26 @@ jobs:
       - name: Despertar la app y verificar que quedo viva
         working-directory: .github/scripts
         env:
-          APP_URL: https://resultados-icfes-pcielo-2025.streamlit.app/
+          APP_URL: ${{ inputs.app_url || 'https://resultados-icfes-pcielo-2025.streamlit.app/' }}
         run: node keep-alive.mjs
         # Si la app no queda VIVA, este paso falla: GitHub envia correo al dueno del repo.
+
+      - name: Avisar por Telegram (bot de Hermes) si la app no quedo viva
+        if: failure()
+        env:
+          TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+          CORRIDA: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$TOKEN" ] || [ -z "$CHAT" ]; then
+            echo "::warning::Faltan los secretos de Telegram; no se envia alerta."
+            exit 0
+          fi
+          TEXTO="[Panel ICFES] La app quedo DORMIDA
+          El despertador corrio pero no logro dejarla viva.
+          Panel: https://resultados-icfes-pcielo-2025.streamlit.app/
+          Corrida: $CORRIDA
+          Si se repite, revisa los logs en https://share.streamlit.io/"
+          curl -sS -X POST "https://api.telegram.org/bot$TOKEN/sendMessage" \
+            -d chat_id="$CHAT" --data-urlencode text="$TEXTO" \
+            -o /dev/null -w "telegram sendMessage: %{http_code}\n"
