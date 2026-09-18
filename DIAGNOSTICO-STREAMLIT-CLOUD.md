@@ -99,8 +99,10 @@ gh workflow run keep-alive.yml --repo alvaretto/resultados-icfes
    correo de GitHub al dueño del repo.
 4. **Que se acabe el plan gratuito o cambie la política de hibernación.** La solución
    de fondo, si el panel llega a ser el enlace institucional permanente, es moverlo a
-   una plataforma que despierte sola con la primera petición (Cloud Run, Fly.io,
-   Render): ahí esta pantalla no existe.
+   una plataforma que despierte sola con la primera petición: ahí esta pantalla no existe.
+   Plan escrito y con los puntos de fricción ya verificados en
+   [`docs-plan/PLAN-MIGRACION-CLOUD-RUN.md`](docs-plan/PLAN-MIGRACION-CLOUD-RUN.md).
+   **No ejecutarlo mientras la defensa actual funcione**: ese documento dice cuándo sí.
 
 ---
 
